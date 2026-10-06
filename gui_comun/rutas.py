@@ -38,7 +38,7 @@ BACKENDS: dict[str, dict[str, tuple[str, ...]]] = {
 
 @lru_cache(maxsize=1)
 def core_env():
-    """El módulo core/env.py del workspace: se sube desde studios/ hasta hallarlo."""
+    """El módulo core/env.py del workspace: se sube desde gui-suites/ hasta hallarlo."""
     d = STUDIOS_ROOT
     while d != d.parent and not (d / "core" / "env.py").is_file():
         d = d.parent
