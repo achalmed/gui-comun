@@ -1,4 +1,4 @@
-"""comun/icons.py — acceso a los iconos SVG de un studio.
+"""gui_comun/icons.py — acceso a los iconos SVG de un studio.
 
 Intenta usar los recursos Qt compilados (`resources_rc.py` en la carpeta del studio, generado con pyside6-rcc
 desde `resources/resources.qrc`). Si no se han compilado, carga los .svg del disco, de modo que el studio

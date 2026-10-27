@@ -1,4 +1,4 @@
-"""comun/theming.py — aplicación de temas QSS (oscuro / claro / sistema) de Filesystem Studio y Git Studio.
+"""gui_comun/theming.py — aplicación de temas QSS (oscuro / claro / sistema) de Filesystem Studio y Git Studio.
 
 Cada studio pasa su carpeta de temas (`resources/themes/`, con `dark.qss` y `light.qss`). «sistema» no aplica
 hoja de estilos y deja que Qt use la paleta del escritorio.

@@ -26,7 +26,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from comun.format import format_duration, timestamp
+from gui_comun.format import format_duration, timestamp
 
 _COLORS = {"info": "#7aa2f7", "ok": "#9ece6a", "warn": "#e0af68",
            "error": "#f7768e", "cmd": "#bb9af7", "out": "#c0caf5",

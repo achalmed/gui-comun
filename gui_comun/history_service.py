@@ -9,7 +9,7 @@ import json
 
 from PySide6.QtCore import QSettings
 
-from comun.format import timestamp
+from gui_comun.format import timestamp
 
 MAX_OPERATIONS = 60
 MAX_REPORTS = 60

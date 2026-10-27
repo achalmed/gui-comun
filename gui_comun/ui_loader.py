@@ -1,4 +1,4 @@
-"""comun/ui_loader.py — carga de archivos .ui de Qt Designer en tiempo de ejecución.
+"""gui_comun/ui_loader.py — carga de archivos .ui de Qt Designer en tiempo de ejecución.
 
 Se usa QUiLoader (en vez de compilar con pyside6-uic) para que los .ui sigan siendo la única fuente de verdad
 editable desde Qt Designer, sin paso de compilación intermedio. Cada studio crea su cargador con su carpeta `ui/`.

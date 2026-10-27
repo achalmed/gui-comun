@@ -1,4 +1,4 @@
-"""comun/ajustes.py — base tipada sobre QSettings que comparten Filesystem Studio y Git Studio.
+"""gui_comun/ajustes.py — base tipada sobre QSettings que comparten Filesystem Studio y Git Studio.
 
 Cada studio hereda `AjustesBase` en su `services/settings_service.py`, fija sus valores por defecto
 (`DEFAULT_EXPORT_FORMAT`, `REPORTS_DIR`) y añade sus preferencias propias. QSettings usa la organización y
