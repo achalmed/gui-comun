@@ -55,6 +55,22 @@ FUENTES = ("Inter", "Inter Variable", "IBM Plex Sans", "Noto Sans", "Cantarell")
 FUENTES_MONO = ("JetBrains Mono", "IBM Plex Mono", "Fira Code", "Noto Sans Mono", "DejaVu Sans Mono")
 
 
+def preparar_plataforma() -> None:
+    """Antes de crear la QApplication: si este Qt no trae el plugin de Wayland (el de Anaconda no lo trae), ir directo a
+    XWayland (`xcb`). Sin esto Qt prueba Wayland, avisa «Could not find the Qt platform plugin "wayland"» y recién
+    entonces cae a `xcb`. Respeta una plataforma fijada a mano que no sea Wayland."""
+    import os
+    from PySide6.QtCore import QLibraryInfo
+    actual = os.environ.get("QT_QPA_PLATFORM", "")
+    if actual and not actual.startswith("wayland"):
+        return
+    if os.environ.get("XDG_SESSION_TYPE") != "wayland" and not os.environ.get("WAYLAND_DISPLAY"):
+        return
+    plataformas = Path(QLibraryInfo.path(QLibraryInfo.LibraryPath.PluginsPath)) / "platforms"
+    if not any(plataformas.glob("libqwayland*")):
+        os.environ["QT_QPA_PLATFORM"] = "xcb"
+
+
 def _mezclar(c1: str, c2: str, t: float) -> str:
     """Color entre c1 y c2 (t = 0 → c1, t = 1 → c2)."""
     a, b = QColor(c1), QColor(c2)
