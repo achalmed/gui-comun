@@ -1,0 +1,107 @@
+"""gui_comun/lanzador.py — el acceso directo de un studio en el menú de aplicaciones (freedesktop: KDE, GNOME…).
+
+Escribe `~/.local/share/applications/<id>.desktop` y el icono `~/.local/share/icons/hicolor/scalable/apps/<id>.svg`
+(la losa del logo con el acento del studio), y avisa al escritorio para que lo muestre sin cerrar sesión. Simula si se
+pide: dice qué escribiría y no toca nada. Cada studio lo llama desde su `main.py --instalar-lanzador`, y su
+`install.sh` lo hace al instalar.
+
+    from gui_comun import lanzador
+    lanzador.instalar("filesystem-studio", "Filesystem Studio", "Árboles, extensiones y hardlinks",
+                      [sys.executable, str(MAIN)], logo_svg=SVG, acento="verde", categorias="Utility;FileTools;")
+"""
+
+from __future__ import annotations
+
+import os
+import re
+import shlex
+import shutil
+import subprocess
+from pathlib import Path
+
+from gui_comun.diseno import ACENTOS
+
+
+def _datos() -> Path:
+    return Path(os.environ.get("XDG_DATA_HOME") or Path.home() / ".local" / "share")
+
+
+def rutas(app_id: str) -> tuple[Path, Path]:
+    """(el .desktop, el icono) de un studio."""
+    return (_datos() / "applications" / f"{app_id}.desktop",
+            _datos() / "icons" / "hicolor" / "scalable" / "apps" / f"{app_id}.svg")
+
+
+def icono_svg(logo_svg: str, acento: str) -> str:
+    """La losa del logo con el acento (el tono claro, que se lee en paneles claros y oscuros) y el trazo en blanco."""
+    color = ACENTOS.get(acento, ACENTOS["azul"])["claro"]
+    interior = re.sub(r'(stroke|fill)="(#[0-9a-fA-F]{3,8}|currentColor)"', r'\1="#ffffff"', logo_svg)
+    interior = re.sub(r"<svg\b", '<svg x="12" y="12" width="40" height="40"', interior, count=1)
+    return (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">'
+            f'<rect x="2" y="2" width="60" height="60" rx="15" fill="{color}"/>{interior}</svg>')
+
+
+def entrada(app_id: str, nombre: str, comentario: str, orden: list[str], *, categorias: str = "Utility;",
+            palabras: str = "", archivos: bool = False, mimetypes: str = "") -> str:
+    exec_ = shlex.join(orden) + (" %F" if archivos else "")
+    lineas = ["[Desktop Entry]", "Type=Application", f"Name={nombre}", f"Comment={comentario}", f"Exec={exec_}",
+              f"Icon={app_id}", "Terminal=false", f"Categories={categorias}", f"StartupWMClass={app_id}",
+              f"X-GNOME-WMClass={app_id}"]
+    if palabras:
+        lineas.append(f"Keywords={palabras}")
+    if mimetypes:
+        lineas.append(f"MimeType={mimetypes}")
+    return "\n".join(lineas) + "\n"
+
+
+def instalar(app_id: str, nombre: str, comentario: str, orden: list[str], *, logo_svg: str, acento: str,
+             categorias: str = "Utility;", palabras: str = "", archivos: bool = False, mimetypes: str = "",
+             simular: bool = False) -> list[Path]:
+    """Escribe el acceso directo y su icono (o, al simular, solo dice cuáles). Devuelve las rutas."""
+    desktop, icono = rutas(app_id)
+    if simular:
+        return [desktop, icono]
+    desktop.parent.mkdir(parents=True, exist_ok=True)
+    icono.parent.mkdir(parents=True, exist_ok=True)
+    icono.write_text(icono_svg(logo_svg, acento), encoding="utf-8")
+    desktop.write_text(entrada(app_id, nombre, comentario, orden, categorias=categorias, palabras=palabras,
+                               archivos=archivos, mimetypes=mimetypes), encoding="utf-8")
+    desktop.chmod(0o755)
+    _avisar_al_escritorio()
+    return [desktop, icono]
+
+
+def quitar(app_id: str, simular: bool = False) -> list[Path]:
+    existentes = [p for p in rutas(app_id) if p.exists()]
+    if not simular:
+        for p in existentes:
+            p.unlink()
+        _avisar_al_escritorio()
+    return existentes
+
+
+def _avisar_al_escritorio() -> None:
+    """Que el menú lo muestre ya (KDE: kbuildsycoca; los demás: la base de .desktop y la caché de iconos)."""
+    for orden in (["update-desktop-database", str(_datos() / "applications")],
+                  ["gtk-update-icon-cache", "-q", "-t", str(_datos() / "icons" / "hicolor")],
+                  ["kbuildsycoca6", "--noincremental"], ["kbuildsycoca5"]):
+        if shutil.which(orden[0]):
+            subprocess.run(orden, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False)
+            if orden[0].startswith("kbuildsycoca"):
+                break
+
+
+def desde_main(argv: list[str], **datos) -> int | None:
+    """Para el `main.py` de un studio: atiende `--instalar-lanzador` y `--quitar-lanzador` (con `-n`, simula).
+
+    Devuelve el código de salida si atendió una de ellas, o None si no había ninguna (y el studio abre su ventana)."""
+    simular = "-n" in argv or "--simular" in argv
+    if "--instalar-lanzador" in argv:
+        hechas = instalar(simular=simular, **datos)
+        print(("Escribiría" if simular else "Instalado") + ":\n  " + "\n  ".join(str(p) for p in hechas))
+        return 0
+    if "--quitar-lanzador" in argv:
+        hechas = quitar(datos["app_id"], simular=simular)
+        print(("Quitaría" if simular else "Quitado") + ":\n  " + ("\n  ".join(str(p) for p in hechas) or "(nada)"))
+        return 0
+    return None

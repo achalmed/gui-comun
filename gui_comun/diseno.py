@@ -31,6 +31,7 @@ ACENTOS = {
     "azul": {"claro": "#2563eb", "oscuro": "#60a5fa"},     # Quarto Studio
     "violeta": {"claro": "#7c3aed", "oscuro": "#a78bfa"},  # Raphi Studio
     "rosa": {"claro": "#db2777", "oscuro": "#f472b6"},     # LaTeX Studio
+    "lima": {"claro": "#65a30d", "oscuro": "#a3e635"},     # Simuladores Studio
 }
 
 # --- Tokens neutros: superficies, bordes y texto ---

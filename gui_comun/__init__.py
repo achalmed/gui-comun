@@ -1,7 +1,8 @@
-"""gui_comun — lo que comparten los studios PySide6: rutas por core/env, tema, carga de .ui e iconos, ajustes, workers, consola e historial.
+"""gui_comun — el marco común de la familia de studios PySide6: diseño, ventana, rutas, workers, consola e historial.
 
-Lo importan Filesystem Studio, Git Studio y, para las rutas, Quarto Studio, cada uno desde su propio repo. Cada studio
-pone `core/py-common` en `sys.path` desde el `__init__.py` de su paquete (subiendo carpetas hasta hallar `core/`, como
-los envoltorios del logger) antes de importar nada de aquí. Llegó con su historia del repo que reunía las tres GUI,
-retirado el 2026-10-27 (docs/decisiones.md §2.9).
+Lo importan Filesystem, Git, Quarto, Raphi, LaTeX y Simuladores Studio. Se instala con pip (`pip install gui-comun`,
+o desde su repo) o, dentro del espacio de trabajo, cada studio lo encuentra subiendo carpetas hasta el repo
+`gui-comun/` (como antes hasta `core/py-common`, de donde salió el 2026-10-31 con su historia).
 """
+
+__version__ = "1.0.0"
