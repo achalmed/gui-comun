@@ -404,6 +404,8 @@ _TRAZOS = {
     "subtitulos": '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 15h4M13 15h4M7 11h10"/>',
     "texto": '<path d="M4 6h16M4 12h16M4 18h10"/>',
     "volver": '<path d="M15 18l-6-6 6-6"/>',
+    "tendencia": '<path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/>',
+    "barras": '<path d="M4 20V11M10 20V5M16 20v-6M2 20h20"/>',
     "jugar": '<path d="M7 4l13 8-13 8z"/>',
     "mas": '<path d="M12 5v14M5 12h14"/>',
     "quitar": '<path d="M6 6l12 12M18 6L6 18"/>',

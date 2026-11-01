@@ -113,6 +113,8 @@ class Mosaico(QFrame):
         textos.setSpacing(2)
         t = QLabel(titulo)
         t.setStyleSheet("font-weight: 600; font-size: 14px;")
+        t.setWordWrap(True)
+        t.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Preferred)   # el título también se ajusta a la columna
         d = clase(QLabel(descripcion), "tenue")
         d.setWordWrap(True)
         d.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Preferred)   # el ancho lo pone la rejilla, no el texto
