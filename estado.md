@@ -17,7 +17,7 @@ nada en curso
 
 ## Por hacer
 
-nada
+- 2026-10-31 · dueño: autor · **Crear el remoto público `achalmed/gui-comun`** y empujar con la etiqueta `v1.0.0` (Raphi lo pide desde GitHub cuando no está el repo de al lado): `gh repo create achalmed/gui-comun --public --source . --remote origin && git push -u origin main --tags`. Después, `remoto:` en `meta/workspace.yml`.
 
 ## Futuro
 
