@@ -32,6 +32,7 @@ ACENTOS = {
     "violeta": {"claro": "#7c3aed", "oscuro": "#a78bfa"},  # Raphi Studio
     "rosa": {"claro": "#db2777", "oscuro": "#f472b6"},     # LaTeX Studio
     "lima": {"claro": "#65a30d", "oscuro": "#a3e635"},     # Simuladores Studio
+    "sepia": {"claro": "#9a6b3f", "oscuro": "#d6a874"},    # Biblioteca Studio
 }
 
 # --- Tokens neutros: superficies, bordes y texto ---
@@ -404,6 +405,11 @@ _TRAZOS = {
     "subtitulos": '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 15h4M13 15h4M7 11h10"/>',
     "texto": '<path d="M4 6h16M4 12h16M4 18h10"/>',
     "volver": '<path d="M15 18l-6-6 6-6"/>',
+    "libro": '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"/>',
+    "sincronizar": '<path d="M20 11a8 8 0 0 0-14.3-4.9L4 8M4 4v4h4M4 13a8 8 0 0 0 14.3 4.9L20 16M20 20v-4h-4"/>',
+    "candado": '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
+    "bandeja": '<path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.5 5h13l3.5 7v6a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-6z"/>',
+    "verificar": '<path d="M9 12l2 2 4-4"/><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/>',
     "tendencia": '<path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/>',
     "barras": '<path d="M4 20V11M10 20V5M16 20v-6M2 20h20"/>',
     "jugar": '<path d="M7 4l13 8-13 8z"/>',

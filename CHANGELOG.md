@@ -7,6 +7,14 @@ estado: activo
 Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/es-ES/1.1.0/); versiones: [SemVer 2.0.0](https://semver.org/lang/es/).
 La versión vive en `gui_comun/__init__.py` y en `pyproject.toml`.
 
+## [1.1.0] - 2026-10-31
+
+### Añadido
+
+- Acento `sepia` (Biblioteca Studio) y los iconos de trazo `libro`, `sincronizar`, `candado`, `bandeja` y `verificar`.
+- `lanzador.entrada(..., esquema=)` e `instalar(..., esquema=)`: el acceso directo declara `x-scheme-handler/<esquema>`,
+  recibe el enlace por `%u` y queda como aplicación por omisión de ese esquema (`xdg-mime default`).
+
 ## [1.0.0] - 2026-10-31
 
 ### Añadido

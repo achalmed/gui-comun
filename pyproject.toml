@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "gui-comun"
-version = "1.0.0"
+version = "1.1.0"
 description = "El marco común de la familia de studios PySide6: diseño claro/oscuro con acento, barra lateral, paleta de comandos, avisos, consola y workers"
 readme = "README.md"
 license = { text = "MIT" }

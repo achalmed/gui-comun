@@ -5,4 +5,4 @@ o desde su repo) o, dentro del espacio de trabajo, cada studio lo encuentra subi
 `gui-comun/` (como antes hasta `core/py-common`, de donde salió el 2026-10-31 con su historia).
 """
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"

@@ -13,12 +13,12 @@ la consola salen de aquí.
 
 | pieza | qué hace |
 |---|---|
-| `diseno.py` | tokens claro/oscuro, acentos (verde, naranja, azul, violeta, rosa, lima), hoja QSS generada, modo «sistema» en vivo, iconos SVG que se repintan con el tema, la losa del logo, `preparar_plataforma()` (XWayland sin aviso si el Qt no trae Wayland) |
+| `diseno.py` | tokens claro/oscuro, acentos (verde, naranja, azul, violeta, rosa, lima, sepia), hoja QSS generada, modo «sistema» en vivo, iconos SVG que se repintan con el tema, la losa del logo, `preparar_plataforma()` (XWayland sin aviso si el Qt no trae Wayland) |
 | `widgets/marco.py` | barra lateral con marca, buscador y pie (consola, tema, preferencias), plegable a iconos; atajos Ctrl+K · Ctrl+1…9 · Ctrl+B · Ctrl+J · Ctrl+Mayús+L · Ctrl+,; `montar_studio()` para una ventana con consola acoplada |
 | `widgets/paleta.py` · `avisos.py` | paleta de comandos con búsqueda difusa; avisos flotantes que se apilan |
 | `widgets/tarjetas.py` · `grafico_barras.py` | encabezado, tarjetas, cifras, mosaicos, listas con estado vacío; gráfico de barras sin QtCharts |
 | `widgets/console_dock.py` · `workers/` | consola con progreso y señales de tarea; workers de función y de proceso |
-| `lanzador.py` | el acceso directo en el menú de aplicaciones (`.desktop` e icono con el acento) |
+| `lanzador.py` | el acceso directo en el menú de aplicaciones (`.desktop` e icono con el acento) y, si el studio lo pide, su esquema de enlaces (`esquema=`) |
 | `rutas.py` · `ajustes.py` · `theming.py` · `icons.py` · `ui_loader.py` · `format.py` · `history_service.py` | rutas del espacio de trabajo, ajustes, tema (contrato anterior), iconos, `.ui`, formatos e historial |
 
 ## Uso

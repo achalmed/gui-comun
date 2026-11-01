@@ -53,8 +53,11 @@ def icono_svg(logo_svg: str, acento: str) -> str:
 
 
 def entrada(app_id: str, nombre: str, comentario: str, orden: list[str], *, categorias: str = "Utility;",
-            palabras: str = "", archivos: bool = False, mimetypes: str = "") -> str:
-    exec_ = shlex.join(orden) + (" %F" if archivos else "")
+            palabras: str = "", archivos: bool = False, mimetypes: str = "", esquema: str = "") -> str:
+    """`esquema`: un esquema de enlaces propio (`biblioteca-studio://…`) que el escritorio abre con este studio."""
+    if esquema:
+        mimetypes = f"{mimetypes}x-scheme-handler/{esquema};"
+    exec_ = shlex.join(orden) + (" %u" if esquema else " %F" if archivos else "")
     lineas = ["[Desktop Entry]", "Type=Application", f"Name={nombre}", f"Comment={comentario}", f"Exec={exec_}",
               f"Icon={app_id}", "Terminal=false", f"Categories={categorias}", f"StartupWMClass={app_id}",
               f"X-GNOME-WMClass={app_id}"]
@@ -67,7 +70,7 @@ def entrada(app_id: str, nombre: str, comentario: str, orden: list[str], *, cate
 
 def instalar(app_id: str, nombre: str, comentario: str, orden: list[str], *, logo_svg: str, acento: str,
              categorias: str = "Utility;", palabras: str = "", archivos: bool = False, mimetypes: str = "",
-             simular: bool = False) -> list[Path]:
+             esquema: str = "", simular: bool = False) -> list[Path]:
     """Escribe el acceso directo y su icono (o, al simular, solo dice cuáles). Devuelve las rutas."""
     desktop, icono = rutas(app_id)
     if simular:
@@ -76,8 +79,11 @@ def instalar(app_id: str, nombre: str, comentario: str, orden: list[str], *, log
     icono.parent.mkdir(parents=True, exist_ok=True)
     icono.write_text(icono_svg(logo_svg, acento), encoding="utf-8")
     desktop.write_text(entrada(app_id, nombre, comentario, orden, categorias=categorias, palabras=palabras,
-                               archivos=archivos, mimetypes=mimetypes), encoding="utf-8")
+                               archivos=archivos, mimetypes=mimetypes, esquema=esquema), encoding="utf-8")
     desktop.chmod(0o755)
+    if esquema and shutil.which("xdg-mime"):           # que el escritorio abra esos enlaces con este studio
+        subprocess.run(["xdg-mime", "default", desktop.name, f"x-scheme-handler/{esquema}"], check=False,
+                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     _avisar_al_escritorio()
     return [desktop, icono]
 
