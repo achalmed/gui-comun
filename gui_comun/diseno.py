@@ -29,7 +29,8 @@ ACENTOS = {
     "verde": {"claro": "#0d9488", "oscuro": "#2dd4bf"},    # Filesystem Studio
     "naranja": {"claro": "#ea580c", "oscuro": "#fb923c"},  # Git Studio
     "azul": {"claro": "#2563eb", "oscuro": "#60a5fa"},     # Quarto Studio
-    "violeta": {"claro": "#7c3aed", "oscuro": "#a78bfa"},
+    "violeta": {"claro": "#7c3aed", "oscuro": "#a78bfa"},  # Raphi Studio
+    "rosa": {"claro": "#db2777", "oscuro": "#f472b6"},     # LaTeX Studio
 }
 
 # --- Tokens neutros: superficies, bordes y texto ---
