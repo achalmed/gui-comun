@@ -171,5 +171,6 @@ def pagina_desplazable(contenido: QWidget, margen: int = 28) -> QScrollArea:
     area = QScrollArea()
     area.setWidgetResizable(True)
     area.setFrameShape(QFrame.NoFrame)
+    area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)   # la página se adapta al ancho; solo desplaza en alto
     area.setWidget(contenido)
     return area

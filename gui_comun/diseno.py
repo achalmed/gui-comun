@@ -388,7 +388,31 @@ _TRAZOS = {
     "buscar": '<circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>',
     "info": '<circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/>',
     "cargando": '<path d="M21 12a9 9 0 1 1-6.2-8.6"/>',
+    "inicio": '<path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/>',
+    "documento": '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/>',
+    "pdf": '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M8 16v-4h1.5a1.5 1.5 0 0 1 0 3H8M13 12v4h1a2 2 0 0 0 0-4z"/>',
+    "imagen": '<rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-9 9"/>',
+    "audio": '<path d="M9 18V6l11-2v12"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/>',
+    "video": '<rect x="2" y="6" width="14" height="12" rx="2"/><path d="M16 10l6-3v10l-6-3"/>',
+    "archivo": '<path d="M21 8v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8"/><rect x="2" y="3" width="20" height="5" rx="1"/><path d="M10 12h4"/>',
+    "descarga": '<path d="M12 3v12M7 10l5 5 5-5"/><path d="M5 21h14"/>',
+    "receta": '<path d="M9 5h11M9 12h11M9 19h11"/><path d="M4 5l1 1 2-2M4 12l1 1 2-2M4 19l1 1 2-2"/>',
+    "sistema": '<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 9h6v6H9zM9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 14h3M1 9h3M1 14h3"/>',
+    "carpeta": '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
+    "subtitulos": '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 15h4M13 15h4M7 11h10"/>',
+    "texto": '<path d="M4 6h16M4 12h16M4 18h10"/>',
+    "volver": '<path d="M15 18l-6-6 6-6"/>',
+    "jugar": '<path d="M7 4l13 8-13 8z"/>',
+    "mas": '<path d="M12 5v14M5 12h14"/>',
+    "quitar": '<path d="M6 6l12 12M18 6L6 18"/>',
+    "abrir": '<path d="M14 4h6v6M20 4l-9 9"/><path d="M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"/>',
 }
+
+
+def icono_trazo(nombre: str) -> QIcon:
+    """Un icono de línea de este archivo que sigue al tema (suave, acento si está seleccionado)."""
+    return icono_svg(f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#888888" '
+                     f'stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">{_TRAZOS[nombre]}</svg>')
 
 
 def icono(nombre: str, color: str, tam: int = 18) -> QIcon:
