@@ -12,7 +12,7 @@ Panel inferior acoplable (estilo "Output pane" de Qt Creator) con:
 import html
 import time
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QFont
 from PySide6.QtWidgets import (
     QDockWidget,
@@ -26,6 +26,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from gui_comun.diseno import fuente_mono
 from gui_comun.format import format_duration, timestamp
 
 _COLORS = {"info": "#7aa2f7", "ok": "#9ece6a", "warn": "#e0af68",
@@ -34,6 +35,11 @@ _COLORS = {"info": "#7aa2f7", "ok": "#9ece6a", "warn": "#e0af68",
 
 
 class ConsoleDock(QDockWidget):
+    # el marco del studio los escucha: chip de la barra de estado y aviso al terminar
+    tarea_iniciada = Signal(str)
+    tarea_progreso = Signal(int, str)
+    tarea_terminada = Signal(str, str, str)   # nivel (ok · warn · error), nombre de la tarea, detalle
+
     def __init__(self, parent=None):
         super().__init__("Consola", parent)
         self.setObjectName("consoleDock")
@@ -41,6 +47,8 @@ class ConsoleDock(QDockWidget):
 
         self._worker = None
         self._progress_started = 0.0
+        self._task_name = ""
+        self._colors = dict(_COLORS)
 
         container = QWidget()
         layout = QVBoxLayout(container)
@@ -70,15 +78,16 @@ class ConsoleDock(QDockWidget):
 
         # -------------------------------------------------------- pestañas
         self.tabs = QTabWidget()
-        mono = QFont("Monospace")
-        mono.setStyleHint(QFont.TypeWriter)
+        mono = fuente_mono()
 
         self.console = QTextEdit()
         self.console.setReadOnly(True)
         self.console.setFont(mono)
+        self.console.setProperty("clase", "consola")
         self.log_view = QTextEdit()
         self.log_view.setReadOnly(True)
         self.log_view.setFont(mono)
+        self.log_view.setProperty("clase", "consola")
 
         self.tabs.addTab(self.console, "Consola")
         self.tabs.addTab(self.log_view, "Registro")
@@ -86,11 +95,17 @@ class ConsoleDock(QDockWidget):
 
         self.setWidget(container)
 
+    def actualizar_tokens(self, t: dict) -> None:
+        """Colores de la consola según el tema (los del diseño común); lo ya escrito conserva los suyos."""
+        if t:
+            self._colors.update({"info": t["info"], "ok": t["exito"], "warn": t["aviso"], "error": t["error"],
+                                 "cmd": t["acento"], "out": t["texto"], "err": t["error"]})
+
     # ================================================================ logging
     def _append(self, view: QTextEdit, color: str, prefix: str,
                 text: str) -> None:
         safe = html.escape(text)
-        view.append(f'<span style="color:{_COLORS[color]}">'
+        view.append(f'<span style="color:{self._colors[color]}">'
                     f'{prefix}</span> {safe}')
         view.verticalScrollBar().setValue(
             view.verticalScrollBar().maximum())
@@ -123,6 +138,8 @@ class ConsoleDock(QDockWidget):
         self.bar.setRange(0, 0)  # indeterminado hasta el primer porcentaje
         self.btn_cancel.setVisible(True)
         self.console_note(f"Iniciando: {task_name}")
+        self._task_name = task_name
+        self.tarea_iniciada.emit(task_name)
 
         worker.progress.connect(self._on_progress)
         worker.message.connect(self.log)
@@ -146,6 +163,8 @@ class ConsoleDock(QDockWidget):
         self.btn_cancel.setVisible(True)
 
         self.console_command(worker.command_line())
+        self._task_name = task_name
+        self.tarea_iniciada.emit(task_name)
         worker.line.connect(self.console_line)
         worker.finished_with_code.connect(
             lambda code: self._finish_process(worker, code))
@@ -163,20 +182,22 @@ class ConsoleDock(QDockWidget):
             else:
                 self.lbl_eta.setText("")
         self.lbl_current.setText(current)
+        self.tarea_progreso.emit(percent, current)
 
     def _finish(self, worker, level: str) -> None:
         status = {"ok": "completada", "warn": "cancelada",
                   "error": "con errores"}[level]
-        self.console_note(
-            f"Operación {status} en {format_duration(worker.elapsed)}", level)
+        detalle = f"Operación {status} en {format_duration(worker.elapsed)}"
+        self.console_note(detalle, level)
+        self.tarea_terminada.emit(level, self._task_name, detalle)
         self._reset_progress()
 
     def _finish_process(self, worker, code: int) -> None:
         elapsed = time.perf_counter() - self._progress_started
         level = "ok" if code == 0 else "error"
-        self.console_note(
-            f"Proceso terminó con código {code} en "
-            f"{format_duration(elapsed)}", level)
+        detalle = f"Proceso terminó con código {code} en {format_duration(elapsed)}"
+        self.console_note(detalle, level)
+        self.tarea_terminada.emit(level, self._task_name, detalle)
         self._reset_progress()
 
     def _reset_progress(self) -> None:

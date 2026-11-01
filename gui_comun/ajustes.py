@@ -11,7 +11,7 @@ from pathlib import Path
 
 from PySide6.QtCore import QSettings
 
-DEFAULT_THEME = "oscuro"
+DEFAULT_THEME = "sistema"
 
 
 class AjustesBase:
