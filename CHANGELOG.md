@@ -7,6 +7,12 @@ estado: activo
 Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/es-ES/1.1.0/); versiones: [SemVer 2.0.0](https://semver.org/lang/es/).
 La versión vive en `gui_comun/__init__.py` y en `pyproject.toml`.
 
+## [1.2.0] - 2026-11-01
+
+### Añadido
+
+- Acento `grafito` (Huella Studio) y los iconos de trazo `huella`, `usuario`, `correo`, `codigo` y `globo`.
+
 ## [1.1.0] - 2026-10-31
 
 ### Añadido

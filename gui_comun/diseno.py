@@ -33,6 +33,7 @@ ACENTOS = {
     "rosa": {"claro": "#db2777", "oscuro": "#f472b6"},     # LaTeX Studio
     "lima": {"claro": "#65a30d", "oscuro": "#a3e635"},     # Simuladores Studio
     "sepia": {"claro": "#9a6b3f", "oscuro": "#d6a874"},    # Biblioteca Studio
+    "grafito": {"claro": "#475569", "oscuro": "#94a3b8"},  # Huella Studio
 }
 
 # --- Tokens neutros: superficies, bordes y texto ---
@@ -410,6 +411,11 @@ _TRAZOS = {
     "candado": '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
     "bandeja": '<path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.5 5h13l3.5 7v6a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-6z"/>',
     "verificar": '<path d="M9 12l2 2 4-4"/><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/>',
+    "huella": '<path d="M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4"/><path d="M14 13.12c0 2.38 0 6.38-1 8.88"/><path d="M17.29 21.02c.12-.6.43-2.3.5-3.02"/><path d="M2 12a10 10 0 0 1 18-6"/><path d="M2 16h.01"/><path d="M21.8 16c.2-2 .131-5.354 0-6"/><path d="M5 19.5C5.5 18 6 15 6 12a6 6 0 0 1 .34-2"/><path d="M8.65 22c.21-.66.45-1.32.57-2"/><path d="M9 6.8a6 6 0 0 1 9 5.2v2"/>',
+    "usuario": '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+    "correo": '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>',
+    "codigo": '<path d="M16 18l6-6-6-6"/><path d="M8 6l-6 6 6 6"/>',
+    "globo": '<circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18a14 14 0 0 1 0-18"/>',
     "tendencia": '<path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/>',
     "barras": '<path d="M4 20V11M10 20V5M16 20v-6M2 20h20"/>',
     "jugar": '<path d="M7 4l13 8-13 8z"/>',
