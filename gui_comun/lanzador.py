@@ -33,12 +33,23 @@ def rutas(app_id: str) -> tuple[Path, Path]:
 
 
 def icono_svg(logo_svg: str, acento: str) -> str:
-    """La losa del logo con el acento (el tono claro, que se lee en paneles claros y oscuros) y el trazo en blanco."""
+    """La losa del logo con el acento (el tono claro, que se lee en paneles claros y oscuros) y el trazo en blanco.
+
+    Sin `<svg>` anidados: el motor SVG de Qt (el de KDE) es SVG Tiny 1.2 y los ignora; el dibujo del logo entra como un
+    grupo escalado que hereda los atributos de trazo de su `<svg>` raíz."""
     color = ACENTOS.get(acento, ACENTOS["azul"])["claro"]
-    interior = re.sub(r'(stroke|fill)="(#[0-9a-fA-F]{3,8}|currentColor)"', r'\1="#ffffff"', logo_svg)
-    interior = re.sub(r"<svg\b", '<svg x="12" y="12" width="40" height="40"', interior, count=1)
+    m = re.search(r"<svg\b([^>]*)>(.*)</svg>", logo_svg, re.S)
+    atributos, dibujo = (m.group(1), m.group(2)) if m else ("", logo_svg)
+    attr = dict(re.findall(r'([\w:-]+)="([^"]*)"', atributos))
+    vb = [float(x) for x in attr.get("viewBox", "0 0 24 24").replace(",", " ").split()]
+    escala = 36 / max(vb[2], vb[3])
+    heredados = " ".join(f'{k}="{v}"' for k, v in attr.items()
+                         if k in ("fill", "stroke", "stroke-width", "stroke-linecap", "stroke-linejoin"))
+    blanco = lambda t: re.sub(r'(stroke|fill)="(#[0-9a-fA-F]{3,8}|currentColor|black|white)"', r'\1="#ffffff"', t)
+    grupo = (f'<g transform="translate({14 - vb[0] * escala:g} {14 - vb[1] * escala:g}) scale({escala:g})" '
+             f'{blanco(heredados)}>{blanco(dibujo)}</g>')
     return (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">'
-            f'<rect x="2" y="2" width="60" height="60" rx="15" fill="{color}"/>{interior}</svg>')
+            f'<rect x="2" y="2" width="60" height="60" rx="15" fill="{color}"/>{grupo}</svg>')
 
 
 def entrada(app_id: str, nombre: str, comentario: str, orden: list[str], *, categorias: str = "Utility;",
