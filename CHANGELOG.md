@@ -7,6 +7,13 @@ estado: activo
 Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/es-ES/1.1.0/); versiones: [SemVer 2.0.0](https://semver.org/lang/es/).
 La versión vive en `gui_comun/__init__.py` y en `pyproject.toml`.
 
+## [1.4.0] - 2026-11-01
+
+### Añadido
+
+- Acento `carmesi` (Lliphi Studio; el rojo OKLCH 25° de Lliphi: `#c53133` en claro, `#ef6661` en oscuro) y los iconos de
+  trazo `paleta`, `capas`, `cursor`, `pantalla`, `ventana`, `cohete` y `ojo`.
+
 ## [1.3.0] - 2026-11-01
 
 ### Añadido

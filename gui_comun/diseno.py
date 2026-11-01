@@ -35,6 +35,7 @@ ACENTOS = {
     "sepia": {"claro": "#9a6b3f", "oscuro": "#d6a874"},    # Biblioteca Studio
     "grafito": {"claro": "#475569", "oscuro": "#94a3b8"},  # Huella Studio
     "indigo": {"claro": "#4f46e5", "oscuro": "#818cf8"},   # Dotfiles Studio
+    "carmesi": {"claro": "#c53133", "oscuro": "#ef6661"},  # Lliphi Studio (el rojo OKLCH 25° de Lliphi)
 }
 
 # --- Tokens neutros: superficies, bordes y texto ---
@@ -420,6 +421,13 @@ _TRAZOS = {
     "paquete": '<path d="M21 8l-9-5-9 5v8l9 5 9-5z"/><path d="M3 8l9 5 9-5"/><path d="M12 13v8"/>',
     "enlace": '<path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/>',
     "subir": '<path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M4 20h16"/>',
+    "paleta": '<path d="M12 3a9 9 0 0 0 0 18c1.1 0 1.6-.8 1.6-1.6 0-.5-.2-.8-.5-1.2-.3-.3-.5-.7-.5-1.2 0-.9.7-1.6 1.6-1.6H16a5 5 0 0 0 5-5c0-4-4-7.4-9-7.4z"/><circle cx="7.5" cy="11" r="1"/><circle cx="10" cy="7" r="1"/><circle cx="14.5" cy="7" r="1"/><circle cx="17" cy="11" r="1"/>',
+    "capas": '<path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/>',
+    "cursor": '<path d="M5 3l14 7-6 2-2 6z"/>',
+    "pantalla": '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/>',
+    "ventana": '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/><circle cx="6.5" cy="6.5" r=".6"/><circle cx="9" cy="6.5" r=".6"/>',
+    "cohete": '<path d="M12 15l-3-3c1-4 4-8 10-9-1 6-5 9-9 10z"/><path d="M9 12l-4 1-2 3 4 1M12 15l-1 4-3 2-1-4"/><circle cx="15" cy="9" r="1.5"/>',
+    "ojo": '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
     "tendencia": '<path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/>',
     "barras": '<path d="M4 20V11M10 20V5M16 20v-6M2 20h20"/>',
     "jugar": '<path d="M7 4l13 8-13 8z"/>',
