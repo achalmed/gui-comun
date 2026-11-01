@@ -7,6 +7,12 @@ estado: activo
 Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/es-ES/1.1.0/); versiones: [SemVer 2.0.0](https://semver.org/lang/es/).
 La versión vive en `gui_comun/__init__.py` y en `pyproject.toml`.
 
+## [1.3.0] - 2026-11-01
+
+### Añadido
+
+- Acento `indigo` (Dotfiles Studio) y los iconos de trazo `paquete`, `enlace` y `subir`.
+
 ## [1.2.0] - 2026-11-01
 
 ### Añadido

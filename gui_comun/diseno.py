@@ -34,6 +34,7 @@ ACENTOS = {
     "lima": {"claro": "#65a30d", "oscuro": "#a3e635"},     # Simuladores Studio
     "sepia": {"claro": "#9a6b3f", "oscuro": "#d6a874"},    # Biblioteca Studio
     "grafito": {"claro": "#475569", "oscuro": "#94a3b8"},  # Huella Studio
+    "indigo": {"claro": "#4f46e5", "oscuro": "#818cf8"},   # Dotfiles Studio
 }
 
 # --- Tokens neutros: superficies, bordes y texto ---
@@ -416,6 +417,9 @@ _TRAZOS = {
     "correo": '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>',
     "codigo": '<path d="M16 18l6-6-6-6"/><path d="M8 6l-6 6 6 6"/>',
     "globo": '<circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18a14 14 0 0 1 0-18"/>',
+    "paquete": '<path d="M21 8l-9-5-9 5v8l9 5 9-5z"/><path d="M3 8l9 5 9-5"/><path d="M12 13v8"/>',
+    "enlace": '<path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/>',
+    "subir": '<path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M4 20h16"/>',
     "tendencia": '<path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/>',
     "barras": '<path d="M4 20V11M10 20V5M16 20v-6M2 20h20"/>',
     "jugar": '<path d="M7 4l13 8-13 8z"/>',
