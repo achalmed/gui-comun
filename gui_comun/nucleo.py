@@ -6,10 +6,20 @@
     sys.exit(app.ejecutar(RUTA / "qml" / "Main.qml", humo="--smoke" in sys.argv))
 
 Hace, en este orden: fija el estilo de QtQuick Controls (`org.kde.desktop`, el de Plasma, que trae Breeze y el
-esquema de color del usuario) y el idioma de la interfaz; crea la `QGuiApplication` con organización, nombre,
+esquema de color del usuario) y el idioma de la interfaz; crea la `QApplication` con organización, nombre,
 versión y nombre de escritorio (la ventana se agrupa con su lanzador en Wayland); carga las traducciones al español
 de Qt y de Kirigami (las de Kirigami Addons las lee KI18n del entorno `LANGUAGE`); crea el motor QML y le añade la
-ruta del módulo `GuiComun` (`gui_comun/qml`). Si un módulo QML falta (Kirigami no instalado), lo dice con claridad.
+ruta del módulo `GuiComun` (`gui_comun/qml`); crea el registro de errores (`errores`) y la integración con el
+escritorio (`escritorio`) y los expone. Si un módulo QML falta (Kirigami no instalado), lo dice con claridad.
+
+**Por qué `QApplication` y no `QGuiApplication` (3.0).** El tema de plataforma de KDE (`KDEPlasmaPlatformTheme6`)
+solo ofrece su diálogo de archivos nativo (el de Dolphin: lugares, vista previa, filtros, la barra de rutas) cuando
+la aplicación es una `QApplication`: es un widget (`KFileWidget`). Con una `QGuiApplication`, `FileDialog` y
+`FolderDialog` de `QtQuick.Dialogs` caen a su implementación en QML, que no se parece a nada del escritorio (el
+«selector de archivos extraño» que vio el autor; comprobado en Plasma 6.6 Wayland el 2026-11-02, capturas en
+`docs/integracion-kde.md`). El estilo `org.kde.desktop` también pinta sus controles con el `QStyle` del sistema solo si
+hay `QApplication`. Así lo hacen las aplicaciones de Kirigami de KDE. La interfaz sigue siendo QML: de `QtWidgets`
+solo se usa la clase de la aplicación.
 
 No construye interfaz ni conoce ningún studio: la presentación es del QML de cada uno.
 """
@@ -21,9 +31,12 @@ import sys
 from pathlib import Path
 
 from gui_comun import __version__ as _VERSION_GUI_COMUN
+from gui_comun import errores as _errores
 from gui_comun import i18n
-from gui_comun.qt import (BINDING, Property, QEvent, QGuiApplication, QIcon, QObject, QQmlApplicationEngine,
-                          QQmlPropertyMap, QQuickWindow, QTimer, QTranslator, QUrl, cast, version_qt)
+from gui_comun.escritorio import Escritorio
+from gui_comun.qt import (BINDING, Property, QApplication, QEvent, QGuiApplication, QIcon, QObject,
+                          QQmlApplicationEngine, QQmlPropertyMap, QQuickWindow, QTimer, QTranslator, QUrl, cast,
+                          version_qt)
 
 RUTA_QML = Path(__file__).resolve().parent / "qml"          # el módulo QML GuiComun vive en gui_comun/qml/GuiComun/
 ESTILO = "org.kde.desktop"
@@ -63,7 +76,7 @@ def cargar_traducciones(app, idioma: str = "es") -> list[str]:
 
 
 class Aplicacion:
-    """La aplicación de un studio QML: `QGuiApplication` + motor QML con el módulo `GuiComun`."""
+    """La aplicación de un studio QML: `QApplication` + motor QML con el módulo `GuiComun`, `errores` y `escritorio`."""
 
     def __init__(self, app_id: str, nombre: str, *, version: str = "", organizacion: str = ORGANIZACION,
                  idioma: str = "es", argv: list[str] | None = None, nombre_ajustes: str | None = None):
@@ -77,7 +90,10 @@ class Aplicacion:
         if version:
             QGuiApplication.setApplicationVersion(version)
         QGuiApplication.setDesktopFileName(app_id)
-        self.app = QGuiApplication(argv if argv is not None else sys.argv)
+        # QApplication (no QGuiApplication): el diálogo de archivos de KDE y el QStyle de org.kde.desktop la necesitan
+        # (ver el docstring del módulo); sin QtWidgets en el binding, la de siempre
+        clase = QApplication if QApplication is not None else QGuiApplication
+        self.app = clase.instance() or clase(argv if argv is not None else sys.argv)
         if not QIcon.themeName():               # sin tema de escritorio (offscreen, otro entorno): el de Plasma
             QIcon.setThemeName("breeze")
         self.traducciones = cargar_traducciones(self.app, idioma)
@@ -90,6 +106,11 @@ class Aplicacion:
         self._avisos: list[str] = []
         self.motor.warnings.connect(self._anotar_avisos)
         self._raiz = None
+        self.errores = _errores.Errores()                         # 3.0: errores presentables
+        _errores.fijar_predeterminado(self.errores)               # Tareas y Escritorio lo usan sin que nadie se lo pase
+        self.escritorio = Escritorio(self.errores)                # 3.0: abrir, mostrar en Dolphin, abrir carpeta
+        self.exponer("errores", self.errores)
+        self.exponer("escritorio", self.escritorio)
         self.datos = DatosStudio(self)
         self.exponer("aplicacionStudio", self.datos)
 
@@ -100,6 +121,12 @@ class Aplicacion:
         La segunda forma evita la sombra de una propiedad homónima del componente (`acciones: studio.acciones`)."""
         self.motor.rootContext().setContextProperty(nombre, objeto)
         self.studio.insert(nombre, objeto)
+
+    def error(self, descripcion: str, causa: str = "", recurso: str = "", accion: str = "", detalle: str = "",
+              nivel: str = "error") -> dict:
+        """Presenta un error al usuario (la ventana lo muestra en un `DialogoError`): qué pasó, la causa probable, el
+        archivo o recurso, la acción recomendada y el detalle técnico desplegable. Atajo de `self.errores.presentar`."""
+        return self.errores.presentar(descripcion, causa, recurso, accion, detalle, nivel)
 
     def cargar(self, ruta_qml: str | Path) -> bool:
         """Carga el `Main.qml` del studio; False (con el motivo en stderr) si no se pudo."""
@@ -137,6 +164,8 @@ class Aplicacion:
         self.motor.deleteLater()                   # después el motor
         self.app.sendPostedEvents(None, QEvent.Type.DeferredDelete)
         self.motor = None
+        if _errores.predeterminado() is self.errores:
+            _errores.fijar_predeterminado(None)
 
     def ventana(self):
         """La ventana raíz como `QQuickWindow` (para capturas, geometría, foco)."""
@@ -198,3 +227,13 @@ class DatosStudio(QObject):
     @Property(str, constant=True)
     def versionQt(self) -> str:
         return version_qt()
+
+    @Property(QObject, constant=True)
+    def errores(self):
+        """3.0: el registro de errores (`gui_comun.errores.Errores`); `VentanaBase` lo muestra."""
+        return self._a.errores
+
+    @Property(QObject, constant=True)
+    def escritorio(self):
+        """3.0: la integración con el escritorio (`gui_comun.escritorio.Escritorio`)."""
+        return self._a.escritorio

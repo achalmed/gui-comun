@@ -33,6 +33,13 @@ PROPIEDADES = {
     "VistaTexto": 'texto: "# Hola\\n\\nun *documento*"; markdown: true; mensajeVacio: "nada"',
     "ListaDiagnosticos": 'modelo: studio.diagnosticos; mensajeVacio: "sin problemas"',
     "PaginaFormulario": 'campos: [{clave: "a", etiqueta: "A", tipo: "texto", defecto: "x"}, {clave: "n", etiqueta: "N", tipo: "entero", defecto: 3, minimo: 0, maximo: 10}, {clave: "o", etiqueta: "O", tipo: "opcion", defecto: "b", opciones: [["a", "Alfa"], ["b", "Beta"]]}, {clave: "c", etiqueta: "C", tipo: "casilla", defecto: true}, {clave: "k", etiqueta: "K", tipo: "color", defecto: "#ff0000"}, {clave: "r", etiqueta: "R", tipo: "carpeta"}, {clave: "m", etiqueta: "M", tipo: "multilinea"}, {clave: "d", etiqueta: "D", tipo: "decimal", defecto: 1.5}, {clave: "p", etiqueta: "P", tipo: "clave"}]',
+    "VentanaBase": 'acciones: studio.acciones; tareas: studio.tareas; consola: studio.consola; visible: false; Rectangle { anchors.fill: parent; color: Kirigami.Theme.backgroundColor }',
+    "TarjetaError": 'width: 600; error: ({descripcion: "No se pudo sincronizar", causa: "La rama divergió", recurso: "/tmp", accion: "Traiga los cambios", detalle: "$ git push\\nrejected", nivel: "error"}); detalleAbierto: true',
+    "DialogoError": 'errores: studio.errores',
+    "DialogoConfirmacion": 'acciones: studio.acciones; peticion: ({titulo: "Publicar", consecuencias: "Se subirá", operacionTexto: "Publicación", textoAceptar: "Publicar"})',
+    "ElegirArchivos": 'multiple: true; filtros: ["Documentos PDF (*.pdf)", {nombre: "LaTeX", patrones: ["*.tex", "*.bib"]}]; carpetaInicial: "/tmp"',
+    "ElegirCarpeta": 'carpetaInicial: "/tmp"',
+    "GuardarComo": 'nombreSugerido: "informe.pdf"; sufijo: "pdf"; carpetaInicial: "/tmp"',
     "Grafico": 'series: [{nombre: "a", y: [1, 2, 3]}, {nombre: "b", y: [3, 2, 1]}]; etiquetasX: ["0", "1", "2"]; xMaximo: 2; yMaximo: 3; equilibrio: ({x: 1, y: 2, etiqueta: "E"}); marcas: [{x: 1, etiqueta: "x"}]; anotacion: "nota"',
 }
 
@@ -58,9 +65,9 @@ diagnosticos = ModeloLista(("nivel", "mensaje", "archivo", "linea"), [{"nivel": 
 for n, o in (("acciones", acciones), ("consola", consola), ("tareas", tareas), ("tabla", tabla), ("arbol", arbol), ("diagnosticos", diagnosticos)): app.exponer(n, o)
 componente, props = sys.argv[2], sys.argv[3]
 ruta = os.path.join(os.environ["PRUEBA_TMP"], "Prueba_" + componente + ".qml")
-cuerpo = "import QtQuick\nimport GuiComun\n%s { id: raiz; %s }\n" % (componente, props)
-if componente != "VentanaStudio":
-    cuerpo = "import QtQuick\nimport GuiComun\nWindow { visible: false; width: 900; height: 600; %s { id: raiz; %s } }\n" % (componente, props)
+cuerpo = "import QtQuick\nimport org.kde.kirigami as Kirigami\nimport GuiComun\n%s { id: raiz; %s }\n" % (componente, props)
+if componente not in ("VentanaStudio", "VentanaBase"):
+    cuerpo = "import QtQuick\nimport org.kde.kirigami as Kirigami\nimport GuiComun\nWindow { visible: false; width: 900; height: 600; %s { id: raiz; %s } }\n" % (componente, props)
 open(ruta, "w").write(cuerpo)
 errores = []
 app.motor.warnings.connect(lambda avisos: errores.extend(a.toString() for a in avisos))
@@ -83,7 +90,7 @@ def test_carga_cada_componente(componente, tmp_path):
     graves = [e for e in datos["errores"] if "TypeError" in e or "ReferenceError" in e or "is not a type" in e or "Cannot assign" in e]
     assert not graves, "\n".join(graves)
     assert "qtbase_es" in datos["traducciones"] and "libkirigami6_qt" in datos["traducciones"]
-    assert {"acciones", "consola", "tareas", "tabla"} <= set(datos["studio"])
+    assert {"acciones", "consola", "tareas", "tabla", "errores", "escritorio", "aplicacionStudio"} <= set(datos["studio"])
 
 
 def test_qmldir_declara_cada_componente():
@@ -213,3 +220,76 @@ print(json.dumps({"ok": ok, "vacios": vacios, "puestos": puestos, "fijados": fij
     assert datos["fijados"] == {"n": 7, "c": False} and datos["defecto"] == "x"
     assert datos["avisos"] == [["c", False], ["a", ""]]
     assert not [e for e in datos["errores"] if "TypeError" in e or "ReferenceError" in e], "\n".join(datos["errores"])
+
+
+@requiere_kirigami
+def test_ventana_base_confirma_y_presenta_errores(tmp_path):
+    """3.0: en VentanaBase, una publicación no se ejecuta al dispararla sino al aceptar su diálogo; un error presentado
+    abre el diálogo de errores; el contenido es libre; las rutas con espacios van y vuelven de URL sin «%20»."""
+    guion = r'''
+import sys, os, json; sys.path.insert(0, sys.argv[1])
+from gui_comun.nucleo import Aplicacion
+from gui_comun.acciones import Acciones
+from gui_comun.qt import QTimer, QObject
+from gui_comun.qt import QMetaObject
+app = Aplicacion("gui-comun-prueba", "Prueba")
+acc = Acciones(); acc.estandar("Prueba", paneles=False)
+hechos = []
+acc.registrar("sitio.publicar", "&Publicar el sitio", "document-send", "Ctrl+Shift+P", "Sitio", operacion="publicacion",
+              consecuencias="Se subirán 3 archivos", al_disparar=lambda: hechos.append("publicado"))
+acc.definir_menus([("&Archivo", ["sitio.publicar", "|", "app.salir"])])
+app.exponer("acciones", acc)
+ruta = os.path.join(os.environ["PRUEBA_TMP"], "Base.qml")
+modulo = os.path.join(sys.argv[1], "gui_comun", "qml", "GuiComun", "rutas.js")
+open(ruta, "w").write("""import QtQuick
+import GuiComun
+import "file://%s" as Rutas
+VentanaBase { id: v; visible: true; width: 900; height: 600; acciones: studio.acciones
+  property string ida: Rutas.aUrl("/home/x/00 metodo/a#b.tex")
+  property string vuelta: Rutas.deUrl(ida)
+  property var filtros: Rutas.filtros(["PDF (*.pdf)", {nombre: "LaTeX", patrones: ["*.tex", "*.bib"]}], true)
+  Rectangle { objectName: "lienzo"; anchors.fill: parent } }
+""" % modulo)
+errores = []
+app.motor.warnings.connect(lambda avisos: errores.extend(a.toString() for a in avisos))
+ok = app.cargar(ruta)
+v = app.motor.rootObjects()[0]
+r = {"ok": ok}
+def paso1():
+    try:
+        acc.ejecutar("sitio.publicar")
+        c = v.findChild(QObject, "confirmacion")
+        r["pedida"] = bool(c.property("visible"))
+        r["antes"] = list(hechos)
+        QMetaObject.invokeMethod(c, "accept")
+        r["despues"] = list(hechos)
+        app.error("No se pudo publicar", "Sin conexión", "/tmp", "Reintente", "detalle")
+        QTimer.singleShot(300, paso2)
+    except Exception as exc:
+        r["fallo"] = repr(exc); app.app.quit()
+def paso2():
+    try:
+        d = v.findChild(QObject, "dialogoError")
+        r["error_abierto"] = bool(d.property("visible"))
+        r["lienzo"] = v.findChild(QObject, "lienzo") is not None
+        r["ida"], r["vuelta"] = v.property("ida"), v.property("vuelta")
+        f = v.property("filtros")
+        r["filtros"] = f.toVariant() if hasattr(f, "toVariant") else f
+    except Exception as exc:
+        r["fallo"] = repr(exc)
+    app.app.quit()
+QTimer.singleShot(300, paso1)
+app.app.exec(); app.cerrar()
+r["errores"] = errores
+print(json.dumps(r))
+'''
+    import json
+    r = correr_hijo(guion, tmp_path)
+    assert r.returncode == 0, r.stderr[-3000:]
+    datos = json.loads(r.stdout.strip().splitlines()[-1])
+    assert "fallo" not in datos, datos.get("fallo")
+    assert datos["ok"] and datos["pedida"] and datos["antes"] == [] and datos["despues"] == ["publicado"]
+    assert datos["error_abierto"] and datos["lienzo"]
+    assert datos["ida"] == "file:///home/x/00%20metodo/a%23b.tex" and datos["vuelta"] == "/home/x/00 metodo/a#b.tex"
+    assert datos["filtros"] == ["PDF (*.pdf)", "LaTeX (*.tex *.bib)", "Todos los archivos (*)"]
+    assert not [e for e in datos["errores"] if "TypeError" in e or "ReferenceError" in e or "Unable to assign" in e], "\n".join(datos["errores"])

@@ -16,3 +16,10 @@ VistaTexto 2.2 VistaTexto.qml
 ListaDiagnosticos 2.3 ListaDiagnosticos.qml
 Grafico 2.6 Grafico.qml
 PaginaFormulario 2.7 PaginaFormulario.qml
+VentanaBase 3.0 VentanaBase.qml
+TarjetaError 3.0 TarjetaError.qml
+DialogoError 3.0 DialogoError.qml
+DialogoConfirmacion 3.0 DialogoConfirmacion.qml
+ElegirArchivos 3.0 ElegirArchivos.qml
+ElegirCarpeta 3.0 ElegirCarpeta.qml
+GuardarComo 3.0 GuardarComo.qml

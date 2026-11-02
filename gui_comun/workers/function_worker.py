@@ -42,6 +42,7 @@ class FunctionWorker(QThread):
         self._cancel_event = threading.Event()
         self.started_at: float = 0.0
         self.elapsed: float = 0.0
+        self.excepcion: BaseException | None = None      # 3.0: la excepción de `failed` (Tareas la explica)
 
     # ------------------------------------------------------------------ API
     def cancel(self) -> None:
@@ -67,6 +68,7 @@ class FunctionWorker(QThread):
             return
         except Exception as exc:  # noqa: BLE001 — el worker es la frontera
             self.elapsed = time.perf_counter() - self.started_at
+            self.excepcion = exc
             self.failed.emit(str(exc))
             return
         self.elapsed = time.perf_counter() - self.started_at

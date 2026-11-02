@@ -23,9 +23,13 @@ if BINDING == "PySide6":
         QAbstractItemModel, QAbstractListModel, QAbstractTableModel, QByteArray, QCoreApplication, QDir, QEvent,
         QFileInfo, QFileSystemWatcher, QLocale, QMimeDatabase, QModelIndex, QObject, QPoint, QProcess, QSettings, QSize,
         QSortFilterProxyModel, QStandardPaths, Qt, QThread, QTimer, QTranslator, QUrl, Signal, Slot, Property,
-        QItemSelectionModel,
+        QItemSelectionModel, QMetaObject,
     )
-    from PySide6.QtGui import QGuiApplication, QIcon, QKeySequence, QFontDatabase  # noqa: F401
+    from PySide6.QtGui import QDesktopServices, QGuiApplication, QIcon, QKeySequence, QFontDatabase  # noqa: F401
+    try:   # 3.0: solo la clase de la aplicación (ver nucleo.py: el diálogo de archivos de KDE la necesita); ningún widget
+        from PySide6.QtWidgets import QApplication  # noqa: F401
+    except ImportError:   # pragma: no cover
+        QApplication = None
     try:   # QML: no hace falta para los studios de Widgets (1.x), que solo usan QtCore de aquí
         from PySide6.QtQml import QQmlApplicationEngine, QQmlPropertyMap, qmlRegisterType  # noqa: F401
         from PySide6.QtQuick import QQuickItem, QQuickWindow  # noqa: F401
@@ -44,10 +48,14 @@ else:
     from PyQt6.QtCore import (  # noqa: F401
         QAbstractItemModel, QAbstractListModel, QAbstractTableModel, QByteArray, QCoreApplication, QDir, QEvent,
         QFileInfo, QFileSystemWatcher, QLocale, QMimeDatabase, QModelIndex, QObject, QPoint, QProcess, QSettings, QSize,
-        QSortFilterProxyModel, QStandardPaths, Qt, QThread, QTimer, QTranslator, QUrl, QItemSelectionModel,
+        QSortFilterProxyModel, QStandardPaths, Qt, QThread, QTimer, QTranslator, QUrl, QItemSelectionModel, QMetaObject,
     )
     from PyQt6.QtCore import pyqtProperty as Property, pyqtSignal as Signal, pyqtSlot as Slot  # noqa: F401
-    from PyQt6.QtGui import QGuiApplication, QIcon, QKeySequence, QFontDatabase  # noqa: F401
+    from PyQt6.QtGui import QDesktopServices, QGuiApplication, QIcon, QKeySequence, QFontDatabase  # noqa: F401
+    try:
+        from PyQt6.QtWidgets import QApplication  # noqa: F401
+    except ImportError:   # pragma: no cover
+        QApplication = None
     try:
         from PyQt6.QtQml import QQmlApplicationEngine, QQmlPropertyMap, qmlRegisterType  # noqa: F401
         from PyQt6.QtQuick import QQuickItem, QQuickWindow  # noqa: F401

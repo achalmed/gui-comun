@@ -16,6 +16,20 @@ partir del mismo objeto, y al dispararla avisa a Python, que es quien hace algo.
 En QML: `acciones.accion("repo.analizar")` devuelve el objeto (texto, icono, atajo, habilitada…; propiedades con
 aviso de cambio), `acciones.menus` y `acciones.barra` describen menú y barra, `acciones.buscar("sinc")` alimenta
 la paleta y `acciones.ejecutar(nombre)` dispara. Los atajos solo los registra la barra de menú (una vez).
+
+3.0 — **estados de operación** y **atajos por disciplina**:
+
+    acciones.registrar("sitio.publicar", "&Publicar…", "document-send", "Ctrl+Shift+P", "Sitio",
+                       operacion="publicacion", al_disparar=publicar,
+                       consecuencias=lambda: f"Se subirán {n} archivos a {dominio}. No se puede deshacer desde aquí.")
+
+`operacion` es una de `OPERACIONES` (lectura, simulación, preparación, escritura, instalación, publicación,
+eliminación). Instalación, publicación y eliminación **siempre** piden confirmación, y `registrar` exige que sus
+`consecuencias` estén redactadas (texto o función que lo calcula al pedirla); cualquier otra la pide con
+`confirmar=True` (una escritura que sobrescribe). Disparar una acción así no la ejecuta: `Acciones` emite
+`confirmacionPedida({...})`, la ventana (`VentanaBase`) muestra el diálogo y, si el usuario acepta, llama a
+`confirmar(nombre)`. La base no impone atajos de disciplina (ni F5): cada studio fija los suyos al registrar, cambia
+los estándar con `estandar(..., atajos={...})` o `fijar_atajo`, y comprueba con `conflictos()` que ninguno se repite.
 """
 
 from __future__ import annotations
@@ -41,6 +55,22 @@ _TECLAS = (("Shift", "Mayús"), ("Return", "Intro"), ("Enter", "Intro"), ("Del",
            ("Space", "Espacio"), ("Esc", "Esc"), ("PgUp", "RePág"), ("PgDown", "AvPág"), ("Home", "Inicio"),
            ("End", "Fin"), ("Ins", "Ins"), ("Meta", "Meta"), ("Up", "↑"), ("Down", "↓"), ("Left", "←"),
            ("Right", "→"))
+
+
+# 3.0: los estados de una operación. nombre → (etiqueta, icono, confirmación obligatoria)
+OPERACIONES = {
+    "lectura": ("Lectura", "document-preview", False),
+    "simulacion": ("Simulación", "view-preview", False),
+    "preparacion": ("Preparación", "document-edit", False),
+    "escritura": ("Escritura", "document-save", False),
+    "instalacion": ("Instalación", "run-install", True),
+    "publicacion": ("Publicación", "document-send", True),
+    "eliminacion": ("Eliminación", "edit-delete", True),
+}
+
+
+def texto_operacion(operacion: str) -> str:
+    return OPERACIONES[operacion][0] if operacion in OPERACIONES else ""
 
 
 def atajo_portable(atajo) -> str:
@@ -71,16 +101,30 @@ class Accion(QObject):
     habilitadaCambiada = Signal()
     marcadaCambiada = Signal()
     visibleCambiada = Signal()
+    atajoCambiado = Signal()
     disparada = Signal(bool)          # el estado marcado tras dispararse (False si no es marcable)
+    confirmacionPedida = Signal()     # 3.0: se disparó una acción que exige confirmación; aún no se ejecutó
 
     def __init__(self, nombre: str, texto: str, icono: str = "", atajo=None, grupo: str = "", *,
                  habilitada: bool = True, marcable: bool = False, marcada: bool = False, descripcion: str = "",
-                 visible: bool = True, parent=None):
+                 visible: bool = True, operacion: str = "", consecuencias="", confirmar: bool | None = None,
+                 parent=None):
         super().__init__(parent)
+        if operacion and operacion not in OPERACIONES:
+            raise ValueError(f"{nombre}: operación desconocida «{operacion}» (una de {', '.join(OPERACIONES)})")
+        obligatoria = operacion in OPERACIONES and OPERACIONES[operacion][2]
+        if obligatoria and confirmar is False:
+            raise ValueError(f"{nombre}: una {texto_operacion(operacion).lower()} siempre pide confirmación")
+        if (obligatoria or confirmar) and not consecuencias:
+            raise ValueError(f"{nombre}: una acción que pide confirmación necesita sus consecuencias redactadas")
+        if (obligatoria or confirmar) and marcable:
+            raise ValueError(f"{nombre}: una acción marcable no pide confirmación")
         self._nombre, self._texto, self._icono, self._grupo = nombre, texto, icono, grupo
         self._atajo = atajo_portable(atajo)
         self._habilitada, self._marcable, self._marcada = habilitada, marcable, marcada
         self._descripcion, self._visible = descripcion, visible
+        self._operacion, self._consecuencias = operacion, consecuencias
+        self._confirmar = bool(obligatoria or confirmar)
         self._manejadores: list[Callable] = []
 
     # ------------------------------------------------------------ lectura
@@ -88,13 +132,38 @@ class Accion(QObject):
     def nombre(self) -> str:
         return self._nombre
 
-    @Property(str, constant=True)
+    @Property(str, notify=atajoCambiado)
     def atajo(self) -> str:
         return self._atajo
 
-    @Property(str, constant=True)
+    @Property(str, notify=atajoCambiado)
     def atajoTexto(self) -> str:
         return atajo_legible(self._atajo)
+
+    def fijar_atajo(self, atajo) -> None:
+        """3.0: cambia el atajo (la barra de menú lo vuelve a registrar sola)."""
+        nuevo = atajo_portable(atajo)
+        if nuevo != self._atajo:
+            self._atajo = nuevo
+            self.atajoCambiado.emit()
+
+    @Property(str, constant=True)
+    def operacion(self) -> str:
+        """3.0: lectura · simulacion · preparacion · escritura · instalacion · publicacion · eliminacion (o vacío)."""
+        return self._operacion
+
+    @Property(str, constant=True)
+    def operacionTexto(self) -> str:
+        return texto_operacion(self._operacion)
+
+    @Property(bool, constant=True)
+    def requiereConfirmacion(self) -> bool:
+        return self._confirmar
+
+    @Property(str, notify=textoCambiado)
+    def consecuencias(self) -> str:
+        """Lo que pasará si se acepta; si se registró una función, se calcula cada vez que se lee."""
+        return str(self._consecuencias() if callable(self._consecuencias) else self._consecuencias)
 
     @Property(str, constant=True)
     def grupo(self) -> str:
@@ -172,8 +241,21 @@ class Accion(QObject):
 
     @Slot()
     def disparar(self) -> None:
+        """Desde un menú, un botón, la paleta o un atajo. Si pide confirmación, solo la pide (`confirmacionPedida`)."""
         if not self._habilitada:
             return
+        if self._confirmar:
+            self.confirmacionPedida.emit()
+            return
+        self._ejecutar()
+
+    @Slot()
+    def confirmar(self) -> None:
+        """Ejecuta la acción ya confirmada por el usuario (la llama el diálogo de confirmación)."""
+        if self._habilitada:
+            self._ejecutar()
+
+    def _ejecutar(self) -> None:
         if self._marcable:
             self._marcada_set(not self._marcada)
         for manejador in list(self._manejadores):
@@ -190,6 +272,7 @@ class Acciones(QAbstractListModel):
     R_NOMBRE, R_TEXTO, R_ICONO, R_ATAJO, R_GRUPO, R_HABILITADA, R_MARCADA, R_OBJETO = (rol(i) for i in range(1, 9))
 
     disparada = Signal(str, bool)      # nombre, marcada: para quien prefiera escuchar el registro entero
+    confirmacionPedida = Signal("QVariantMap")   # 3.0: {nombre, titulo, consecuencias, operacion, operacionTexto, icono, textoAceptar, destructiva}
     menusCambiados = Signal()
     barraCambiada = Signal()
 
@@ -205,11 +288,14 @@ class Acciones(QAbstractListModel):
     # --------------------------------------------------------------- alta
     def registrar(self, nombre: str, texto: str, icono: str = "", atajo=None, grupo: str = "", *,
                   habilitada: bool = True, marcable: bool = False, marcada: bool = False, descripcion: str = "",
-                  visible: bool = True, al_disparar: Callable | None = None) -> Accion:
+                  visible: bool = True, al_disparar: Callable | None = None, operacion: str = "",
+                  consecuencias="", confirmar: bool | None = None) -> Accion:
+        """Registra una acción. 3.0: `operacion` (ver `OPERACIONES`), `consecuencias` (texto o función) y `confirmar`."""
         if nombre in self._por_nombre:
             raise ValueError(f"acción repetida: {nombre}")
         accion = Accion(nombre, texto, icono, atajo, grupo, habilitada=habilitada, marcable=marcable,
-                        marcada=marcada, descripcion=descripcion, visible=visible, parent=self)
+                        marcada=marcada, descripcion=descripcion, visible=visible, operacion=operacion,
+                        consecuencias=consecuencias, confirmar=confirmar, parent=self)
         if al_disparar:
             accion.conectar(al_disparar)
         fila = len(self._acciones)
@@ -218,18 +304,25 @@ class Acciones(QAbstractListModel):
         self._por_nombre[nombre] = accion
         self.endInsertRows()
         accion.disparada.connect(lambda marcada, n=nombre: self.disparada.emit(n, marcada))
-        for senal in (accion.textoCambiado, accion.iconoCambiado, accion.habilitadaCambiada, accion.marcadaCambiada):
+        accion.confirmacionPedida.connect(lambda n=nombre: self.confirmacionPedida.emit(self.peticion(n)))
+        for senal in (accion.textoCambiado, accion.iconoCambiado, accion.habilitadaCambiada, accion.marcadaCambiada,
+                      accion.atajoCambiado):
             senal.connect(lambda n=nombre: self._cambio(n))
         return accion
 
-    def estandar(self, nombre_app: str) -> None:
-        """Las acciones que toda ventana de la familia tiene (la ventana las atiende; el studio puede escucharlas)."""
-        self.registrar("ventana.navegacion", "Panel de &navegación", "view-sidetree", "F9", "Ver", marcable=True,
-                       marcada=True, descripcion="Muestra u oculta el panel de navegación")
-        self.registrar("ventana.detalles", "Panel de &detalles", "view-right-new", "F11", "Ver", marcable=True,
-                       marcada=True, descripcion="Muestra u oculta el panel de detalles")
-        self.registrar("ventana.inferior", "Panel &inferior", "utilities-terminal", "F4", "Ver", marcable=True,
-                       marcada=False, descripcion="Muestra u oculta la salida y el registro")
+    def estandar(self, nombre_app: str, *, paneles: bool = True, atajos: dict | None = None) -> None:
+        """Las acciones que toda ventana de la familia tiene (la ventana las atiende; el studio puede escucharlas).
+
+        3.0: `paneles=False` omite los conmutadores de los tres paneles de `VentanaStudio` (una ventana sobre
+        `VentanaBase` sin navegación, detalles ni panel inferior no los necesita); `atajos` cambia los atajos de las
+        estándar ({"ventana.detalles": "F3", "ventana.paleta": ""}) para que el studio use los de su disciplina."""
+        if paneles:
+            self.registrar("ventana.navegacion", "Panel de &navegación", "view-sidetree", "F9", "Ver", marcable=True,
+                           marcada=True, descripcion="Muestra u oculta el panel de navegación")
+            self.registrar("ventana.detalles", "Panel de &detalles", "view-right-new", "F11", "Ver", marcable=True,
+                           marcada=True, descripcion="Muestra u oculta el panel de detalles")
+            self.registrar("ventana.inferior", "Panel &inferior", "utilities-terminal", "F4", "Ver", marcable=True,
+                           marcada=False, descripcion="Muestra u oculta la salida y el registro")
         self.registrar("ventana.pantalla_completa", "Pantalla &completa", "view-fullscreen", StandardKey.FullScreen,
                        "Ver", marcable=True)
         self.registrar("ventana.paleta", "&Paleta de órdenes", "edit-find", "Ctrl+Alt+I", "Herramientas",
@@ -237,6 +330,23 @@ class Acciones(QAbstractListModel):
         self.registrar("app.ajustes", f"Configurar &{nombre_app}…", "configure", StandardKey.Preferences, "Ajustes")
         self.registrar("app.acerca", f"&Acerca de {nombre_app}", "help-about", None, "Ayuda")
         self.registrar("app.salir", "&Salir", "application-exit", StandardKey.Quit, "Archivo")
+        for nombre, atajo in (atajos or {}).items():
+            self.fijar_atajo(nombre, atajo)
+
+    def fijar_atajo(self, nombre: str, atajo) -> None:
+        """3.0: el atajo de una acción ya registrada (vacío lo quita)."""
+        if nombre not in self._por_nombre:
+            raise KeyError(f"atajo para una acción sin registrar: {nombre}")
+        self._por_nombre[nombre].fijar_atajo(atajo)
+
+    def conflictos(self) -> dict[str, list[str]]:
+        """3.0: los atajos que comparten dos o más acciones visibles ({"Ctrl+Return": ["a", "b"]}); un atajo repetido
+        es ambiguo y no dispara ninguna. Las pruebas de cada studio piden que esté vacío."""
+        por_atajo: dict[str, list[str]] = {}
+        for a in self._acciones:
+            if a.atajo and a.visible:
+                por_atajo.setdefault(a.atajo.lower(), []).append(a.nombre)
+        return {self._por_nombre[n[0]].atajo: n for n in por_atajo.values() if len(n) > 1}
 
     def definir_menus(self, menus: list) -> None:
         """[(título, [nombre | "|" | (título, [...])]), …] → `menus` para QML (lista de {titulo, elementos})."""
@@ -295,7 +405,24 @@ class Acciones(QAbstractListModel):
     def barra(self) -> list:
         return self._barra
 
+    @Slot(str, result="QVariantMap")
+    def peticion(self, nombre: str) -> dict:
+        """3.0: lo que el diálogo de confirmación de `nombre` muestra (las consecuencias, calculadas ahora)."""
+        a = self._por_nombre.get(nombre)
+        if a is None:
+            return {}
+        return {"nombre": a.nombre, "titulo": a.textoPlano, "consecuencias": a.consecuencias, "operacion": a.operacion,
+                "operacionTexto": a.operacionTexto, "icono": a.icono or OPERACIONES.get(a.operacion, ("", "dialog-question"))[1],
+                "textoAceptar": a.textoPlano, "destructiva": a.operacion == "eliminacion"}
+
     # ---------------------------------------------------------------- uso
+    @Slot(str)
+    def confirmar(self, nombre: str) -> None:
+        """3.0: ejecuta una acción que el usuario ya confirmó en el diálogo."""
+        accion = self._por_nombre.get(nombre)
+        if accion is not None:
+            accion.confirmar()
+
     @Slot(str)
     def ejecutar(self, nombre: str) -> None:
         accion = self._por_nombre.get(nombre)
@@ -320,7 +447,7 @@ class Acciones(QAbstractListModel):
         afinidad; sin texto, todas las acciones visibles y habilitadas por su grupo."""
         consulta = texto.strip().lower()
         candidatos = [{"nombre": a.nombre, "texto": a.textoPlano, "grupo": a.grupo, "icono": a.icono,
-                       "atajo": a.atajoTexto, "descripcion": a.descripcion}
+                       "atajo": a.atajoTexto, "descripcion": a.descripcion, "operacion": a.operacionTexto}
                       for a in self._acciones if a.visible and a.habilitada]
         self._dinamicas.clear()
         for fuente in self._fuentes:
@@ -329,6 +456,7 @@ class Acciones(QAbstractListModel):
                 entrada.setdefault("icono", "")
                 entrada.setdefault("atajo", "")
                 entrada.setdefault("descripcion", "")
+                entrada.setdefault("operacion", "")
                 candidatos.append(entrada)
         if not consulta:
             return candidatos

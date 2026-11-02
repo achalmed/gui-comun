@@ -98,3 +98,63 @@ def test_atajos_estandar_sin_repetir(app):
     atajos = [a[n].atajo for n in a.nombres() if a[n].atajo]
     assert len(atajos) == len(set(atajos)), atajos
     assert a["ventana.detalles"].atajo == "F11" and a["ventana.pantalla_completa"].atajo == "Ctrl+Shift+F"
+
+
+@requiere_binding
+def test_operaciones_de_riesgo_piden_confirmacion(app):
+    """3.0: instalación, publicación y eliminación siempre piden confirmación redactada; disparar no ejecuta."""
+    from gui_comun.acciones import Acciones, OPERACIONES
+    assert list(OPERACIONES) == ["lectura", "simulacion", "preparacion", "escritura", "instalacion", "publicacion", "eliminacion"]
+    a = Acciones()
+    hechos, pedidas = [], []
+    a.confirmacionPedida.connect(lambda p: pedidas.append(p))
+    destino = {"dominio": "a.example"}
+    a.registrar("sitio.publicar", "&Publicar…", "document-send", None, "Sitio", operacion="publicacion",
+                consecuencias=lambda: f"Se publicará en {destino['dominio']}", al_disparar=lambda: hechos.append("publicado"))
+    a.registrar("sitio.leer", "&Leer", "", None, "Sitio", operacion="lectura", al_disparar=lambda: hechos.append("leido"))
+    a.registrar("doc.sobrescribir", "&Sobrescribir", "", None, "Doc", operacion="escritura", confirmar=True,
+                consecuencias="Sustituye el archivo", al_disparar=lambda: hechos.append("escrito"))
+    assert a["sitio.publicar"].requiereConfirmacion and not a["sitio.leer"].requiereConfirmacion
+    assert a["sitio.publicar"].operacionTexto == "Publicación"
+    a.ejecutar("sitio.leer")
+    a.ejecutar("sitio.publicar")
+    assert hechos == ["leido"] and pedidas[-1]["nombre"] == "sitio.publicar"
+    destino["dominio"] = "b.example"                                  # las consecuencias se calculan al pedir
+    assert a.peticion("sitio.publicar")["consecuencias"] == "Se publicará en b.example"
+    assert pedidas[-1]["consecuencias"] == "Se publicará en a.example" and pedidas[-1]["textoAceptar"] == "Publicar"
+    a.confirmar("sitio.publicar")
+    assert hechos == ["leido", "publicado"]
+    a.ejecutar("doc.sobrescribir")
+    assert hechos[-1] == "publicado" and pedidas[-1]["operacion"] == "escritura"
+    a.habilitar("sitio.publicar", False)
+    a.confirmar("sitio.publicar")
+    assert hechos[-1] == "publicado"                                  # deshabilitada: ni confirmada se ejecuta
+
+    with pytest.raises(ValueError):                                   # sin consecuencias redactadas
+        a.registrar("x.borrar", "&Borrar", "", None, "X", operacion="eliminacion")
+    with pytest.raises(ValueError):                                   # no se puede saltar la confirmación
+        a.registrar("x.instalar", "&Instalar", "", None, "X", operacion="instalacion", consecuencias="y", confirmar=False)
+    with pytest.raises(ValueError):
+        a.registrar("x.otro", "&Otro", "", None, "X", operacion="borrado")
+    assert a.buscar("sobresc")[0]["operacion"] == "Escritura"                # la paleta nombra el estado
+
+
+@requiere_binding
+def test_atajos_por_disciplina(app):
+    """3.0: la base no impone F5 ni paneles; el studio fija sus atajos y comprueba que no se repiten."""
+    from gui_comun.acciones import Acciones
+    a = Acciones()
+    a.estandar("Libre", paneles=False, atajos={"ventana.paleta": "Ctrl+Shift+P"})
+    assert not a.existe("ventana.navegacion") and not a.existe("ventana.detalles")
+    assert all(x.atajo != "F5" for x in (a[n] for n in a.nombres()))
+    assert a["ventana.paleta"].atajo == "Ctrl+Shift+P"
+    cambios = []
+    a["ventana.paleta"].atajoCambiado.connect(lambda: cambios.append(1))
+    a.registrar("tex.compilar", "&Compilar", "", "Ctrl+B", "LaTeX")
+    a.registrar("tex.negrita", "&Negrita", "", "Ctrl+B", "Formato")
+    assert a.conflictos() == {"Ctrl+B": ["tex.compilar", "tex.negrita"]}
+    a.fijar_atajo("tex.negrita", "")
+    a.fijar_atajo("ventana.paleta", "Ctrl+Alt+I")
+    assert a.conflictos() == {} and cambios == [1] and a["ventana.paleta"].atajoTexto == "Ctrl+Alt+I"
+    with pytest.raises(KeyError):
+        a.fijar_atajo("no.existe", "F1")

@@ -153,7 +153,8 @@ def test_tarea_proceso_con_entrada_y_entorno(app):
 
 @requiere_binding
 def test_cancelar_un_proceso_termina_a_sus_hijos(app, tmp_path):
-    """2.2.0: `cancel()` avisa al grupo entero; el nieto (`sleep`) no sobrevive a la cancelación del `sh` padre."""
+    """2.2.0: `cancel()` avisa al grupo entero; el nieto (`sleep`) no sobrevive a la cancelación del `sh` padre.
+    3.0: la tarea cancelada termina en «warn · cancelada», como una función cancelada, y no presenta un error."""
     import os
     import time
     from gui_comun.consola import Consola
@@ -172,7 +173,7 @@ def test_cancelar_un_proceso_termina_a_sus_hijos(app, tmp_path):
     time.sleep(0.2)
     t.cancelar()
     _esperar(app, t)
-    assert fines and fines[-1][0] == "error"           # terminado por señal: código distinto de 0
+    assert fines and fines[-1] == ("warn", "cancelada")    # 3.0: cancelar no es un error (antes «error», por la señal)
     for _ in range(50):                                 # el nieto debe haber muerto con el grupo
         try:
             os.kill(pid, 0)

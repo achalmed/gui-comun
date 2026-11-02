@@ -35,7 +35,8 @@ QQC2.ToolBar {
                 text: {
                     if (!barra.tareas) return ""
                     const e = barra.tareas.elemento
-                    return barra.tareas.nombre + (e ? " · " + e : "")
+                    const o = barra.tareas.operacionTexto !== undefined ? barra.tareas.operacionTexto : ""   // 3.0
+                    return (o ? o + ": " : "") + barra.tareas.nombre + (e ? " · " + e : "")
                 }
                 elide: Text.ElideMiddle
                 Layout.maximumWidth: Kirigami.Units.gridUnit * 22
