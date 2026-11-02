@@ -18,7 +18,7 @@ FileDialog {
     signal elegido(string ruta)
     signal cancelado()
 
-    title: titulo
+    title: titulo || (multiple ? "Elegir archivos" : "Elegir un archivo")         // 3.0.1: con un título vacío, Qt ponía el suyo, en inglés («Select Folder»)
     fileMode: multiple ? FileDialog.OpenFiles : FileDialog.OpenFile
     nameFilters: Rutas.filtros(filtros, conTodos)
 

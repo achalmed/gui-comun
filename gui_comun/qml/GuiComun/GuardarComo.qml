@@ -17,7 +17,7 @@ FileDialog {
     signal elegido(string ruta)
     signal cancelado()
 
-    title: titulo
+    title: titulo || "Guardar como"         // 3.0.1: con un título vacío, Qt ponía el suyo, en inglés («Select Folder»)
     fileMode: FileDialog.SaveFile
     nameFilters: Rutas.filtros(filtros, conTodos)
     defaultSuffix: sufijo

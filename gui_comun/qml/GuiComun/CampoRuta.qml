@@ -16,7 +16,9 @@ RowLayout {
     property bool guardar: false                     // 3.0: con carpeta: false, elige dónde guardar (GuardarComo)
     property string titulo: carpeta ? "Elegir carpeta" : (guardar ? "Guardar como" : "Elegir archivo")
     property string marcador: carpeta ? "Carpeta…" : "Archivo…"
-    property string nombreAccesible: titulo
+    // 3.0.1: el título que se ve, aunque quien usa el campo le pase uno vacío (una etiqueta que aún no se conoce)
+    readonly property string tituloVisible: titulo || (carpeta ? "Elegir carpeta" : (guardar ? "Guardar como" : "Elegir archivo"))
+    property string nombreAccesible: tituloVisible
     property var filtros: []                         // ["Documentos PDF (*.pdf)"] o [{nombre, patrones}] (archivos)
     property string carpetaInicial: ""               // 3.0: dónde abre el diálogo si el campo está vacío
     property alias campoTexto: entrada
@@ -44,14 +46,14 @@ RowLayout {
     }
     QQC2.ToolButton {
         icon.name: campo.carpeta ? "folder-open" : (campo.guardar ? "document-save-as" : "document-open")
-        text: campo.titulo + "…"
+        text: campo.tituloVisible + "…"
         display: QQC2.AbstractButton.IconOnly
         QQC2.ToolTip.text: text
         QQC2.ToolTip.visible: hovered
         Accessible.name: text
         onClicked: campo.abrir()
     }
-    ElegirCarpeta { id: selectorCarpeta; titulo: campo.titulo; onElegida: ruta => campo.poner(ruta) }
-    ElegirArchivos { id: selectorArchivo; titulo: campo.titulo; filtros: campo.filtros; onElegido: ruta => campo.poner(ruta) }
-    GuardarComo { id: selectorGuardar; titulo: campo.titulo; filtros: campo.filtros; onElegido: ruta => campo.poner(ruta) }
+    ElegirCarpeta { id: selectorCarpeta; titulo: campo.tituloVisible; onElegida: ruta => campo.poner(ruta) }
+    ElegirArchivos { id: selectorArchivo; titulo: campo.tituloVisible; filtros: campo.filtros; onElegido: ruta => campo.poner(ruta) }
+    GuardarComo { id: selectorGuardar; titulo: campo.tituloVisible; filtros: campo.filtros; onElegido: ruta => campo.poner(ruta) }
 }

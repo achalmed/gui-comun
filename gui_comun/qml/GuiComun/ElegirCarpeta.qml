@@ -12,7 +12,7 @@ FolderDialog {
     signal elegida(string ruta)
     signal cancelado()
 
-    title: titulo
+    title: titulo || "Elegir una carpeta"         // 3.0.1: con un título vacío, Qt ponía el suyo, en inglés («Select Folder»)
 
     function abrir(carpeta) {
         const c = carpeta || carpetaInicial

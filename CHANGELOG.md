@@ -10,6 +10,11 @@ La versión vive en `gui_comun/__init__.py` y en `pyproject.toml`. Las secciones
 
 ## [Unreleased]
 
+### Fixed
+- **Un diálogo de archivo o carpeta con el título vacío salía con el de Qt, en inglés («Select Folder»)**, visto en la
+  sesión real con Quarto y Biblioteca, cuyo `CampoRuta` recibe la etiqueta de una entrada que aún no se conoce:
+  `ElegirCarpeta`, `ElegirArchivos` y `GuardarComo` ponen el suyo por omisión, y `CampoRuta` tiene `tituloVisible`.
+
 ## [3.0.0] - 2026-11-02
 
 La base de la reingeniería de los diez studios (encargo del autor del 2026-11-02): cada studio deja de ser una
