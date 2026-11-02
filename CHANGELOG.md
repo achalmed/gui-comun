@@ -10,6 +10,23 @@ La versión vive en `gui_comun/__init__.py` y en `pyproject.toml`. Las secciones
 
 ## [Unreleased]
 
+## [2.2.0] - 2026-11-02
+
+Lo que la fase 5 (Huella Studio, el tercero tras el piloto) pidió al marco; se añade sin quitar.
+
+### Added
+
+- `VistaTexto` (QML): la vista de texto de solo lectura con mensaje de vacío, en Markdown (los enlaces abren fuera) o
+  monoespaciada con resaltado de KSyntaxHighlighting (`definicion`); `ajustarLineas`, `nombreAccesible`, `area`. La
+  repetían Filesystem (el árbol de `tree`), Git (la diferencia) y Dotfiles (el diff y la Guía); Huella la usa para la
+  lectura de cada auditoría y el manual. La galería la muestra en su página.
+
+### Fixed
+
+- `workers.ProcessWorker` arranca el proceso en su propia sesión y `cancel()` termina el grupo entero (`SIGTERM` al
+  grupo): cancelar un `main.sh` que lanza un guion que lanza una herramienta ya no deja vivos a los nietos.
+  `Tareas.proceso` no cambia de API.
+
 ## [2.1.0] - 2026-11-02
 
 Lo que la fase 5 (Filesystem Studio, el primero tras el piloto) pidió al marco; se añade sin quitar.

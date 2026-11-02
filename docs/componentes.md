@@ -5,7 +5,7 @@ forma: referencia
 titulo: "Componentes de GuiComun 2.x: qué es cada uno, sus propiedades y señales, y la API Python que los alimenta"
 creado: 2026-11-01
 ---
-# Componentes de GuiComun (2.1)
+# Componentes de GuiComun (2.2)
 
 La referencia del módulo QML `GuiComun` (`gui_comun/qml/GuiComun/`) y del núcleo Python que lo alimenta. La anatomía
 y la justificación están en `arquitectura-qml-kirigami.md` §4–5 y en `git-studio/docs/rediseno.md` §4–7; la galería
@@ -112,6 +112,14 @@ Un `TextField` con su botón de elegir: `texto`, `carpeta` (verdadero: `FolderDi
 `filtros`), `titulo`, `marcador`, `nombreAccesible`; señal `aceptada(texto)` (Intro o el diálogo); funciones
 `abrir()`, `enfocar()`; `campoTexto` es el campo.
 
+### VistaTexto (2.2)
+
+Texto de solo lectura con mensaje de vacío: `texto`; `markdown` (verdadero: `MarkdownText`, fuente del sistema, líneas
+ajustadas, los enlaces abren fuera; falso: monoespaciado, sin partir líneas) y `definicion` (la de KSyntaxHighlighting
+que resalta el texto plano: «Bash», «Diff», «JSON», «Markdown»…; vacía, sin resaltar; si el módulo
+`org.kde.syntaxhighlighting` falta, texto plano); `ajustarLineas`; `mensajeVacio` · `iconoVacio`; `nombreAccesible`;
+`area` es el `TextArea`. El centro de una vista de documento o la pestaña de lectura de un panel de detalles.
+
 ### MenuAcciones · BotonAccion
 
 `MenuAcciones { acciones; elementos; titulo; conAtajos }`: un `Menu` construido desde `[{tipo: "accion", nombre} |
@@ -125,7 +133,7 @@ Un `TextField` con su botón de elegir: `texto`, `carpeta` (verdadero: `FolderDi
 | `nucleo.Aplicacion(app_id, nombre, version=, organizacion=, idioma="es", nombre_ajustes=)` | `.exponer(nombre, objeto)` (también `studio.<nombre>`), `.cargar(qml)`, `.ejecutar(qml, humo=False)`, `.ventana()`, `.capturar(png, espera_ms)`, `.cerrar()`, `.traducciones`, `.mensaje_de_fallo()`; `aplicacionStudio` en QML (appId, nombre, version, binding, versionGuiComun, versionQt) |
 | `acciones.Acciones` | `.registrar(nombre, texto, icono, atajo, grupo, habilitada=, marcable=, marcada=, descripcion=, al_disparar=)` → `Accion`; `.estandar(nombre_app)`; `.definir_menus([...])`; `.definir_barra([...])`; `.anadir_fuente(fn)`; `.accion(nombre)`, `.existe`, `.ejecutar`, `.habilitar`, `.marcar`, `.buscar(texto)`; señal `disparada(nombre, marcada)`; es modelo de lista |
 | `acciones.Accion` | propiedades `nombre`, `texto`, `textoPlano`, `icono`, `atajo`, `atajoTexto`, `grupo`, `habilitada`, `marcable`, `marcada`, `visible`, `descripcion`; `.conectar(fn)`, `.disparar()`; señal `disparada(marcada)` |
-| `tareas.Tareas(consola)` | `.funcion(nombre, fn, *args, al_terminar=, al_fallar=, **kw)`, `.proceso(nombre, argv, cwd=, al_terminar=)`, `.cancelar()`; `activa`, `nombre`, `progreso`, `elemento`, `cuantas`; señales `iniciada`, `cambiada`, `linea`, `terminada(nivel, nombre, detalle)` |
+| `tareas.Tareas(consola)` | `.funcion(nombre, fn, *args, al_terminar=, al_fallar=, **kw)`, `.proceso(nombre, argv, cwd=, al_terminar=)` (el proceso en su propio grupo), `.cancelar()` (a la función, su `cancel_cb`; al proceso, `SIGTERM` al grupo entero); `activa`, `nombre`, `progreso`, `elemento`, `cuantas`; señales `iniciada`, `cambiada`, `linea`, `terminada(nivel, nombre, detalle)` |
 | `consola.Consola` | `.salida`, `.registro` (`ModeloConsola`: `escribir`, `limpiar`, `texto`, `textoConHora`, `lineas`), `.escribir(texto, nivel)`, `.registrar(nivel, texto)`, `.log(nivel, texto)`; señal `escrita` |
 | `modelos.ModeloLista(roles, filas)` | `.poner`, `.anadir`, `.quitar`, `.actualizar`, `.fila(i)`, `.todas()`, `filas` |
 | `modelos.ModeloFiltrado(origen)` | `.ordenar(columna, descendente)`, `.filtrar(texto)`, `.aceptar_con(criterio)`, `.filaOrigen`, `.filaVisible`, `filas`, `columnaOrden`, `descendente` |

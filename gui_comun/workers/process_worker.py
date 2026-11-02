@@ -1,11 +1,16 @@
 """
 workers/process_worker.py — Ejecución de procesos externos (scripts backend).
 
-Ejecuta un comando (p. ej. script_proyect_tree/main.sh de SCRIPTS_LINUX) en un
-QThread, transmitiendo stdout/stderr línea a línea hacia la Consola
-integrada. Nada de la salida del backend se oculta.
+Ejecuta un comando (p. ej. el main.sh de una suite) en un QThread, transmitiendo stdout/stderr línea a línea hacia
+la Consola integrada. Nada de la salida del backend se oculta.
+
+El proceso arranca en su propia sesión (grupo de procesos) y `cancel()` avisa al grupo entero: un `main.sh` que
+lanza un guion que lanza una herramienta (Huella Studio: `main.sh fase12 --aplicar` → sherlock) se detiene completo,
+no solo el hijo directo (2.2.0).
 """
 
+import os
+import signal
 import subprocess
 
 from gui_comun.qt import QThread, Signal
@@ -29,8 +34,12 @@ class ProcessWorker(QThread):
         return " ".join(self.argv)
 
     def cancel(self) -> None:
+        """Termina el proceso y todo lo que lanzó (SIGTERM al grupo); si el grupo ya no existe, al proceso."""
         if self._proc and self._proc.poll() is None:
-            self._proc.terminate()
+            try:
+                os.killpg(self._proc.pid, signal.SIGTERM)
+            except (ProcessLookupError, PermissionError, OSError):
+                self._proc.terminate()
 
     def run(self) -> None:
         try:
@@ -41,6 +50,7 @@ class ProcessWorker(QThread):
                 stderr=subprocess.PIPE,
                 text=True,
                 errors="replace",
+                start_new_session=True,      # su propio grupo: cancel() lo termina entero
             )
         except OSError as exc:
             self.line.emit(f"No se pudo ejecutar el comando: {exc}", True)

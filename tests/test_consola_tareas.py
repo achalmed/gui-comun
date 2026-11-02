@@ -109,3 +109,36 @@ def test_tarea_proceso(app):
     lineas = c.salida.texto.splitlines()
     assert lineas[0].startswith("$ sh -c") and "hola" in lineas and "err" in lineas
     assert "código de salida 3" in c.registro.texto
+
+
+@requiere_binding
+def test_cancelar_un_proceso_termina_a_sus_hijos(app, tmp_path):
+    """2.2.0: `cancel()` avisa al grupo entero; el nieto (`sleep`) no sobrevive a la cancelación del `sh` padre."""
+    import os
+    import time
+    from gui_comun.consola import Consola
+    from gui_comun.tareas import Tareas
+    pid_nieto = tmp_path / "nieto.pid"
+    c = Consola()
+    t = Tareas(c)
+    fines = []
+    t.terminada.connect(lambda nivel, nombre, detalle: fines.append((nivel, detalle)))
+    t.proceso("dormir", ["sh", "-c", f"sh -c 'echo $$ > {pid_nieto}; exec sleep 60' & wait"], al_terminar=lambda *_: None)
+    limite = time.time() + 10
+    while not pid_nieto.is_file() and time.time() < limite:
+        app.processEvents()
+        time.sleep(0.05)
+    pid = int(pid_nieto.read_text().strip())
+    time.sleep(0.2)
+    t.cancelar()
+    _esperar(app, t)
+    assert fines and fines[-1][0] == "error"           # terminado por señal: código distinto de 0
+    for _ in range(50):                                 # el nieto debe haber muerto con el grupo
+        try:
+            os.kill(pid, 0)
+        except ProcessLookupError:
+            break
+        time.sleep(0.05)
+    else:
+        os.kill(pid, 9)
+        raise AssertionError("el nieto siguió vivo tras cancelar")

@@ -30,6 +30,7 @@ PROPIEDADES = {
     "BarraEstado": 'resumen: "3 cosas"; contexto: "uno · main"; tareas: studio.tareas',
     "ArbolDatos": 'modelo: studio.arbol; columnas: [{ancho: 0, minimo: 8, conIcono: true}, {ancho: 6, semantica: true}]; expandirAlCargar: -1',
     "CampoRuta": 'texto: "/tmp"; carpeta: true',
+    "VistaTexto": 'texto: "# Hola\\n\\nun *documento*"; markdown: true; mensajeVacio: "nada"',
 }
 
 GUION = r'''

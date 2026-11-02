@@ -9,6 +9,7 @@ actualizado: 2026-11-02
 
 | fecha | qué | dónde se ve |
 |---|---|---|
+| 2026-11-02 | **2.2.0 (fase 5, con lo que pidió Huella Studio)**: `VistaTexto` (texto de solo lectura en Markdown o monoespaciado con resaltado, con mensaje de vacío; lo repetían Filesystem, Git y Dotfiles) y `ProcessWorker` que arranca en su propio grupo y cancela al grupo entero (cancelar `main.sh fase12 --aplicar` mataba solo a `bash`); galería y pruebas; rama `wip/2026-11-02-qml-huella`, etiqueta `v2.2.0` **local**, sin empujar hasta el visto bueno del autor | `CHANGELOG.md` 2.2.0; `docs/componentes.md`; `python3 -m gui_comun.galeria --pagina texto` |
 | 2026-11-02 | **2.1.0 (fase 4, con lo que pidió Filesystem Studio)**: `ArbolDatos` (TreeView con la anatomía y los roles de `TablaDatos`, `raiz`, expansión por ratón y teclado), `CampoRuta`, `modelos.ModeloTabla` y `modelos.ModeloArbol` (hijos perezosos), anchos de columna de `TablaDatos` recordados (`claveAjustes`); galería y 33 pruebas; rama `wip/2026-11-02-qml` fusionada en `main` y empujada con la etiqueta `v2.1.0` al remoto público con el visto bueno del autor (2026-11-02) | `CHANGELOG.md` 2.1.0; `docs/componentes.md`; `python3 -m gui_comun.galeria --pagina arbol` |
 | 2026-11-01 | **2.0.1**: lo que el piloto Git Studio pidió al marco (`Tareas.funcion(silenciosa=)`, `acentos.py` para que el lanzador no arrastre QtSvg, barra de progreso solo con tarea, esquema temporal) | `CHANGELOG.md` 2.0.1; etiqueta `v2.0.1` |
 | 2026-11-01 | **2.0.0, fase 2 de la modernización**: módulo QML `GuiComun` (VentanaStudio, PanelNavegacion, TablaDatos, PanelDetalles, PanelInferior, BarraEstado, Mensajes, PaletaOrdenes, DialogoAjustes, MenuAcciones, BotonAccion) sobre Kirigami 6.24 + Addons 1.11 + `org.kde.desktop`, sin colores propios; núcleo Python (`nucleo`, `acciones`, `tareas`, `consola`, `modelos`, `i18n`, `qt` con PySide6/PyQt6 del sistema); la galería con `--captura` y `--esquema`; 29 pruebas (`tests/run.sh`); `widgets` congelado; hallazgos heredados del validador corregidos; F1b: el autor instaló `python3-pyside6.*` 6.10.2 | `CHANGELOG.md` 2.0.0; `docs/componentes.md`; `docs/figuras/galeria-*.png`; `python3 -m gui_comun.galeria` |
@@ -22,13 +23,10 @@ nada en curso
 
 ## Por hacer
 
-- 2026-11-02 · director: **`VistaTexto` para 2.2**: la vista de texto de solo lectura con resaltado de
-  KSyntaxHighlighting (o Markdown) y mensaje de vacío se repite ya en tres studios (`VistaTexto` de Filesystem,
-  `DialogoDiferencia` de Git, `VistaTexto` de Dotfiles): sube al módulo `GuiComun` con el siguiente studio de la fase 5
-  (Huella). Dotfiles Studio no necesitó nada más del marco.
 - 2026-11-01 · **autor**: P2, aprobar la galería (`/usr/bin/python3 -m gui_comun.galeria`; capturas en
   `docs/figuras/galeria-*.png`) como lenguaje visual de la familia; D8 de `arquitectura-qml-kirigami.md` §9 (HIG de
   KDE, documentación de Kirigami y Addons, Qt Quick, especificación freedesktop a Calibre) sigue pendiente del autor.
+- 2026-11-02 · director: los `VistaTexto` propios de Filesystem (`studio/fs_app/qml/componentes/VistaTexto.qml`), Dotfiles (`studio/dotfiles_app/qml/componentes/VistaTexto.qml` y `Resaltado.qml`) y el `DialogoDiferencia` de Git pueden pasar a `GuiComun.VistaTexto` cuando cada repo se toque; no urge (funcionan).
 - 2026-11-01 · director: lo que falta en 2.x (`docs/componentes.md` §3): `Grafico` (`org.kde.quickcharts`) para Simuladores; `PaginaFormulario` generada desde fichas para
   Raphi; `org.kde.kirigamiaddons.settings` cuando Kubuntu lo empaquete. Se hacen en F4 (2.1) con lo aprendido del
   piloto. Dependencias Python que faltan en el Python del sistema para los studios de F5: `openpyxl`, `matplotlib`,

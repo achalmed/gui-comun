@@ -29,6 +29,7 @@ VentanaStudio {
         { nombre: "mensajes", texto: "Mensajes", icono: "dialog-information" },
         { nombre: "acciones", texto: "Acciones y menús", icono: "configure-shortcuts" },
         { nombre: "formulario", texto: "Formularios (Addons)", icono: "document-edit" },
+        { nombre: "texto", texto: "VistaTexto", icono: "text-x-generic" },
         { nombre: "tema", texto: "Tema y unidades", icono: "preferences-desktop-color" }
     ]
     property string paginaActual: paginaInicial || "espacio"
@@ -261,7 +262,35 @@ VentanaStudio {
             CampoRuta { Layout.fillWidth: true; carpeta: false; texto: "~/Documentos/web/_metadata.yml"; filtros: ["YAML (*.yml)"]; nombreAccesible: "Archivo de referencia" }
         }
 
-        // 9. Tema
+        // 9. VistaTexto
+        Pagina {
+            titulo: "VistaTexto"
+            texto: "Texto de solo lectura con mensaje de vacío: un documento en Markdown (fuente del sistema, líneas ajustadas, los enlaces abren fuera) o texto monoespaciado con el resaltado de KSyntaxHighlighting que se pida (`definicion`). El centro de una vista de documento o la pestaña de lectura de un panel de detalles."
+            RowLayout {
+                Layout.fillWidth: true
+                Layout.preferredHeight: Kirigami.Units.gridUnit * 14
+                spacing: Kirigami.Units.largeSpacing
+                VistaTexto {
+                    Layout.fillWidth: true; Layout.fillHeight: true
+                    markdown: true
+                    texto: "# HALLAZGOS\n\nCada `[+]` es una **hipótesis** hasta verificarla (manual §26).\n\n| hallazgo | severidad | estado |\n|---|---|---|\n| perfil antiguo en un foro | 🟡 media | verificado |\n| correo en una brecha de 2019 | 🔴 alta | contraseña rotada |\n\n- <https://haveibeenpwned.com/>"
+                    nombreAccesible: "Documento de muestra"
+                }
+                VistaTexto {
+                    Layout.fillWidth: true; Layout.fillHeight: true
+                    definicion: "Bash"
+                    texto: "#!/usr/bin/env bash\n# fase12-usuario-correo.sh — dónde existen los usuarios\nset -euo pipefail\nfor u in \"${USUARIOS[@]}\"; do\n    sherlock \"$u\" --timeout 10\ndone\necho \"Listo → $SALIDA\""
+                    nombreAccesible: "Texto de muestra"
+                }
+                VistaTexto {
+                    Layout.fillWidth: true; Layout.fillHeight: true
+                    mensajeVacio: "Selecciona un archivo para leerlo"
+                    iconoVacio: "document-preview"
+                }
+            }
+        }
+
+        // 10. Tema
         Pagina {
             titulo: "Tema y unidades"
             texto: "Cero colores propios: todo sale de Kirigami.Theme (el esquema del usuario) y Kirigami.Units."
