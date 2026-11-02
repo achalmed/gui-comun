@@ -32,6 +32,7 @@ VentanaStudio {
         { nombre: "texto", texto: "VistaTexto", icono: "text-x-generic" },
         { nombre: "diagnosticos", texto: "ListaDiagnosticos", icono: "data-warning" },
         { nombre: "grafico", texto: "Grafico", icono: "office-chart-line" },
+        { nombre: "formulario_ficha", texto: "PaginaFormulario", icono: "document-properties" },
         { nombre: "tema", texto: "Tema y unidades", icono: "preferences-desktop-color" }
     ]
     property string paginaActual: paginaInicial || "espacio"
@@ -345,7 +346,41 @@ VentanaStudio {
             }
         }
 
-        // 12. Tema
+        // 12. PaginaFormulario
+        Pagina {
+            titulo: "PaginaFormulario"
+            texto: "Un formulario generado desde una lista de campos (la ficha de una herramienta) sobre Kirigami.FormLayout: un control por tipo (texto, multilínea, entero, decimal, opción, casilla, clave, color, ruta, carpeta), la ayuda debajo, el asterisco de lo obligatorio; `valores` es lo escrito (sin los vacíos) y `cambiado(clave, valor)` avisa de cada edición. Lo que un studio que arma pantallas desde fichas (Raphi) ya no escribe a mano."
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: Kirigami.Units.largeSpacing
+                PaginaFormulario {
+                    id: formularioMuestra
+                    Layout.fillWidth: true
+                    nombreAccesible: "Opciones de muestra"
+                    campos: [
+                        { clave: "nombre", etiqueta: "Nombre del archivo", tipo: "texto", defecto: "unido", ayuda: "sin «.pdf»" },
+                        { clave: "hasta", etiqueta: "Hasta (MB)", tipo: "decimal", defecto: 10, minimo: 0 },
+                        { clave: "calidad", etiqueta: "Calidad", tipo: "entero", defecto: 85, minimo: 10, maximo: 100 },
+                        { clave: "formato", etiqueta: "A", tipo: "opcion", defecto: "jpg", opciones: [["jpg", "JPG"], ["png", "PNG"], ["webp", "WebP"]] },
+                        { clave: "marcadores", etiqueta: "Un marcador por archivo", tipo: "casilla", defecto: true, ayuda: "para navegar el PDF unido" },
+                        { clave: "color", etiqueta: "Color del sello", tipo: "color", defecto: "#9e2a2b" },
+                        { clave: "texto", etiqueta: "Texto de la marca", tipo: "multilinea", marcador: "una línea por renglón" },
+                        { clave: "clave", etiqueta: "Contraseña", tipo: "clave", obligatorio: true },
+                        { clave: "destino", etiqueta: "Carpeta de salida", tipo: "carpeta" }
+                    ]
+                }
+                VistaTexto {
+                    Layout.preferredWidth: Kirigami.Units.gridUnit * 16
+                    Layout.fillHeight: true
+                    texto: JSON.stringify(formularioMuestra.valores, null, 1)
+                    definicion: "JSON"
+                    mensajeVacio: "Edita un campo: aquí aparecen los valores"
+                    nombreAccesible: "Valores del formulario"
+                }
+            }
+        }
+
+        // 13. Tema
         Pagina {
             titulo: "Tema y unidades"
             texto: "Cero colores propios: todo sale de Kirigami.Theme (el esquema del usuario) y Kirigami.Units."

@@ -146,6 +146,18 @@ de QuickCharts), las barras del acento y el resto de `Kirigami.Theme`. Sin panta
 renderizador por software, que no dibuja los materiales de QuickCharts: una captura necesita `QT_QUICK_BACKEND=rhi`.
 La pestaña Resultados de Simuladores Studio.
 
+### PaginaFormulario (2.7)
+
+Un `Kirigami.FormLayout` generado desde `campos` (`[{clave, etiqueta, tipo, defecto, opciones, minimo, maximo, ayuda,
+obligatorio, marcador}]`, la ficha de una herramienta) con un control por `tipo`: `texto` (y cualquier tipo
+desconocido), `multilinea`, `entero` (`SpinBox` con `minimo` y `maximo`), `decimal`, `opcion` (`ComboBox` sobre
+`opciones`: `[valor, etiqueta]` o valores sueltos), `casilla`, `clave` (contraseña), `color` (muestra, campo y
+`ColorDialog`), `ruta` y `carpeta` (`CampoRuta`); la ayuda debajo de cada campo y el asterisco de lo obligatorio.
+`valores` es lo escrito, sin los vacíos (quien lo usa pone el valor por omisión: `Parametro.convertir` del motor de
+Raphi); `valor(clave)` (lo escrito o el `defecto`), `fijar(clave, valor)`, `poner(mapa)`, `restablecer()`; señal
+`cambiado(clave, valor)`; `nombreAccesible`, `mensajeVacio`, `nCampos`. Cambiar `campos` vacía los valores. La pestaña
+Opciones de Raphi Studio.
+
 ### MenuAcciones · BotonAccion
 
 `MenuAcciones { acciones; elementos; titulo; conAtajos }`: un `Menu` construido desde `[{tipo: "accion", nombre} |
@@ -174,4 +186,3 @@ La pestaña Resultados de Simuladores Studio.
 - `org.kde.kirigamiaddons.settings` cuando Kubuntu lo empaquete (hoy `DialogoAjustes` reproduce su anatomía).
 - Orden por cabecera en `ArbolDatos` (un `KSortFilterProxyModel` de `org.kde.kitemmodels` sobre el árbol) cuando un
   studio lo pida.
-- `PaginaFormulario` generada desde fichas para Raphi (F5).

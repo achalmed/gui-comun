@@ -32,6 +32,7 @@ PROPIEDADES = {
     "CampoRuta": 'texto: "/tmp"; carpeta: true',
     "VistaTexto": 'texto: "# Hola\\n\\nun *documento*"; markdown: true; mensajeVacio: "nada"',
     "ListaDiagnosticos": 'modelo: studio.diagnosticos; mensajeVacio: "sin problemas"',
+    "PaginaFormulario": 'campos: [{clave: "a", etiqueta: "A", tipo: "texto", defecto: "x"}, {clave: "n", etiqueta: "N", tipo: "entero", defecto: 3, minimo: 0, maximo: 10}, {clave: "o", etiqueta: "O", tipo: "opcion", defecto: "b", opciones: [["a", "Alfa"], ["b", "Beta"]]}, {clave: "c", etiqueta: "C", tipo: "casilla", defecto: true}, {clave: "k", etiqueta: "K", tipo: "color", defecto: "#ff0000"}, {clave: "r", etiqueta: "R", tipo: "carpeta"}, {clave: "m", etiqueta: "M", tipo: "multilinea"}, {clave: "d", etiqueta: "D", tipo: "decimal", defecto: 1.5}, {clave: "p", etiqueta: "P", tipo: "clave"}]',
     "Grafico": 'series: [{nombre: "a", y: [1, 2, 3]}, {nombre: "b", y: [3, 2, 1]}]; etiquetasX: ["0", "1", "2"]; xMaximo: 2; yMaximo: 3; equilibrio: ({x: 1, y: 2, etiqueta: "E"}); marcas: [{x: 1, etiqueta: "x"}]; anotacion: "nota"',
 }
 
@@ -169,3 +170,46 @@ print(json.dumps({"ok": ok, "sigue": sigue, "salta": salta, "errores": errores})
     datos = json.loads(r.stdout.strip().splitlines()[-1])
     assert datos["ok"] and datos["sigue"] == 1 and datos["salta"] == 2
     assert not [e for e in datos["errores"] if "TypeError" in e], "\n".join(datos["errores"])
+
+
+@requiere_kirigami
+def test_pagina_formulario_valores(tmp_path):
+    """Los valores son lo escrito sin los vacíos; `poner` y `fijar` los cambian y cada edición emite `cambiado` (2.7.0: Raphi
+    Studio arma sus opciones desde las fichas del motor)."""
+    guion = r'''
+import sys, os, json; sys.path.insert(0, sys.argv[1])
+from gui_comun.nucleo import Aplicacion
+from gui_comun.qt import QTimer, QObject
+app = Aplicacion("gui-comun-prueba", "Prueba")
+ruta = os.path.join(os.environ["PRUEBA_TMP"], "Formulario.qml")
+open(ruta, "w").write("""import QtQuick
+import GuiComun
+Window { visible: false; width: 900; height: 600
+  PaginaFormulario { id: raiz; objectName: "f"; width: 800; campos: [{clave: "a", etiqueta: "A", tipo: "texto", defecto: "x"}, {clave: "n", etiqueta: "N", tipo: "entero", defecto: 3}, {clave: "c", etiqueta: "C", tipo: "casilla", defecto: true}, {clave: "o", etiqueta: "O", tipo: "opcion", opciones: [["a", "Alfa"], ["b", "Beta"]]}] } }
+""")
+errores = []
+app.motor.warnings.connect(lambda avisos: errores.extend(a.toString() for a in avisos))
+ok = app.cargar(ruta)
+f = app.motor.rootObjects()[0].findChild(QObject, "f")
+avisos = []
+f.cambiado.connect(lambda clave, valor: avisos.append([clave, valor]))
+vacios = f.property("valores").toVariant()
+f.poner({"a": "hola", "n": 7, "vacio": ""})
+puestos = f.property("valores").toVariant()
+f.fijar("c", False); f.fijar("a", "")
+fijados = f.property("valores").toVariant()
+defecto = f.valor("a")
+f.restablecer()
+campos = f.property("nCampos")
+QTimer.singleShot(300, app.app.quit); app.app.exec(); app.cerrar()
+print(json.dumps({"ok": ok, "vacios": vacios, "puestos": puestos, "fijados": fijados, "defecto": defecto, "avisos": avisos, "campos": campos, "errores": errores}))
+'''
+    import json
+    r = correr_hijo(guion, tmp_path)
+    assert r.returncode == 0, r.stderr[-3000:]
+    datos = json.loads(r.stdout.strip().splitlines()[-1])
+    assert datos["ok"] and datos["campos"] == 4
+    assert datos["vacios"] == {} and datos["puestos"] == {"a": "hola", "n": 7}
+    assert datos["fijados"] == {"n": 7, "c": False} and datos["defecto"] == "x"
+    assert datos["avisos"] == [["c", False], ["a", ""]]
+    assert not [e for e in datos["errores"] if "TypeError" in e or "ReferenceError" in e], "\n".join(datos["errores"])

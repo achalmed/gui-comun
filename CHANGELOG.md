@@ -10,6 +10,18 @@ La versión vive en `gui_comun/__init__.py` y en `pyproject.toml`. Las secciones
 
 ## [Unreleased]
 
+## [2.7.0] - 2026-11-02
+
+Lo que la fase 5 (Raphi Studio, el octavo tras el piloto) pidió al marco; se añade sin quitar.
+
+### Added
+
+- `PaginaFormulario` (QML): un formulario generado desde una lista de campos (la ficha de una herramienta) sobre
+  `Kirigami.FormLayout`, con un control por tipo (texto, multilínea, entero, decimal, opción, casilla, clave, color,
+  ruta, carpeta), la ayuda debajo y el asterisco de lo obligatorio; `valores` (lo escrito, sin los vacíos),
+  `valor(clave)`, `fijar`, `poner`, `restablecer` y la señal `cambiado(clave, valor)`. Lo que Raphi Studio hacía a mano
+  con QtWidgets. Página en la galería (`--pagina formulario_ficha`) y pruebas.
+
 ## [2.6.0] - 2026-11-02
 
 Lo que la fase 5 (Simuladores Studio, el séptimo tras el piloto) pidió al marco; se añade sin quitar.
