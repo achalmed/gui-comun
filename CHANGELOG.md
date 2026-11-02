@@ -10,6 +10,100 @@ La versión vive en `gui_comun/__init__.py` y en `pyproject.toml`. Las secciones
 
 ## [Unreleased]
 
+## [3.0.0] - 2026-11-02
+
+La base de la reingeniería de los diez studios (encargo del autor del 2026-11-02): cada studio deja de ser una
+variación de Dolphin y tiene la arquitectura de su disciplina; la identidad común es Lliphi y el comportamiento, no la
+distribución. Sube la mayor porque cambian la clase de la aplicación, el árbol de `VentanaStudio` y el nivel con que
+termina una tarea cancelada; la API de 2.x se conserva y la capa 1.x (`widgets/`, `diseno`, `theming`, `marco`,
+`ui_loader`, `icons`) sigue congelada, sin retirar (lo hará 4.0).
+
+**Migración desde 2.x**
+
+1. Nada obligatorio para seguir funcionando: los diez studios arrancan con 3.0 sin cambiar una línea (`--smoke`
+   de cada uno, 2026-11-02). Si un studio comprobaba `isinstance(app, QGuiApplication)` sigue valiendo (`QApplication`
+   la hereda); si una prueba suya prohibía importar `QtWidgets`, `gui_comun.qt` ya lo importa para la aplicación.
+2. Para dejar la distribución de Dolphin: `VentanaBase { acciones: studio.acciones; …contenido propio… }` en vez de
+   `VentanaStudio`, y `acciones.estandar("Mi Studio", paneles=False)`.
+3. Diálogos: `FileDialog`/`FolderDialog` sueltos → `ElegirArchivos`/`ElegirCarpeta`/`GuardarComo` (rutas locales, sin
+   `replace("file://", "")`). «Abrir carpeta» y «Mostrar en el explorador» → `escritorio.abrirCarpeta` /
+   `escritorio.mostrarEnDolphin`; abrir un archivo → `escritorio.abrirConAplicacion` (no `Qt.openUrlExternally` con
+   rutas sin codificar).
+4. Operaciones de riesgo: declarar `operacion="publicacion"` (o instalación, eliminación) con `consecuencias=` y
+   quitar la confirmación hecha a mano en QML; `verificar=` en las tareas que escriben.
+5. Errores: `tareas` ya los presenta al fallar; donde un lote resume sus fallos, `error=False`. En `except`,
+   `aplicacion.errores.desde_excepcion(exc, "No se pudo …", recurso=ruta)`.
+6. Atajos: los de la disciplina con `registrar(..., atajo)` y `fijar_atajo`; una prueba del studio con
+   `assert acciones.conflictos() == {}`.
+7. Si un studio escuchaba `terminada("error", …)` para saber que el usuario canceló un proceso, ahora llega
+   `terminada("warn", nombre, "cancelada")`.
+
+### Added
+
+- `VentanaBase` (QML): la ventana sin plantilla. Aporta solo lo común —barra de menú desde `Acciones`, paleta de
+  órdenes (Ctrl+K), mensajes, el diálogo de errores presentables, la confirmación de las operaciones de riesgo,
+  «Acerca de», el diálogo de ajustes, pantalla completa y la geometría recordada— y deja el contenido libre (lo que se
+  declara dentro, con `anchors.fill: parent`); `header` y `footer` quedan libres. API: `confirmar(peticion, alAceptar)`,
+  `error(descripcion, causa, recurso, accion, detalle)`, `notificar(texto, tipo)`, `paleta`, `mensajes`,
+  `confirmacion`, `dialogoError`, `conMenu`, `notificarTareas`.
+- `gui_comun.escritorio.Escritorio` (expuesto como `escritorio` y `aplicacionStudio.escritorio`): tres operaciones que no
+  se confunden — `abrirConAplicacion(ruta)` (`QDesktopServices.openUrl`: la aplicación asociada; también direcciones
+  web), `mostrarEnDolphin(ruta)` (`dolphin --select`; sin Dolphin, la carpeta con `xdg-open`) y `abrirCarpeta(ruta)`
+  (`xdg-open`) — más `rutaDeUrl`, `urlDeRuta`, `existe` y `hayDolphin`. Si la ruta no existe o nada arranca, devuelve
+  `false` y presenta el error. El lanzador, la apertura de URL y la búsqueda de programas se inyectan (pruebas).
+- `ElegirArchivos`, `ElegirCarpeta`, `GuardarComo` (QML, sobre `QtQuick.Dialogs`): el diálogo de archivos del escritorio
+  (el de KDE) con filtros (`["PDF (*.pdf)"]` o `[{nombre, patrones}]`), carpeta inicial, selección múltiple, nombre
+  sugerido y sufijo; hablan en rutas locales (`elegidos(rutas)`, `elegido(ruta)`, `elegida(ruta)`, `cancelado()`).
+- Errores presentables: `gui_comun.errores` (`Errores` con su cola, `presentar`, `presentarTexto`, `presentarMapa`,
+  `desde_excepcion`, `desde_proceso`; `explicar(excepcion)` y `explicar_codigo(codigo, salida)` dan la causa probable y
+  la acción para los errores frecuentes: archivo inexistente, permisos, disco lleno, sin red, clave SSH rechazada, base
+  de datos bloqueada, orden no encontrada…), `Aplicacion.error(...)`, y en QML `TarjetaError` (descripción, causa,
+  recurso con «Mostrar en Dolphin» y copiar, acción, detalle técnico desplegable, «Copiar todo») y `DialogoError` (la
+  cola, uno detrás de otro; «Siguiente», «Descartar todos»).
+- Estados de operación en `Acciones`: `registrar(..., operacion=, consecuencias=, confirmar=)` con
+  `OPERACIONES` = lectura · simulación · preparación · escritura · instalación · publicación · eliminación. Instalación,
+  publicación y eliminación **siempre** piden confirmación y `registrar` exige sus consecuencias redactadas (texto o
+  función que las calcula al pedirlas); otra la pide con `confirmar=True`. Disparar una acción así emite
+  `confirmacionPedida(peticion)` y no la ejecuta; `DialogoConfirmacion` (que `VentanaBase` ya trae) nombra la operación
+  y sus consecuencias, con el foco en Cancelar y el botón que dice qué hace, y llama a `Acciones.confirmar(nombre)`.
+  `Accion.operacion`, `operacionTexto`, `requiereConfirmacion`, `consecuencias`, `confirmar()`; `Acciones.peticion(n)`.
+- Atajos por disciplina: `Acciones.estandar(nombre, paneles=False, atajos={...})` (sin los conmutadores de paneles de
+  `VentanaStudio`; atajos de las estándar cambiados), `fijar_atajo(nombre, atajo)` (y `Accion.fijar_atajo`; `atajo` y
+  `atajoTexto` avisan al cambiar) y `conflictos()` (los atajos repetidos, que no disparan ninguna acción). La base no
+  impone ningún atajo de disciplina (ni F5).
+- `Tareas`: `operacion=` (y las propiedades `operacion`, `operacionTexto`; la barra de estado la nombra),
+  `verificar=` (una comprobación tras el éxito, notificada aparte con `verificada(nombre, ok, detalle)`), `error=`
+  (`False` no presenta; un dict redacta el error) y la señal `resultado(mapa)`. Cuando una tarea falla presenta un
+  error (descripción, causa por su excepción o por su código y su salida, recurso, acción, las últimas 60 líneas como
+  detalle) en el `errores` de la aplicación; la consola conserva la salida entera. `Tareas(consola, errores=)`.
+- `FunctionWorker.excepcion`: la excepción que dio `failed` (para explicarla).
+- `rutas.js` (en el módulo): `deUrl`, `aUrl`, `carpetaDe`, `nombreDe`, `filtros`, `lista`.
+- Galería: páginas «VentanaBase», «Escritorio y diálogos», «Errores presentables» y «Operaciones», el menú
+  Operaciones con una acción de cada estado de riesgo (trabajo de muestra que no toca nada) y `--ventana-libre`.
+- `docs/integracion-kde.md`: por qué `QApplication`, las tres operaciones, los diálogos y lo comprobado en Wayland.
+
+### Changed
+
+- **`Aplicacion` crea una `QApplication`** (antes `QGuiApplication`): el tema de plataforma de KDE solo da su diálogo de
+  archivos (el de Dolphin) y el estilo `org.kde.desktop` solo pinta con el `QStyle` del sistema cuando la aplicación es
+  una `QApplication`; con `QGuiApplication`, `FileDialog` caía a su versión en QML, el «selector extraño». Comprobado en
+  Plasma 6.6 Wayland. De `QtWidgets` solo se usa la clase de la aplicación; la interfaz sigue siendo QML. Requiere
+  `python3-pyside6.qtwidgets` (o `python3-pyqt6`). Crea además `errores` y `escritorio` y los expone.
+- **`VentanaStudio` se construye sobre `VentanaBase`** con la misma API (ranuras, `resumen`, `contexto`, paneles,
+  `herramientasExtra`, `mensajes`, `paleta`); la barra de menú, la paleta, «Acerca de», los ajustes y la geometría los
+  pone la base. `mensajes` pasa de `alias` a propiedad (sigue siendo el `Mensajes` sobre el centro).
+- **Cancelar un proceso termina en `("warn", "cancelada")`** (antes `("error", "código de salida -15")`), igual que
+  cancelar una función; una cancelación no presenta error.
+- `CampoRuta` abre `ElegirCarpeta`, `ElegirArchivos` o (con `guardar: true`) `GuardarComo`; añade `carpetaInicial`,
+  `guardar` y `poner(ruta)`.
+- La paleta de órdenes recibe `operacion` en cada entrada (el estado en palabras).
+- `BarraEstado` antepone el estado de la tarea («Escritura: …») cuando la tarea lo declara.
+
+### Fixed
+
+- `CampoRuta` devolvía las rutas con espacios codificadas («00%20metodo») y no aceptaba rutas con «#»: ahora las rutas
+  van y vuelven de URL con `rutas.js`.
+
 ## [2.7.0] - 2026-11-02
 
 Lo que la fase 5 (Raphi Studio, el octavo tras el piloto) pidió al marco; se añade sin quitar.

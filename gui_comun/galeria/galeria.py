@@ -110,6 +110,33 @@ def construir(app):
     acciones.registrar("ver.rama", "Rama", "", None, "Ver › Columnas", marcable=True, marcada=True)
     acciones.registrar("ver.ultimo", "Último commit", "", None, "Ver › Columnas", marcable=True, marcada=True)
     acciones.registrar("herr.informe", "&Informe de sincronización…", "view-list-details", None, "Herramientas")
+    # 3.0: una operación de cada estado de riesgo, con trabajo de muestra que no toca nada
+    def trabajo_de_muestra(segundos: float, resultado=3):
+        def trabajo(progress_cb=None, cancel_cb=None, message_cb=None):
+            import time
+            for i in range(5):
+                progress_cb(int((i + 1) * 20), f"paso {i + 1} de 5")
+                time.sleep(segundos / 5)
+            return resultado
+        return trabajo
+    acciones.registrar("galeria.escribir", "&Escribir el informe…", "document-save", None, "Galería", operacion="escritura",
+                       confirmar=True, consecuencias="Sobrescribe «informe.md» de muestra (no se escribe nada de verdad).",
+                       al_disparar=lambda: tareas.funcion("Escribiendo el informe", trabajo_de_muestra(1.0), operacion="escritura",
+                                                          verificar=lambda n: (n == 3, "3 archivos comprobados en disco")))
+    acciones.registrar("galeria.instalar", "&Instalar el tema…", "run-install", None, "Galería", operacion="instalacion",
+                       consecuencias="Instalaría el tema de muestra en ~/.local/share (aquí no se instala nada). Se puede revertir con «Desinstalar».",
+                       al_disparar=lambda: tareas.funcion("Instalando el tema", trabajo_de_muestra(1.0), operacion="instalacion",
+                                                          verificar=lambda _n: (False, "el esquema instalado no coincide con el generado")))
+    acciones.registrar("galeria.publicar", "&Publicar el sitio…", "document-send", None, "Galería", operacion="publicacion",
+                       consecuencias="Subiría 14 archivos a ejemplo.netlify.app y sustituiría la versión publicada (es una muestra: falla a propósito).",
+                       al_disparar=lambda: tareas.proceso("Publicar el sitio", ["sh", "-c", "echo 'Subiendo 14 archivos…'; echo 'fatal: Could not resolve host: ejemplo.netlify.app' >&2; exit 128"],
+                                                          operacion="publicacion"))
+    acciones.registrar("galeria.eliminar", "&Eliminar los auxiliares…", "edit-delete", None, "Galería", operacion="eliminacion",
+                       consecuencias="Borraría 23 archivos auxiliares (.aux, .log, .bbl…) de la muestra; las fuentes no se tocan. Aquí no se borra nada.",
+                       al_disparar=lambda: tareas.funcion("Eliminando los auxiliares", trabajo_de_muestra(0.6, 23), operacion="eliminacion",
+                                                          verificar=lambda n: (True, f"{n} auxiliares menos; fuentes intactas")))
+    acciones.registrar("galeria.fallar", "Una tarea que &falla", "system-run", None, "Galería",
+                       al_disparar=lambda: tareas.proceso("Compilar «articulo.tex»", ["sh", "-c", "echo 'This is LuaHBTeX'; echo '! Undefined control sequence.' >&2; echo 'l.41 \\comandoquenoexiste' >&2; exit 1"]))
     acciones.registrar("mensajes.aviso", "Mostrar un &mensaje de aviso", "dialog-warning", None, "Galería")
     acciones.registrar("mensajes.error", "Mostrar un mensaje de &error", "dialog-error", None, "Galería")
     acciones.definir_menus([
@@ -118,6 +145,7 @@ def construir(app):
         ("&Ver", ["ventana.navegacion", "ventana.detalles", "ventana.inferior", "|", ("C&olumnas", ["ver.rama", "ver.ultimo"]), "|", "ventana.pantalla_completa"]),
         ("&Repositorio", ["repo.analizar", "repo.obtener", "repo.enviar", "repo.sincronizar", "|", "repo.confirmar"]),
         ("&Herramientas", ["ventana.paleta", "herr.informe", "|", "mensajes.aviso", "mensajes.error"]),
+        ("&Operaciones", ["galeria.escribir", "galeria.instalar", "galeria.publicar", "galeria.eliminar", "|", "galeria.fallar"]),
         ("A&justes", ["app.ajustes"]),
         ("Ay&uda", ["app.acerca"]),
     ])
@@ -155,10 +183,20 @@ def construir(app):
     consola.escribir("## wip/2026-11-01-qml\n M studio/git_app/aplicacion.py\n?? docs/figuras/", "out")
     consola.registrar("info", "Galería de GuiComun " + __version__)
 
+    # 3.0: el registro de la ventana libre (VentanaBase): sin paneles, con su atajo de disciplina
+    acciones_libre = Acciones()
+    acciones_libre.estandar("Ventana libre", paneles=False)
+    acciones_libre.registrar("lienzo.procesar", "&Procesar", "media-playback-start", "Ctrl+Return", "Herramienta",
+                             descripcion="Procesa con la herramienta elegida (Ctrl+Intro, como en Raphi)",
+                             al_disparar=lambda: tareas.funcion("Procesando", trabajo_de_muestra(0.8), operacion="escritura"))
+    acciones_libre.definir_menus([("&Archivo", ["lienzo.procesar", "|", "app.salir"]), ("&Ver", ["ventana.pantalla_completa", "ventana.paleta"]),
+                                  ("Ay&uda", ["app.acerca"])])
+    app.exponer("accionesLibre", acciones_libre)
+
     for nombre, objeto in (("acciones", acciones), ("tareas", tareas), ("consola", consola), ("repos", filtrado),
                            ("cambios", cambios), ("historial", historial), ("arbol", arbol), ("diagnosticos", diagnosticos)):
         app.exponer(nombre, objeto)
-    app._vivos = (acciones, tareas, consola, tabla, filtrado, cambios, historial, arbol, diagnosticos)    # que no los recoja el GC
+    app._vivos = (acciones, acciones_libre, tareas, consola, tabla, filtrado, cambios, historial, arbol, diagnosticos)    # que no los recoja el GC
     return acciones
 
 
@@ -167,6 +205,7 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--captura", metavar="PNG", help="guarda una captura de la ventana y sale")
     parser.add_argument("--esquema", metavar="COLORS", help="archivo .colors de KDE con el que verla (relanza el proceso)")
     parser.add_argument("--pagina", default="", help="página inicial de la galería (nombre de la navegación)")
+    parser.add_argument("--ventana-libre", action="store_true", help="abre también la ventana libre (VentanaBase, 3.0)")
     parser.add_argument("--smoke", action="store_true", help="abre y cierra")
     args = parser.parse_args(argv)
 
@@ -180,6 +219,7 @@ def main(argv: list[str]) -> int:
     app = Aplicacion("gui-comun-galeria", "Galería de GuiComun", version=__version__)
     construir(app)
     app.exponer("paginaInicial", args.pagina)
+    app.exponer("abrirVentanaLibre", args.ventana_libre)
     if args.captura:
         app.capturar(args.captura, espera_ms=1800)
     return app.ejecutar(QML, humo=args.smoke)

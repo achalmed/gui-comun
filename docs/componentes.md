@@ -2,12 +2,15 @@
 tipo: doc
 estado: activo
 forma: referencia
-titulo: "Componentes de GuiComun 2.x: qué es cada uno, sus propiedades y señales, y la API Python que los alimenta"
+titulo: "Componentes de GuiComun 3.x: qué es cada uno, sus propiedades y señales, y la API Python que los alimenta"
 creado: 2026-11-01
 ---
-# Componentes de GuiComun (2.5)
+# Componentes de GuiComun (3.0)
 
-La referencia del módulo QML `GuiComun` (`gui_comun/qml/GuiComun/`) y del núcleo Python que lo alimenta. La anatomía
+La referencia del módulo QML `GuiComun` (`gui_comun/qml/GuiComun/`) y del núcleo Python que lo alimenta. **3.0**: la
+ventana deja de imponer distribución (`VentanaBase`, y `VentanaStudio` como una distribución más), la aplicación es una
+`QApplication` (el diálogo de archivos de KDE; ver `integracion-kde.md`), y hay errores presentables, estados de
+operación con confirmación redactada y la integración con el escritorio (abrir, mostrar en Dolphin, abrir carpeta). La anatomía
 y la justificación están en `arquitectura-qml-kirigami.md` §4–5 y en `git-studio/docs/rediseno.md` §4–7; la galería
 (`python3 -m gui_comun.galeria`) muestra cada pieza con datos de muestra. Regla de todo el módulo: **cero colores,
 fuentes, radios o sombras propios** (`Kirigami.Theme`, `Kirigami.Units`), cada control sin texto declara
@@ -15,17 +18,46 @@ fuentes, radios o sombras propios** (`Kirigami.Theme`, `Kirigami.Units`), cada c
 
 ## 1. QML
 
-### VentanaStudio
+### VentanaBase (3.0)
 
-`Kirigami.AbstractApplicationWindow`. Menú generado desde `acciones.menus`; barra de herramientas con `acciones.barra`,
-`herramientasExtra` (p. ej. un `Kirigami.SearchField`), los conmutadores de los tres paneles y el menú completo;
-`SplitView` vertical (espacio de trabajo · panel inferior) con otro horizontal (navegación · centro · detalles);
-barra de estado; paleta de órdenes; «Acerca de». Geometría, visibilidad de paneles y posición de los divisores en
-`QSettings` (`claveAjustes`, por omisión `ventana`).
+`Kirigami.AbstractApplicationWindow` que aporta solo lo común y deja el contenido libre: lo que se declara dentro
+(con `anchors.fill: parent`) va bajo los mensajes y a todo lo ancho; `header` y `footer` quedan libres. Trae la barra
+de menú generada desde `acciones.menus` (la única que registra atajos), la paleta de órdenes (Ctrl+K y la acción
+`ventana.paleta`), `Mensajes`, un `DialogoError` sobre `errores` (se abre solo cuando llega un error), un
+`DialogoConfirmacion` (se abre cuando una acción emite `confirmacionPedida`), «Acerca de», el `dialogoAjustes` del
+studio, pantalla completa y la geometría en `QSettings` (`claveAjustes`, por omisión `ventana`). Atiende
+`ventana.pantalla_completa`, `ventana.paleta`, `app.ajustes`, `app.acerca`, `app.salir`. Con las tareas que declaran su
+operación, notifica el éxito (escritura, instalación, publicación, eliminación) y, aparte, la verificación correcta (la
+fallida llega como error presentable).
 
 | propiedad | tipo | qué es |
 |---|---|---|
-| `acciones` · `tareas` · `consola` | objetos Python | el registro (`gui_comun.acciones.Acciones`), las tareas (`Tareas`) y la consola (`Consola`); se pasan como `studio.acciones`… |
+| `acciones` · `tareas` · `consola` | objetos Python | el registro, las tareas, la consola |
+| `errores` · `escritorio` | objetos Python | por omisión los de `Aplicacion` (`aplicacionStudio.errores`, `.escritorio`) |
+| `descripcion` · `autor` · `sitio` | `string` | «Acerca de» |
+| `dialogoAjustes` | `DialogoAjustes` | lo abre `app.ajustes` |
+| `claveAjustes` | `string` | el grupo de `QSettings` de la geometría |
+| `conMenu` · `notificarTareas` | `bool` | la barra de menú visible (true) · los avisos de éxito y verificación (true) |
+| `mensajes` | `Mensajes` | dónde van los mensajes (el de la base; `VentanaStudio` pone los suyos sobre el centro) |
+| `paleta` · `confirmacion` · `dialogoError` | componentes | la paleta, el diálogo de confirmación, el de errores |
+| `contenido` (por omisión) · `zonaContenido` | `Item` | lo que el studio declara dentro · su contenedor |
+
+Funciones: `confirmar(peticion, alAceptar)` (una confirmación ad hoc: `{titulo, consecuencias, operacion,
+operacionTexto, textoAceptar, icono, destructiva}`), `error(descripcion, causa, recurso, accion, detalle)`,
+`notificar(texto, tipo, acciones)`, `existe(nombre)`.
+
+### VentanaStudio
+
+3.0: una distribución sobre `VentanaBase` (la de Dolphin y Kate), con la misma API que en 2.x. Barra de herramientas
+con `acciones.barra`, `herramientasExtra` (p. ej. un `Kirigami.SearchField`), los conmutadores de los tres paneles y el
+menú completo; `SplitView` vertical (espacio de trabajo · panel inferior) con otro horizontal (navegación · centro ·
+detalles); barra de estado. Visibilidad de paneles y posición de los divisores en `QSettings`. Lo demás (menú, paleta,
+«Acerca de», ajustes, errores, confirmaciones, geometría) lo pone la base. Un studio cuya disciplina pide otra cosa
+(un editor con su visor, un lienzo, un catálogo) usa `VentanaBase`.
+
+| propiedad | tipo | qué es |
+|---|---|---|
+| (las de `VentanaBase`) | | `acciones`, `tareas`, `consola`, `descripcion`, `autor`, `sitio`, `dialogoAjustes`, `claveAjustes`… |
 | `navegacion` · `centro` · `detalles` · `inferior` | `Item` | lo que va en cada ranura (cualquier `Item`; los componentes de abajo encajan) |
 | `resumen` · `contexto` | `string` | la barra de estado: izquierda y derecha |
 | `descripcion` · `autor` · `sitio` | `string` | «Acerca de» |
@@ -33,12 +65,11 @@ barra de estado; paleta de órdenes; «Acerca de». Geometría, visibilidad de p
 | `mostrarNavegacion` · `mostrarDetalles` · `mostrarInferior` | `bool` | el estado de los paneles (recordado; F9 · F11 · F4) |
 | `abrirInferiorAlEmpezarTarea` | `bool` | abre el panel inferior cuando `tareas` arranca algo (como Kate) |
 | `anchoEstrecho` (900) · `anchoMedio` (1200) · `estrecha` · `media` | `int` · `bool` | con menos de `anchoEstrecho`, la navegación se pliega a iconos y los detalles se abren como hoja sobre la tabla |
-| `mensajes` | `Mensajes` | `ventana.mensajes.mostrar(texto, tipo, acciones)` |
+| `mensajes` | `Mensajes` | `ventana.mensajes.mostrar(texto, tipo, acciones)` (sobre el centro) |
 | `paleta` | `PaletaOrdenes` | `paleta.abrir("texto")` |
 
-La ventana atiende `ventana.navegacion`, `ventana.detalles`, `ventana.inferior`, `ventana.pantalla_completa`,
-`ventana.paleta`, `app.ajustes`, `app.acerca` y `app.salir` (las registra `Acciones.estandar()`); el studio puede
-escucharlas también.
+La ventana atiende `ventana.navegacion`, `ventana.detalles` y `ventana.inferior` (y la base, el resto; las registra
+`Acciones.estandar()`); el studio puede escucharlas también.
 
 ### PanelNavegacion
 
@@ -108,11 +139,46 @@ dinámicas (`Acciones.anadir_fuente`) entran en la misma lista (ir a un reposito
 `Kirigami.Dialog` con `modulos: [{titulo, icono, pagina (Component)}]`; cada página puede declarar `function guardar()`,
 que se llama al aceptar o aplicar; señal `guardado()`. Páginas con `FormCard`.
 
-### CampoRuta (2.1)
+### CampoRuta (2.1; 3.0)
 
-Un `TextField` con su botón de elegir: `texto`, `carpeta` (verdadero: `FolderDialog`; falso: `FileDialog` con
-`filtros`), `titulo`, `marcador`, `nombreAccesible`; señal `aceptada(texto)` (Intro o el diálogo); funciones
-`abrir()`, `enfocar()`; `campoTexto` es el campo.
+Un `TextField` con su botón de elegir: `texto`, `carpeta` (verdadero: `ElegirCarpeta`; falso: `ElegirArchivos` con
+`filtros`, o `GuardarComo` con `guardar: true`), `carpetaInicial` (3.0: donde abre el diálogo si el campo está vacío),
+`titulo`, `marcador`, `nombreAccesible`; señal `aceptada(texto)` (Intro o el diálogo); funciones `abrir()`,
+`enfocar()`, `poner(ruta)`; `campoTexto` es el campo. 3.0: las rutas con espacios o «#» vuelven bien (antes «%20»).
+
+### ElegirArchivos · ElegirCarpeta · GuardarComo (3.0)
+
+El diálogo de archivos del escritorio (el de KDE con la `QApplication` de `Aplicacion`; `integracion-kde.md`), nunca un
+explorador propio. Hablan en **rutas locales**, no en URL.
+
+| componente | propiedades | funciones y señales |
+|---|---|---|
+| `ElegirArchivos` (`FileDialog`) | `titulo`, `filtros` (`["Documentos PDF (*.pdf)"]` o `[{nombre, patrones: ["*.pdf"]}]`), `conTodos` (añade «Todos los archivos (*)»; true), `carpetaInicial`, `multiple` | `abrir(carpeta)`; `elegidos(rutas)`, `elegido(ruta)` (la primera), `cancelado()` |
+| `ElegirCarpeta` (`FolderDialog`) | `titulo`, `carpetaInicial` | `abrir(carpeta)`; `elegida(ruta)`, `cancelado()` |
+| `GuardarComo` (`FileDialog` en modo guardar) | `titulo`, `filtros`, `conTodos` (false), `carpetaInicial`, `nombreSugerido`, `sufijo` (la extensión si el usuario no escribe ninguna) | `abrir(carpeta, nombre)`; `elegido(ruta)`, `cancelado()` |
+
+El diálogo de KDE pregunta antes de sobrescribir. `rutas.js` (en el módulo, `import "rutas.js" as Rutas` desde dentro)
+convierte: `deUrl`, `aUrl`, `carpetaDe`, `nombreDe`, `filtros(lista, conTodos)`, `lista(urls)`.
+
+### TarjetaError · DialogoError (3.0)
+
+`TarjetaError`: un error presentable — `error` (`{descripcion, causa, recurso, accion, detalle, nivel}`, el mapa de
+`Errores`; cada parte también suelta), el icono del nivel (`error` · `aviso` · `informacion`), la descripción como
+título, «Causa probable», «Afecta a» (el recurso, con «Mostrar en Dolphin» si es una ruta que existe y «Copiar la
+ruta»), «Qué hacer», el detalle técnico desplegable (`detalleAbierto`) y «Copiar todo»; `escritorio`, `conIcono`. Cabe
+dentro de una página (el trabajo fallido de una cola).
+
+`DialogoError` (`Kirigami.Dialog`): la cola de `errores` (por omisión `aplicacionStudio.errores`), uno detrás de otro
+(«Error (1 de 3)», «Siguiente», «Descartar todos»); se abre solo al llegar un error (`abrirSolo`); al cerrarlo descarta
+el que se veía. `VentanaBase` ya trae uno.
+
+### DialogoConfirmacion (3.0)
+
+`Kirigami.Dialog` para las operaciones de riesgo: el icono, el estado («Publicación · no se puede deshacer desde aquí»
+en las eliminaciones), las consecuencias redactadas y el botón que dice qué hace («Publicar el sitio»); el foco empieza
+en Cancelar. `acciones`, `peticion`; `pedir(peticion, alAceptar)`: sin `alAceptar`, al aceptar llama a
+`acciones.confirmar(peticion.nombre)`; señal `aceptada(nombre)`. `VentanaBase` ya trae uno y lo abre con
+`acciones.confirmacionPedida`.
 
 ### VistaTexto (2.2)
 
@@ -168,10 +234,12 @@ Opciones de Raphi Studio.
 
 | módulo | API |
 |---|---|
-| `nucleo.Aplicacion(app_id, nombre, version=, organizacion=, idioma="es", nombre_ajustes=)` | `.exponer(nombre, objeto)` (también `studio.<nombre>`), `.cargar(qml)`, `.ejecutar(qml, humo=False)`, `.ventana()`, `.capturar(png, espera_ms)`, `.cerrar()`, `.traducciones`, `.mensaje_de_fallo()`; `aplicacionStudio` en QML (appId, nombre, version, binding, versionGuiComun, versionQt) |
-| `acciones.Acciones` | `.registrar(nombre, texto, icono, atajo, grupo, habilitada=, marcable=, marcada=, descripcion=, al_disparar=)` → `Accion`; `.estandar(nombre_app)`; `.definir_menus([...])`; `.definir_barra([...])`; `.anadir_fuente(fn)`; `.accion(nombre)`, `.existe`, `.ejecutar`, `.habilitar`, `.marcar`, `.buscar(texto)`; señal `disparada(nombre, marcada)`; es modelo de lista |
-| `acciones.Accion` | propiedades `nombre`, `texto`, `textoPlano`, `icono`, `atajo`, `atajoTexto`, `grupo`, `habilitada`, `marcable`, `marcada`, `visible`, `descripcion`; `.conectar(fn)`, `.disparar()`; señal `disparada(marcada)` |
-| `tareas.Tareas(consola)` | `.funcion(nombre, fn, *args, al_terminar=, al_fallar=, **kw)`, `.proceso(nombre, argv, cwd=, al_terminar=, progreso_de=, entrada=, entorno=)` (el proceso en su propio grupo; 2.3: `progreso_de(texto)` → `(porcentaje, elemento)` o `None` por cada línea de la salida; 2.5: `entrada`, el texto que se escribe en su entrada estándar y se cierra, sin ella cerrada; `entorno`, variables añadidas), `.cancelar()` (a la función, su `cancel_cb`; al proceso, `SIGTERM` al grupo entero); `activa`, `nombre`, `progreso`, `elemento`, `cuantas`; señales `iniciada`, `cambiada`, `linea`, `terminada(nivel, nombre, detalle)` |
+| `nucleo.Aplicacion(app_id, nombre, version=, organizacion=, idioma="es", nombre_ajustes=)` | 3.0: una `QApplication` (el diálogo de archivos de KDE). `.exponer(nombre, objeto)` (también `studio.<nombre>`), `.cargar(qml)`, `.ejecutar(qml, humo=False)`, `.ventana()`, `.capturar(png, espera_ms)`, `.cerrar()`, `.traducciones`, `.mensaje_de_fallo()`; 3.0: `.errores`, `.escritorio` (expuestos con esos nombres), `.error(descripcion, causa, recurso, accion, detalle, nivel)`; `aplicacionStudio` en QML (appId, nombre, version, binding, versionGuiComun, versionQt; 3.0: errores, escritorio) |
+| `escritorio.Escritorio(errores, lanzar=, abrir_url=, buscar=)` (3.0) | `abrirConAplicacion(ruta)` (también una dirección web), `mostrarEnDolphin(ruta)`, `abrirCarpeta(ruta)` → `bool` (falso y error presentado si no existe o no arranca); `rutaDeUrl(url)`, `urlDeRuta(ruta)`, `existe(ruta)`, `hayDolphin`; `ruta_local(texto)` |
+| `errores.Errores(consola)` (3.0) | `.presentar(descripcion, causa=, recurso=, accion=, detalle=, nivel=)` → dict; `presentarTexto(5 textos)` y `presentarMapa({...})` desde QML; `.desde_excepcion(exc, descripcion, recurso=, accion=)`; `.desde_proceso(descripcion, argv, codigo, salida)`; la cola: `actual`, `cuantos`, `omitidos` (más de 20 seguidos), `descartar()`, `limpiar()`, `pendientes()`; señales `presentado(mapa)`, `cambiado`. `explicar(exc)` y `explicar_codigo(codigo, salida)` → (causa, acción); `predeterminado()` (el de la aplicación) |
+| `acciones.Acciones` | `.registrar(nombre, texto, icono, atajo, grupo, habilitada=, marcable=, marcada=, descripcion=, al_disparar=, operacion=, consecuencias=, confirmar=)` → `Accion` (3.0: `operacion` ∈ `OPERACIONES`; instalación, publicación y eliminación exigen `consecuencias` y siempre confirman); `.estandar(nombre_app, paneles=True, atajos=None)`; 3.0: `.fijar_atajo(nombre, atajo)`, `.conflictos()`, `.peticion(nombre)`, `.confirmar(nombre)`, señal `confirmacionPedida(mapa)`; `.definir_menus([...])`; `.definir_barra([...])`; `.anadir_fuente(fn)`; `.accion(nombre)`, `.existe`, `.ejecutar`, `.habilitar`, `.marcar`, `.buscar(texto)`; señal `disparada(nombre, marcada)`; es modelo de lista |
+| `acciones.Accion` | propiedades `nombre`, `texto`, `textoPlano`, `icono`, `atajo`, `atajoTexto`, `grupo`, `habilitada`, `marcable`, `marcada`, `visible`, `descripcion`; 3.0: `operacion`, `operacionTexto`, `requiereConfirmacion`, `consecuencias`; `.conectar(fn)`, `.disparar()` (si confirma, solo pide), `.confirmar()`, `.fijar_atajo(a)`; señales `disparada(marcada)`, `confirmacionPedida`, `atajoCambiado` |
+| `tareas.Tareas(consola, errores=)` | 3.0 en `.funcion` y `.proceso`: `operacion=`, `verificar=` (`f(valor)` → `bool` o `(bool, texto)`, tras el éxito), `error=` (`False` o un dict que redacta); al fallar presenta un error; propiedades `operacion`, `operacionTexto`; señales `verificada(nombre, ok, detalle)`, `resultado(mapa)`; cancelar termina en `("warn", "cancelada")`. `.funcion(nombre, fn, *args, al_terminar=, al_fallar=, **kw)`, `.proceso(nombre, argv, cwd=, al_terminar=, progreso_de=, entrada=, entorno=)` (el proceso en su propio grupo; 2.3: `progreso_de(texto)` → `(porcentaje, elemento)` o `None` por cada línea de la salida; 2.5: `entrada`, el texto que se escribe en su entrada estándar y se cierra, sin ella cerrada; `entorno`, variables añadidas), `.cancelar()` (a la función, su `cancel_cb`; al proceso, `SIGTERM` al grupo entero); `activa`, `nombre`, `progreso`, `elemento`, `cuantas`; señales `iniciada`, `cambiada`, `linea`, `terminada(nivel, nombre, detalle)` |
 | `consola.Consola` | `.salida`, `.registro` (`ModeloConsola`: `escribir`, `limpiar`, `texto`, `textoConHora`, `lineas`), `.escribir(texto, nivel)`, `.registrar(nivel, texto)`, `.log(nivel, texto)`; señal `escrita` |
 | `modelos.ModeloLista(roles, filas)` | `.poner`, `.anadir`, `.quitar`, `.actualizar`, `.fila(i)`, `.todas()`, `filas` |
 | `modelos.ModeloFiltrado(origen)` | `.ordenar(columna, descendente)`, `.filtrar(texto)`, `.aceptar_con(criterio)`, `.filaOrigen`, `.filaVisible`, `filas`, `columnaOrden`, `descendente` |
@@ -181,7 +249,7 @@ Opciones de Raphi Studio.
 | `qt` | `BINDING`, los nombres de QtCore/QtGui/QtQml con la API de PySide6, `cast`, `rol`, `roles`, `version_qt` |
 | `galeria.esquema.entorno_con_esquema(colors)` | el entorno de un proceso con otro esquema de color de KDE (kdeglobals temporal) |
 
-## 3. Lo que falta (2.x)
+## 3. Lo que falta (3.x)
 
 - `org.kde.kirigamiaddons.settings` cuando Kubuntu lo empaquete (hoy `DialogoAjustes` reproduce su anatomía).
 - Orden por cabecera en `ArbolDatos` (un `KSortFilterProxyModel` de `org.kde.kitemmodels` sobre el árbol) cuando un

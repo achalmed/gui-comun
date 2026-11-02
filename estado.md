@@ -9,6 +9,7 @@ actualizado: 2026-11-02
 
 | fecha | qué | dónde se ve |
 |---|---|---|
+| 2026-11-02 | **3.0.0, la base de la reingeniería de los diez studios** (carril A): `Aplicacion` con `QApplication` (el diálogo de archivos de KDE; comprobado en Plasma 6.6 Wayland), `Escritorio` (abrir con su aplicación, mostrar en Dolphin, abrir carpeta), `ElegirArchivos`/`ElegirCarpeta`/`GuardarComo`, `VentanaBase` sin plantilla (y `VentanaStudio` encima, misma API), errores presentables (`errores`, `TarjetaError`, `DialogoError`; `Tareas` los presenta al fallar), estados de operación con confirmación redactada (`DialogoConfirmacion`), verificación aparte del éxito, atajos por disciplina (`estandar(paneles=, atajos=)`, `fijar_atajo`, `conflictos`); `CampoRuta` ya no devuelve «%20»; 4 páginas nuevas en la galería; 62 pruebas; los diez studios arrancan (`--smoke`) con la base nueva; rama `wip/2026-11-02-reingenieria-base` (worktree `~/.cache/reingenieria/gui-comun`), etiqueta `v3.0.0` **local**, sin fusionar ni empujar (lo hace el director) | `CHANGELOG.md` 3.0.0; `docs/integracion-kde.md`; `docs/componentes.md`; `python3 -m gui_comun.galeria --pagina operaciones` |
 | 2026-11-02 | **Fase 5 completa**: los diez studios (Git, Filesystem, Dotfiles, Huella, LaTeX, Biblioteca, Quarto, Simuladores, Raphi, Lliphi) corren en QML + Kirigami sobre `gui-comun` 2.7.0; ningún studio importa ya `widgets/` | los `docs/rediseno.md` y `docs/figuras/` de cada studio; `python3 -m gui_comun.galeria` |
 | 2026-11-02 | **2.7.0** con lo que pidió Raphi Studio (`PaginaFormulario`, el formulario generado desde fichas, en la galería): `wip/2026-11-02-qml-raphi` fusionada en `main`, `v2.7.0` en el remoto público | `CHANGELOG.md` 2.7.0; `git ls-remote --tags origin` |
 | 2026-11-02 | **2.7.0 (fase 5, con lo que pidió Raphi Studio)**: `PaginaFormulario` (formulario generado desde una lista de campos sobre `Kirigami.FormLayout`: un control por tipo, ayuda, obligatorios; `valores`, `fijar`, `poner`, `restablecer`, `cambiado`); página en la galería y pruebas; rama `wip/2026-11-02-qml-raphi`, etiqueta `v2.7.0` **local**, sin empujar hasta el visto bueno del autor | `CHANGELOG.md` 2.7.0; `docs/componentes.md`; `python3 -m gui_comun.galeria --pagina formulario_ficha` |
@@ -36,9 +37,12 @@ nada en curso
 ## Por hacer
 
 - 2026-11-02 · dueño: **el autor** · usar los diez studios en la sesión real (cada `estado.md` tiene su guion de prueba) y decir
-  qué no convence; lo que salga se corrige en `main` o vuelve a `gui-comun`. Decidir cuándo sale **3.0**: retira `widgets/`,
+  qué no convence; lo que salga se corrige en `main` o vuelve a `gui-comun`. Decidir cuándo sale **4.0**: retira `widgets/`,
   `diseno`, `theming`, `marco`, `ui_loader` e `icons` (1.x, congelada desde 2.0.0 y ya sin consumidores; `rg "gui_comun.widgets|gui_comun.diseno"`
-  en los studios da 0) y sube la mayor en `CHANGELOG.md`.
+  en los studios da 0; 3.0 la dejó por prudencia, durante la reingeniería) y sube la mayor en `CHANGELOG.md`.
+- 2026-11-02 · dueño: director (reingeniería) · fusionar `wip/2026-11-02-reingenieria-base` en `main` (local) para el
+  carril B; empujar `v3.0.0` al remoto público solo con el visto bueno del autor. Lo que cada studio construya y parezca
+  común va a «Para promover a gui-comun» del registro de la jornada.
 - 2026-11-02 · dueño: director (fase 6) · `meta/workspace.yml` describe aún a `gui-comun` y a varios studios como «PySide6»;
   actualizar las descripciones y regenerar el `CLAUDE.md` raíz (`meta/generadores/workspace.py claude --aplicar`); `latex-studio`
   sigue sin empujar (capturas con la carpeta de inicio: regenerarlas con `HOME` temporal y empujar).

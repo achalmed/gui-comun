@@ -33,9 +33,14 @@ VentanaStudio {
         { nombre: "diagnosticos", texto: "ListaDiagnosticos", icono: "data-warning" },
         { nombre: "grafico", texto: "Grafico", icono: "office-chart-line" },
         { nombre: "formulario_ficha", texto: "PaginaFormulario", icono: "document-properties" },
+        { nombre: "ventana_base", texto: "VentanaBase (3.0)", icono: "window-new" },
+        { nombre: "escritorio", texto: "Escritorio y diálogos (3.0)", icono: "system-file-manager" },
+        { nombre: "errores", texto: "Errores presentables (3.0)", icono: "dialog-error" },
+        { nombre: "operaciones", texto: "Operaciones (3.0)", icono: "dialog-question" },
         { nombre: "tema", texto: "Tema y unidades", icono: "preferences-desktop-color" }
     ]
     property string paginaActual: paginaInicial || "espacio"
+    Component.onCompleted: if (abrirVentanaLibre) Qt.callLater(() => { const v = cVentanaLibre.createObject(null); v.show(); v.requestActivate() })
     readonly property int indicePagina: paginas.findIndex(p => p.nombre === paginaActual)
 
     Connections {
@@ -380,7 +385,103 @@ VentanaStudio {
             }
         }
 
-        // 13. Tema
+        // 13. VentanaBase (3.0)
+        Pagina {
+            titulo: "VentanaBase"
+            texto: "La ventana sin plantilla (3.0). Aporta solo lo común —la barra de menú desde el registro de acciones, la paleta (Ctrl+K), los mensajes, el diálogo de errores presentables, la confirmación de las operaciones de riesgo, «Acerca de», los ajustes y la geometría recordada— y deja el contenido libre: un lienzo, un editor con su visor, una cuadrícula de herramientas, un grafo de commits. Ninguna navegación lateral, tabla, panel de detalles ni consola impuestos. Esta galería es una VentanaStudio, que ahora es una distribución más construida sobre VentanaBase."
+            RowLayout {
+                spacing: Kirigami.Units.largeSpacing
+                QQC2.Button {
+                    text: "Abrir una ventana libre"
+                    icon.name: "window-new"
+                    onClicked: { const v = cVentanaLibre.createObject(null); v.show(); v.raise(); v.requestActivate() }
+                }
+                QQC2.Label { text: "Una VentanaBase con una cuadrícula de herramientas y su propia cabecera; sin paneles."; color: Kirigami.Theme.disabledTextColor; wrapMode: Text.WordWrap; Layout.fillWidth: true }
+            }
+            Kirigami.FormLayout {
+                Layout.fillWidth: true
+                QQC2.Label { Kirigami.FormData.label: "Contenido:"; text: "lo que se declara dentro (con anchors.fill: parent), bajo los mensajes"; wrapMode: Text.WordWrap }
+                QQC2.Label { Kirigami.FormData.label: "header · footer:"; text: "libres (VentanaStudio pone su barra de herramientas y su barra de estado)"; wrapMode: Text.WordWrap }
+                QQC2.Label { Kirigami.FormData.label: "API:"; text: "confirmar(peticion, alAceptar) · error(descripcion, causa, recurso, accion, detalle) · notificar(texto, tipo) · paleta · mensajes"; wrapMode: Text.WordWrap }
+                QQC2.Label { Kirigami.FormData.label: "Acciones:"; text: "estandar(nombre, paneles=False) para no registrar los conmutadores de paneles; los atajos, los de la disciplina"; wrapMode: Text.WordWrap }
+            }
+        }
+
+        // 14. Escritorio y diálogos (3.0)
+        Pagina {
+            titulo: "Escritorio y diálogos"
+            texto: "Tres operaciones distintas que no se confunden: abrir un archivo con su aplicación (Okular, el editor elegido…), mostrarlo en Dolphin señalado, abrir su carpeta. Elegir archivos o carpetas es otra cosa: ElegirArchivos, ElegirCarpeta y GuardarComo usan el diálogo del escritorio, que con la QApplication de Aplicacion es el de KDE (lugares de Dolphin, vista previa, filtros). Hablan en rutas locales: una carpeta con espacio vuelve con su espacio."
+            property string elegido: ""
+            id: paginaEscritorio
+            RowLayout {
+                spacing: Kirigami.Units.smallSpacing
+                QQC2.Button { text: "Elegir archivos…"; icon.name: "document-open"; onClicked: dlgArchivos.abrir("") }
+                QQC2.Button { text: "Elegir carpeta…"; icon.name: "folder-open"; onClicked: dlgCarpeta.abrir("") }
+                QQC2.Button { text: "Guardar como…"; icon.name: "document-save-as"; onClicked: dlgGuardar.abrir("", "informe de muestra.md") }
+            }
+            Kirigami.FormLayout {
+                Layout.fillWidth: true
+                QQC2.Label { Kirigami.FormData.label: "Elegido:"; text: paginaEscritorio.elegido || "—"; font: Kirigami.Theme.fixedWidthFont; wrapMode: Text.WrapAnywhere; Layout.maximumWidth: Kirigami.Units.gridUnit * 30 }
+                RowLayout {
+                    Kirigami.FormData.label: "Con lo elegido:"
+                    QQC2.Button { text: "Abrir con su aplicación"; icon.name: "document-open"; enabled: paginaEscritorio.elegido !== ""; onClicked: escritorio.abrirConAplicacion(paginaEscritorio.elegido) }
+                    QQC2.Button { text: "Mostrar en Dolphin"; icon.name: "system-file-manager"; enabled: paginaEscritorio.elegido !== ""; onClicked: escritorio.mostrarEnDolphin(paginaEscritorio.elegido) }
+                    QQC2.Button { text: "Abrir la carpeta"; icon.name: "folder-open"; enabled: paginaEscritorio.elegido !== ""; onClicked: escritorio.abrirCarpeta(paginaEscritorio.elegido) }
+                }
+                QQC2.Button { Kirigami.FormData.label: "Lo que no existe:"; text: "Mostrar en Dolphin una ruta borrada"; icon.name: "dialog-warning"; onClicked: escritorio.mostrarEnDolphin("/tmp/gui-comun-galeria/ya no existe.pdf") }
+                CampoRuta { Kirigami.FormData.label: "CampoRuta:"; carpeta: false; filtros: [{ nombre: "Documentos", patrones: ["*.pdf", "*.md", "*.tex"] }]; Layout.preferredWidth: Kirigami.Units.gridUnit * 24; onAceptada: texto => paginaEscritorio.elegido = texto }
+            }
+            ElegirArchivos { id: dlgArchivos; multiple: true; filtros: [{ nombre: "Documentos", patrones: ["*.pdf", "*.md", "*.tex"] }, "Imágenes (*.png *.jpg *.svg)"]; onElegidos: rutas => paginaEscritorio.elegido = rutas.join("\n") ; onElegido: ruta => Qt.callLater(() => paginaEscritorio.elegido = ruta) }
+            ElegirCarpeta { id: dlgCarpeta; onElegida: ruta => paginaEscritorio.elegido = ruta }
+            GuardarComo { id: dlgGuardar; sufijo: "md"; filtros: ["Markdown (*.md)"]; onElegido: ruta => paginaEscritorio.elegido = ruta }
+        }
+
+        // 15. Errores presentables (3.0)
+        Pagina {
+            titulo: "Errores presentables"
+            texto: "Un error se presenta con su descripción, la causa probable, el archivo o recurso afectado, la acción recomendada y el detalle técnico desplegable; la consola sigue teniendo toda la salida, pero nadie tiene que leerla para entender qué pasó. Desde Python: aplicacion.error(…) o errores.desde_excepcion(exc, …); Tareas presenta uno cuando una tarea falla (error=False lo omite). La ventana los muestra uno detrás de otro en DialogoError; TarjetaError pinta el mismo error dentro de una página, como aquí."
+            RowLayout {
+                spacing: Kirigami.Units.smallSpacing
+                QQC2.Button { text: "Presentar un error"; icon.name: "dialog-error"; onClicked: ventana.error("No se pudo sincronizar «yachay»", "La rama local y origin han divergido.", "~/Documentos/yachay", "Traiga los cambios (pull), resuelva los conflictos y vuelva a enviar.", "$ git push\nTo github.com:usuario/yachay.git\n ! [rejected]        main -> main (non-fast-forward)\nerror: failed to push some refs") }
+                QQC2.Button { text: "Una tarea que falla"; icon.name: "system-run"; onClicked: acciones.ejecutar("galeria.fallar") }
+                QQC2.Button { text: "Tres seguidos"; icon.name: "edit-copy"; onClicked: { for (let i = 1; i <= 3; i++) ventana.error("Error de muestra " + i + " de 3", "Para ver la cola.", "", "Pulse «Siguiente».", "") } }
+            }
+            Kirigami.Card {
+                Layout.fillWidth: true
+                Layout.maximumWidth: Kirigami.Units.gridUnit * 36
+                contentItem: TarjetaError {
+                    error: ({ descripcion: "No se pudo compilar «articulo.tex»", causa: "LuaLaTeX no encontró la orden \\comandoquenoexiste.", recurso: "~/Documentos/escritura/articulo/articulo.tex", accion: "Corrija la línea 41 o defina la orden en el preámbulo.", detalle: "! Undefined control sequence.\nl.41 \\comandoquenoexiste\n\n(código de salida 1)", nivel: "error" })
+                }
+            }
+        }
+
+        // 16. Operaciones (3.0)
+        Pagina {
+            titulo: "Operaciones"
+            texto: "Toda operación declara su estado: lectura, simulación, preparación, escritura, instalación, publicación o eliminación. Las tres últimas piden siempre confirmación, con sus consecuencias redactadas y el botón que dice qué hace; una escritura que sobrescribe la pide con confirmar=True. Un éxito no es una verificación: con verificar=, la tarea comprueba su resultado y lo notifica aparte. Los atajos son los de cada disciplina: la base no impone ninguno (ni F5)."
+            ColumnLayout {
+                spacing: Kirigami.Units.smallSpacing
+                Repeater {
+                    model: [
+                        { n: "Lectura", i: "document-preview", c: "no", a: "" }, { n: "Simulación", i: "view-preview", c: "no", a: "" },
+                        { n: "Preparación", i: "document-edit", c: "no", a: "" }, { n: "Escritura", i: "document-save", c: "si sobrescribe", a: "galeria.escribir" },
+                        { n: "Instalación", i: "run-install", c: "siempre", a: "galeria.instalar" }, { n: "Publicación", i: "document-send", c: "siempre", a: "galeria.publicar" },
+                        { n: "Eliminación", i: "edit-delete", c: "siempre", a: "galeria.eliminar" }
+                    ]
+                    delegate: RowLayout {
+                        required property var modelData
+                        spacing: Kirigami.Units.smallSpacing
+                        Kirigami.Icon { source: modelData.i; implicitWidth: Kirigami.Units.iconSizes.smallMedium; implicitHeight: implicitWidth }
+                        QQC2.Label { text: modelData.n; Layout.preferredWidth: Kirigami.Units.gridUnit * 6 }
+                        QQC2.Label { text: "confirmación: " + modelData.c; color: Kirigami.Theme.disabledTextColor; Layout.preferredWidth: Kirigami.Units.gridUnit * 10 }
+                        BotonAccion { visible: modelData.a !== ""; accion: modelData.a ? acciones.accion(modelData.a) : null }
+                    }
+                }
+            }
+            QQC2.Label { text: "Escribir verifica bien; instalar termina pero su verificación no pasa (error presentable); publicar falla con «no se pudo resolver el servidor»; eliminar no borra nada (es una muestra)."; color: Kirigami.Theme.disabledTextColor; wrapMode: Text.WordWrap; Layout.fillWidth: true }
+        }
+
+        // 17. Tema
         Pagina {
             titulo: "Tema y unidades"
             texto: "Cero colores propios: todo sale de Kirigami.Theme (el esquema del usuario) y Kirigami.Units."
@@ -432,6 +533,43 @@ VentanaStudio {
     }
 
     inferior: PanelInferior { consola: studio.consola }
+
+    // ---- la ventana libre de la página VentanaBase: ni navegación, ni tabla, ni detalles, ni consola ----
+    Component {
+        id: cVentanaLibre
+        VentanaBase {
+            id: libre
+            title: "Ventana libre (VentanaBase)"
+            width: 960; height: 600
+            acciones: studio.accionesLibre
+            tareas: studio.tareas
+            descripcion: "Una VentanaBase de muestra: el contenido es una cuadrícula de herramientas con su propia cabecera."
+            claveAjustes: "ventana-libre"
+            onClosing: libre.destroy()
+            header: QQC2.ToolBar {
+                RowLayout {
+                    anchors.fill: parent
+                    Kirigami.SearchField { id: buscarHerramienta; Layout.preferredWidth: Kirigami.Units.gridUnit * 16; placeholderText: "Buscar herramienta" }
+                    Item { Layout.fillWidth: true }
+                    BotonAccion { accion: studio.accionesLibre.accion("lienzo.procesar") }
+                }
+            }
+            Kirigami.CardsLayout {
+                anchors { left: parent.left; right: parent.right; top: parent.top; margins: Kirigami.Units.largeSpacing }
+                Repeater {
+                    model: [["Unir PDF", "pdf-merge", "Documentos"], ["Comprimir", "archive-insert", "Documentos"], ["Transcribir", "audio-x-generic", "Audio"],
+                            ["Recortar vídeo", "video-x-generic", "Vídeo"], ["Convertir imagen", "image-x-generic", "Imágenes"], ["Receta por lotes", "system-run", "Automatización"]]
+                        .filter(h => h[0].toLowerCase().includes(buscarHerramienta.text.toLowerCase()))
+                    delegate: Kirigami.Card {
+                        required property var modelData
+                        banner.title: modelData[0]
+                        banner.titleIcon: modelData[1]
+                        contentItem: QQC2.Label { text: modelData[2]; color: Kirigami.Theme.disabledTextColor }
+                    }
+                }
+            }
+        }
+    }
 
     // ---- piezas de la galería ----
     component Pagina: QQC2.ScrollView {

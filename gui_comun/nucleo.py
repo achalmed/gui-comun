@@ -16,7 +16,7 @@ escritorio (`escritorio`) y los expone. Si un módulo QML falta (Kirigami no ins
 solo ofrece su diálogo de archivos nativo (el de Dolphin: lugares, vista previa, filtros, la barra de rutas) cuando
 la aplicación es una `QApplication`: es un widget (`KFileWidget`). Con una `QGuiApplication`, `FileDialog` y
 `FolderDialog` de `QtQuick.Dialogs` caen a su implementación en QML, que no se parece a nada del escritorio (el
-«selector de archivos extraño» que vio el autor; comprobado en Plasma 6.6 Wayland el 2026-11-02, capturas en
+«selector de archivos extraño» que vio el autor; comprobado en Plasma 6.6 Wayland el 2026-11-02, ver
 `docs/integracion-kde.md`). El estilo `org.kde.desktop` también pinta sus controles con el `QStyle` del sistema solo si
 hay `QApplication`. Así lo hacen las aplicaciones de Kirigami de KDE. La interfaz sigue siendo QML: de `QtWidgets`
 solo se usa la clase de la aplicación.
