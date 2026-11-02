@@ -60,13 +60,17 @@ class Tareas(QObject):
         return worker
 
     def proceso(self, nombre: str, argv: list[str], cwd: str | None = None, al_terminar: Callable | None = None,
-                progreso_de: Callable[[str], tuple | None] | None = None) -> ProcessWorker:
+                progreso_de: Callable[[str], tuple | None] | None = None, entrada: str | None = None,
+                entorno: dict | None = None) -> ProcessWorker:
         """Corre un proceso externo y pasa su salida, íntegra, a la consola; `al_terminar(codigo)`.
 
         `progreso_de(texto)` (2.3): se llama con cada línea de la salida y, si devuelve `(porcentaje, elemento)`
         (o solo `(porcentaje,)`), la barra de estado lo muestra: el progreso de un proceso que anuncia sus pasos
-        («Pasada 2/3 con lualatex…») sin que el proceso sepa nada de la ventana. `None` deja el progreso como está."""
-        worker = ProcessWorker(argv, cwd=cwd, description=nombre)
+        («Pasada 2/3 con lualatex…») sin que el proceso sepa nada de la ventana. `None` deja el progreso como está.
+        `entrada` (2.5): lo que se escribe en la entrada estándar del proceso (las respuestas a las confirmaciones de
+        un guion que la ventana ya confirmó con el usuario); sin ella, la entrada está cerrada. `entorno` (2.5):
+        variables que se añaden al entorno del proceso."""
+        worker = ProcessWorker(argv, cwd=cwd, description=nombre, entrada=entrada, entorno=entorno)
 
         def linea(texto: str, es_err: bool, w=worker) -> None:
             self._linea(texto, "err" if es_err else "out")

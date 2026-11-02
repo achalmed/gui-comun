@@ -10,6 +10,17 @@ La versión vive en `gui_comun/__init__.py` y en `pyproject.toml`. Las secciones
 
 ## [Unreleased]
 
+## [2.5.0] - 2026-11-02
+
+Lo que la fase 5 (Quarto Studio, el sexto tras el piloto) pidió al marco; se añade sin quitar.
+
+### Added
+
+- `Tareas.proceso(…, entrada=, entorno=)` y `ProcessWorker(entrada=, entorno=)`: `entrada` es el texto que se
+  escribe en la entrada estándar del proceso y se cierra (las respuestas a las confirmaciones de un guion que la
+  ventana ya confirmó con el usuario: el respaldo y «eliminar rotos» de Quarto Studio); sin ella la entrada está
+  cerrada (`DEVNULL`), así un guion que pregunta no se cuelga. `entorno` añade variables al entorno del proceso.
+
 ## [2.4.0] - 2026-11-02
 
 Lo que la fase 5 (Biblioteca Studio, el quinto tras el piloto) pidió al marco; se añade sin quitar.

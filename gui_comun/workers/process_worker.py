@@ -23,11 +23,15 @@ class ProcessWorker(QThread):
     finished_with_code = Signal(int)
 
     def __init__(self, argv: list[str], cwd: str | None = None,
-                 description: str = ""):
+                 description: str = "", entrada: str | None = None, entorno: dict | None = None):
+        """`entrada` (2.5): texto que se escribe en la entrada estándar del proceso y se cierra (las respuestas a las
+        confirmaciones de un guion que la ventana ya confirmó); `entorno` (2.5): variables que se añaden al entorno."""
         super().__init__()
         self.argv = argv
         self.cwd = cwd
         self.description = description
+        self.entrada = entrada
+        self.entorno = dict(entorno) if entorno else None
         self._proc: subprocess.Popen | None = None
 
     def command_line(self) -> str:
@@ -46,16 +50,24 @@ class ProcessWorker(QThread):
             self._proc = subprocess.Popen(
                 self.argv,
                 cwd=self.cwd,
+                stdin=subprocess.PIPE if self.entrada is not None else subprocess.DEVNULL,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
                 errors="replace",
+                env=dict(os.environ, **self.entorno) if self.entorno else None,
                 start_new_session=True,      # su propio grupo: cancel() lo termina entero
             )
         except OSError as exc:
             self.line.emit(f"No se pudo ejecutar el comando: {exc}", True)
             self.finished_with_code.emit(127)
             return
+        if self.entrada is not None and self._proc.stdin:
+            try:
+                self._proc.stdin.write(self.entrada)
+                self._proc.stdin.close()
+            except (BrokenPipeError, OSError):
+                pass
 
         # stderr se lee en un hilo auxiliar para no bloquear el pipe
         import threading

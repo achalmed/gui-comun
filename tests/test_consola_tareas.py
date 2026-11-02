@@ -131,6 +131,24 @@ def test_tarea_proceso_con_progreso_leido_de_la_salida(app):
 
 
 @requiere_binding
+def test_tarea_proceso_con_entrada_y_entorno(app):
+    """2.5: `entrada` responde a las confirmaciones de un guion (la ventana ya confirmó) y `entorno` añade variables."""
+    from gui_comun.consola import Consola
+    from gui_comun.tareas import Tareas
+    c = Consola()
+    t = Tareas(c)
+    codigos = []
+    t.proceso("confirma", ["sh", "-c", "read -r r; echo \"leido=$r\"; echo \"var=$PRUEBA_VAR\"; [ \"$r\" = s ]"],
+              entrada="s\n", entorno={"PRUEBA_VAR": "valor"}, al_terminar=codigos.append)
+    _esperar(app, t)
+    assert codigos == [0]
+    assert "leido=s" in c.salida.texto and "var=valor" in c.salida.texto
+    t.proceso("sin entrada", ["sh", "-c", "read -r r; echo \"leido=[$r]\""], al_terminar=codigos.append)
+    _esperar(app, t)
+    assert "leido=[]" in c.salida.texto                       # sin `entrada`, la entrada está cerrada: no se cuelga
+
+
+@requiere_binding
 def test_cancelar_un_proceso_termina_a_sus_hijos(app, tmp_path):
     """2.2.0: `cancel()` avisa al grupo entero; el nieto (`sleep`) no sobrevive a la cancelación del `sh` padre."""
     import os
