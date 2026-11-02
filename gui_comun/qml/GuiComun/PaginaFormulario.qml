@@ -10,7 +10,7 @@ import QtQuick.Controls as QQC2
 import QtQuick.Dialogs
 import org.kde.kirigami as Kirigami
 
-Kirigami.FormLayout {
+ColumnLayout {
     id: raiz
 
     // [{clave, etiqueta, tipo, defecto, opciones: [[valor, etiqueta]…], minimo, maximo, ayuda, obligatorio, marcador}]
@@ -44,16 +44,24 @@ Kirigami.FormLayout {
     function restablecer() { _valores = ({}) }
     function textoDe(c) { const v = valor(c.clave); return v === null || v === undefined ? "" : String(v) }
 
+    readonly property alias formulario: forma            // el Kirigami.FormLayout de dentro
+    spacing: Kirigami.Units.smallSpacing
     Accessible.name: nombreAccesible
     onCamposChanged: restablecer()
 
     QQC2.Label {
+        Layout.fillWidth: true
         visible: raiz.campos.length === 0 && raiz.mensajeVacio !== ""
         text: raiz.mensajeVacio
+        wrapMode: Text.WordWrap
         color: Kirigami.Theme.disabledTextColor
     }
 
-    Repeater {
+    Kirigami.FormLayout {
+        id: forma
+        Layout.fillWidth: true
+        visible: raiz.campos.length > 0
+        Repeater {
         model: raiz.campos
         Loader {
             id: cargador
@@ -77,6 +85,7 @@ Kirigami.FormLayout {
                 }
             }
             onLoaded: { item.cargador = cargador }
+        }
         }
     }
 

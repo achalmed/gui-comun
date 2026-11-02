@@ -155,7 +155,7 @@ desconocido), `multilinea`, `entero` (`SpinBox` con `minimo` y `maximo`), `decim
 `ColorDialog`), `ruta` y `carpeta` (`CampoRuta`); la ayuda debajo de cada campo y el asterisco de lo obligatorio.
 `valores` es lo escrito, sin los vacíos (quien lo usa pone el valor por omisión: `Parametro.convertir` del motor de
 Raphi); `valor(clave)` (lo escrito o el `defecto`), `fijar(clave, valor)`, `poner(mapa)`, `restablecer()`; señal
-`cambiado(clave, valor)`; `nombreAccesible`, `mensajeVacio`, `nCampos`. Cambiar `campos` vacía los valores. La pestaña
+`cambiado(clave, valor)`; `nombreAccesible`, `mensajeVacio`, `nCampos`, `formulario` (el `Kirigami.FormLayout` de dentro; la raíz es un `ColumnLayout`). Cambiar `campos` vacía los valores. La pestaña
 Opciones de Raphi Studio.
 
 ### MenuAcciones · BotonAccion
