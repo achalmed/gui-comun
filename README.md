@@ -22,7 +22,7 @@ usuario. Ningún nombre ni logotipo dentro de la ventana: la identidad de cada s
 | `gui_comun/consola.py` | `Consola`: salida y registro como modelos con `texto` para pintarlos con resaltado |
 | `gui_comun/modelos.py` | `ModeloLista` (dicts con roles) y `ModeloFiltrado` (orden y filtro que QML maneja) |
 | `gui_comun/i18n.py` · `gui_comun/qt.py` | las funciones `i18n*` de KI18n desde Python (gettext) · el adaptador PySide6/PyQt6 |
-| `gui_comun/qml/GuiComun/` | `VentanaStudio` · `PanelNavegacion` · `TablaDatos` · `PanelDetalles` · `PanelInferior` · `BarraEstado` · `Mensajes` · `PaletaOrdenes` · `DialogoAjustes` · `MenuAcciones` · `BotonAccion` (ver `docs/componentes.md`) |
+| `gui_comun/qml/GuiComun/` | `VentanaStudio` · `PanelNavegacion` · `TablaDatos` · `ArbolDatos` · `PanelDetalles` · `PanelInferior` · `BarraEstado` · `Mensajes` · `PaletaOrdenes` · `DialogoAjustes` · `MenuAcciones` · `BotonAccion` · `CampoRuta` (ver `docs/componentes.md`) |
 | `gui_comun/galeria/` | la galería: cada componente con datos de muestra; `--captura` y `--esquema` para verla en claro y oscuro |
 
 | pieza (1.x, Qt Widgets; congelada) | qué hace |

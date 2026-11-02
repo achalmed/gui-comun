@@ -10,6 +10,26 @@ La versión vive en `gui_comun/__init__.py` y en `pyproject.toml`. Las secciones
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-11-02
+
+Lo que la fase 5 (Filesystem Studio, el primero tras el piloto) pidió al marco; se añade sin quitar.
+
+### Added
+
+- `ArbolDatos` (QML): la vista en árbol hermana de `TablaDatos` sobre `TreeView` de Qt Quick, con la misma
+  descripción de columnas y los mismos roles (`display`, `nivel`, `icono`, `habilitado`), flecha de expandir, ← → por
+  teclado, selección por filas, menú contextual, `activada(indice)`, `raiz` para acotar la vista a un índice y
+  `expandirAlCargar`.
+- `CampoRuta` (QML): campo de ruta con botón de elegir (`FolderDialog` o `FileDialog`) y la señal `aceptada`.
+- `modelos.ModeloTabla` (tabla desde filas de diccionario con columnas (título, clave), roles semánticos y valor
+  crudo para ordenar) y `modelos.ModeloArbol` (árbol desde nodos de diccionario; `hijos` como lista o como función
+  que se consulta al expandir).
+- `TablaDatos.claveAjustes`: los anchos de columna que el usuario arrastra se recuerdan en QSettings (el pendiente
+  de `docs/componentes.md` §3).
+- La galería muestra `ArbolDatos` (página propia) y `CampoRuta` (en Formularios); pruebas de los modelos y de la
+  carga de los dos componentes.
+- `gui_comun.qt` exporta también `QDir`, `QFileInfo` y `QMimeDatabase` (el explorador de Filesystem Studio).
+
 ## [2.0.1] - 2026-11-01
 
 Lo que el piloto (Git Studio, fase 3) pidió al marco; sin cambios de API.

@@ -133,14 +133,26 @@ def construir(app):
         {"hash": "c9ec7fe", "mensaje": "Piloto QML + Kirigami", "hace": "hace 10 min", "autor": "Edison Achalma"},
         {"hash": "f493538", "mensaje": "Servicios intactos; controladores nuevos", "hace": "ayer", "autor": "Edison Achalma"},
         {"hash": "2858abf", "mensaje": "Pruebas en offscreen", "hace": "hace 3 d", "autor": "Edison Achalma"}])
+    from gui_comun.modelos import ModeloArbol
+    arbol = ModeloArbol(("Conjunto / ruta", "Inodo", "Enlaces", "Tamaño", "Ahorro"), [
+        {"valores": ["Conjunto 1 — _partials/pie.qmd", "1203", "3", "1,2 KB", "2,4 KB"], "icono": "folder", "nivel": "positivo",
+         "hijos": [{"valores": ["web/_partials/pie.qmd", "", "", "", ""], "icono": "text-markdown"},
+                   {"valores": ["web/_pubs/axiomata/_partials/pie.qmd", "", "", "", ""], "icono": "text-markdown"},
+                   {"valores": ["web/_pubs/chaska/_partials/pie.qmd", "", "", "", ""], "icono": "text-markdown"}]},
+        {"valores": ["Conjunto 2 — _metadata.yml", "1310", "12", "640 B", "6,9 KB"], "icono": "folder", "nivel": "positivo",
+         "hijos": [{"valores": [f"web/_pubs/{n}/_metadata.yml", "", "", "", ""], "icono": "text-x-generic"} for n in ("actus-mercator", "aequilibria", "axiomata")]
+                  + [{"valores": ["⚠ 9 enlaces fuera del directorio analizado", "", "", "", ""], "nivel": "neutro", "icono": "dialog-warning"}]},
+        {"valores": ["Conjunto 3 — theme.scss", "1377", "13", "28 KB", "336 KB"], "icono": "folder", "nivel": "positivo",
+         "hijos": lambda nodo: [{"valores": [f"web/_pubs/{n}/theme.scss", "", "", "", ""], "icono": "text-css"} for n in ("chaska", "dialectica-y-mercado")]},
+    ])
     consola.escribir("$ git -C ~/Documentos/git-studio status --porcelain=v1 -b", "cmd")
     consola.escribir("## wip/2026-11-01-qml\n M studio/git_app/aplicacion.py\n?? docs/figuras/", "out")
     consola.registrar("info", "Galería de GuiComun " + __version__)
 
     for nombre, objeto in (("acciones", acciones), ("tareas", tareas), ("consola", consola), ("repos", filtrado),
-                           ("cambios", cambios), ("historial", historial)):
+                           ("cambios", cambios), ("historial", historial), ("arbol", arbol)):
         app.exponer(nombre, objeto)
-    app._vivos = (acciones, tareas, consola, tabla, filtrado, cambios, historial)    # que no los recoja el GC
+    app._vivos = (acciones, tareas, consola, tabla, filtrado, cambios, historial, arbol)    # que no los recoja el GC
     return acciones
 
 

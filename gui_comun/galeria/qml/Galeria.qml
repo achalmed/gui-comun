@@ -22,6 +22,7 @@ VentanaStudio {
     readonly property var paginas: [
         { nombre: "espacio", texto: "Espacio de trabajo", icono: "window" },
         { nombre: "tabla", texto: "TablaDatos", icono: "view-list-details" },
+        { nombre: "arbol", texto: "ArbolDatos", icono: "view-list-tree" },
         { nombre: "navegacion", texto: "PanelNavegacion", icono: "view-sidetree" },
         { nombre: "detalles", texto: "PanelDetalles", icono: "view-right-new" },
         { nombre: "inferior", texto: "PanelInferior", icono: "utilities-terminal" },
@@ -136,7 +137,31 @@ VentanaStudio {
             }
         }
 
-        // 3. PanelNavegacion
+        // 3. ArbolDatos
+        Pagina {
+            titulo: "ArbolDatos"
+            texto: "TreeView de Qt Quick con la misma anatomía y roles que TablaDatos (display, nivel, icono, habilitado): flecha de expandir en la primera columna, ← → por teclado, selección por filas, menú contextual, doble clic e Intro. El modelo es un ModeloArbol (nodos de diccionario; los hijos pueden cargarse al expandir: el tercer conjunto) o cualquier QAbstractItemModel; `raiz` acota la vista a un índice."
+            ArbolDatos {
+                Layout.fillWidth: true
+                Layout.preferredHeight: Kirigami.Units.gridUnit * 14
+                modelo: arbol
+                expandirAlCargar: 1
+                columnas: [
+                    { ancho: 0, minimo: 14, conIcono: true, semantica: true },
+                    { ancho: 5, mono: true, alinear: "derecha", secundaria: true },
+                    { ancho: 5, alinear: "derecha" },
+                    { ancho: 5, alinear: "derecha" },
+                    { ancho: 5, alinear: "derecha", estrecho: true }
+                ]
+                menuContextual: MenuAcciones {
+                    acciones: acciones
+                    conAtajos: false
+                    elementos: [{ tipo: "accion", nombre: "editar.todo" }]
+                }
+            }
+        }
+
+        // 4. PanelNavegacion
         Pagina {
             titulo: "PanelNavegacion"
             texto: "Secciones con Kirigami.ListSectionHeader, filas con icono, texto y contador tenue; plegado, solo iconos con su ayuda emergente (como «Lugares» de Dolphin). Abajo: la misma navegación plegada y sin plegar."
@@ -231,6 +256,9 @@ VentanaStudio {
                 FormCard.FormCheckDelegate { text: "Registrar los clonados en repos-config.yml"; checked: true }
                 FormCard.FormButtonDelegate { text: "Carpeta destino"; description: "~/Documentos"; icon.name: "folder" }
             }
+            QQC2.Label { text: "CampoRuta: un campo de ruta con su botón de elegir (FolderDialog o FileDialog); Intro o el diálogo emiten `aceptada`."; wrapMode: Text.WordWrap; Layout.fillWidth: true }
+            CampoRuta { Layout.fillWidth: true; texto: "~/Documentos"; nombreAccesible: "Carpeta de trabajo" }
+            CampoRuta { Layout.fillWidth: true; carpeta: false; texto: "~/Documentos/web/_metadata.yml"; filtros: ["YAML (*.yml)"]; nombreAccesible: "Archivo de referencia" }
         }
 
         // 9. Tema

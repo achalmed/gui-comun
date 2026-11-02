@@ -45,3 +45,62 @@ def test_modelo_filtrado(app):
     assert f.filas == 2
     f.aceptar_con(None)
     assert f.filas == 3
+
+
+@requiere_binding
+def test_modelo_tabla(app):
+    from gui_comun.modelos import ModeloFiltrado, ModeloTabla
+    from gui_comun.qt import Qt
+    m = ModeloTabla([("Extensión", "ext"), ("Cantidad", "n")],
+                    [{"ext": ".pdf", "n": "12", "crudo": {"n": 12}, "nivel": "positivo", "icono": "application-pdf"},
+                     {"ext": ".txt", "n": "9", "crudo": {"n": 9}, "habilitado": False}])
+    assert m.filas == 2 and m.columnas == 2 and m.clave(1) == "n" and m.clave(5) == ""
+    assert m.headerData(0, Qt.Orientation.Horizontal) == "Extensión"
+    assert m.data(m.index(0, 1), Qt.ItemDataRole.DisplayRole) == "12" and m.data(m.index(0, 1), Qt.ItemDataRole.EditRole) == 12
+    assert m.data(m.index(0, 0), m.R_ICONO) == "application-pdf" and m.data(m.index(0, 1), m.R_ICONO) == ""
+    assert m.data(m.index(0, 0), m.R_NIVEL) == "positivo" and m.data(m.index(1, 0), m.R_HABILITADO) is False
+    assert set(v.data().decode() for v in m.roleNames().values()) == {"display", "nivel", "icono", "habilitado"}
+    f = ModeloFiltrado(m)
+    f.ordenar(1, False)                                       # por el valor crudo: 9 antes que 12
+    assert f.data(f.index(0, 0), Qt.ItemDataRole.DisplayRole) == ".txt"
+    f.filtrar("pdf")
+    assert f.filas == 1
+    m.anadir({"ext": ".md", "n": "1"})
+    m.actualizar(2, n="2")
+    assert m.fila(2)["n"] == "2"
+    m.quitar(0)
+    assert [r["ext"] for r in m.todas()] == [".txt", ".md"]
+
+
+@requiere_binding
+def test_modelo_arbol(app):
+    from gui_comun.modelos import ModeloArbol
+    from gui_comun.qt import Qt
+    llamadas = []
+
+    def hijos_perezosos(nodo):
+        llamadas.append(nodo["valores"][0])
+        return [{"valores": ["b.1", ""]}, {"valores": ["b.2", ""], "nivel": "negativo"}]
+
+    m = ModeloArbol(("Nombre", "Dato"), [
+        {"valores": ["a", "1"], "icono": "folder", "hijos": [{"valores": ["a.1", "x"], "habilitado": False}]},
+        {"valores": ["b", "2"], "hijos": hijos_perezosos},
+        {"valores": ["c", "3"]},
+    ])
+    assert m.filas == 3 and m.columnCount() == 2 and m.headerData(1, Qt.Orientation.Horizontal) == "Dato"
+    a, b, c = (m.index(i, 0) for i in range(3))
+    assert m.hasChildren(a) and m.hasChildren(b) and not m.hasChildren(c)
+    assert llamadas == []                                   # perezoso: nada consultado todavía
+    assert m.rowCount(b) == 2 and llamadas == ["b"]
+    assert m.rowCount(b) == 2 and llamadas == ["b"]         # una sola vez
+    assert m.data(m.index(1, 0, b), Qt.ItemDataRole.DisplayRole) == "b.2"
+    assert m.data(m.index(1, 0, b), m.R_NIVEL) == "negativo"
+    assert m.data(m.index(0, 0, a), m.R_HABILITADO) is False
+    assert m.data(a, m.R_ICONO) == "folder" and m.data(m.index(0, 1), m.R_ICONO) == ""
+    assert m.parent(m.index(0, 0, a)) == a and not m.parent(a).isValid()
+    assert m.ruta(m.index(1, 0, b)) == [1, 1] and m.datos(m.index(1, 0, b)) == {"valores": ["b.2", ""], "nivel": "negativo"}
+    assert m.datos(m.index(-1, -1)) == {}
+    m.recargar(b)
+    assert m.rowCount(b) == 2 and llamadas == ["b", "b"]
+    m.poner([{"valores": ["solo", ""]}])
+    assert m.filas == 1 and m.todas()[0]["valores"] == ["solo", ""]

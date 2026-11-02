@@ -2,10 +2,10 @@
 tipo: doc
 estado: activo
 forma: referencia
-titulo: "Componentes de GuiComun 2.0: qué es cada uno, sus propiedades y señales, y la API Python que los alimenta"
+titulo: "Componentes de GuiComun 2.x: qué es cada uno, sus propiedades y señales, y la API Python que los alimenta"
 creado: 2026-11-01
 ---
-# Componentes de GuiComun (2.0)
+# Componentes de GuiComun (2.1)
 
 La referencia del módulo QML `GuiComun` (`gui_comun/qml/GuiComun/`) y del núcleo Python que lo alimenta. La anatomía
 y la justificación están en `arquitectura-qml-kirigami.md` §4–5 y en `git-studio/docs/rediseno.md` §4–7; la galería
@@ -54,10 +54,24 @@ escucharlas también.
 `columnas: [{ancho (unidades; 0 = estira), minimo, alinear, mono, semantica, conIcono, visible, estrecho, secundaria}]`;
 `altoFila` (1,7 unidades); `umbralEstrecho` (50 unidades: bajo él se ocultan las `estrecho`); `columnaOrden` ·
 `descendente`; `menuContextual` (un `Menu`, p. ej. `MenuAcciones` sin atajos); `mensajeVacio` · `iconoVacio`;
-`seleccion` (`ItemSelectionModel`), `filaActual`, `filas`. Señales: `ordenar(columna, descendente)`,
+`seleccion` (`ItemSelectionModel`), `filaActual`, `filas`; `claveAjustes` (2.1: con ella, los anchos de columna que
+el usuario arrastró se recuerdan en QSettings, grupo `tablas/<clave>`). Señales: `ordenar(columna, descendente)`,
 `activada(fila)` (doble clic o Intro), `suprimir()` (Supr), `filaActualCambiada(fila)`, `seleccionCambiada()`.
 Funciones: `filasSeleccionadas()`, `seleccionarTodo()`, `invertirSeleccion()`, `seleccionarFila(fila, limpiar)`,
 `mostrarColumna(c, visible)`. Selección múltiple con Ctrl y Mayús; columnas redimensionables arrastrando la cabecera.
+
+### ArbolDatos (2.1)
+
+`TreeView` de Qt Quick + `HorizontalHeaderView` sobre cualquier `QAbstractItemModel` jerárquico con los roles de
+`TablaDatos` (`display`, `nivel`, `icono`, `habilitado`), p. ej. `modelos.ModeloArbol`. Mismas `columnas`
+(`ancho`, `minimo`, `alinear`, `mono`, `semantica`, `conIcono`, `visible`, `estrecho`, `secundaria`), `altoFila`,
+`umbralEstrecho`, `menuContextual`, `mensajeVacio` · `iconoVacio`, `seleccion`, `filaActual`, `filas`; además `raiz`
+(un `QModelIndex` que acota la vista: el explorador de carpetas) y `expandirAlCargar` (niveles que se expanden solos
+al poner el modelo; −1 todos). Señales: `activada(indice)` (doble clic o Intro; el `QModelIndex`), `suprimir()`,
+`filaActualCambiada(fila)`, `seleccionCambiada()`. Funciones: `indiceDe(fila)`, `indiceActual()`, `expandirTodo(niveles)`,
+`contraerTodo()`, `expandir(fila)` · `contraer(fila)` · `alternar(fila)`, `filasSeleccionadas()`,
+`indicesSeleccionados()`, `seleccionarTodo()`, `seleccionarFila(fila, limpiar)`, `mostrarColumna(c, visible)`. La
+flecha de la primera columna expande con el ratón; ← y → con el teclado (← en una fila contraída sube al padre).
 
 ### PanelDetalles
 
@@ -92,6 +106,12 @@ dinámicas (`Acciones.anadir_fuente`) entran en la misma lista (ir a un reposito
 `Kirigami.Dialog` con `modulos: [{titulo, icono, pagina (Component)}]`; cada página puede declarar `function guardar()`,
 que se llama al aceptar o aplicar; señal `guardado()`. Páginas con `FormCard`.
 
+### CampoRuta (2.1)
+
+Un `TextField` con su botón de elegir: `texto`, `carpeta` (verdadero: `FolderDialog`; falso: `FileDialog` con
+`filtros`), `titulo`, `marcador`, `nombreAccesible`; señal `aceptada(texto)` (Intro o el diálogo); funciones
+`abrir()`, `enfocar()`; `campoTexto` es el campo.
+
 ### MenuAcciones · BotonAccion
 
 `MenuAcciones { acciones; elementos; titulo; conAtajos }`: un `Menu` construido desde `[{tipo: "accion", nombre} |
@@ -109,6 +129,8 @@ que se llama al aceptar o aplicar; señal `guardado()`. Páginas con `FormCard`.
 | `consola.Consola` | `.salida`, `.registro` (`ModeloConsola`: `escribir`, `limpiar`, `texto`, `textoConHora`, `lineas`), `.escribir(texto, nivel)`, `.registrar(nivel, texto)`, `.log(nivel, texto)`; señal `escrita` |
 | `modelos.ModeloLista(roles, filas)` | `.poner`, `.anadir`, `.quitar`, `.actualizar`, `.fila(i)`, `.todas()`, `filas` |
 | `modelos.ModeloFiltrado(origen)` | `.ordenar(columna, descendente)`, `.filtrar(texto)`, `.aceptar_con(criterio)`, `.filaOrigen`, `.filaVisible`, `filas`, `columnaOrden`, `descendente` |
+| `modelos.ModeloTabla(columnas, filas)` (2.1) | `columnas` = [(título, clave)]; filas de dict con esas claves y, opcionales, `nivel`, `icono` (texto o {clave: icono}), `habilitado`, `crudo` ({clave: valor} para ordenar); `.poner`, `.anadir`, `.quitar`, `.actualizar`, `.fila(i)`, `.todas()`, `.clave(c)`, `filas`, `columnas` |
+| `modelos.ModeloArbol(columnas, raices)` (2.1) | nodos de dict: `valores` (uno por columna), `nivel`, `icono` (texto o {columna: icono}), `habilitado`, `hijos` (lista o función `f(nodo)` que se consulta al expandir) y lo propio; `.poner`, `.recargar(indice)`, `.datos(indice)`, `.ruta(indice)`, `.todas(indice)`, `filas` |
 | `i18n.instalar(motor, idioma)` | el objeto de contexto con `i18n`, `i18nc`, `i18nd`, `i18ndc`, `i18np`, `i18ncp`, `i18ndp`, `i18ndcp` y las `xi18n*` (gettext sobre `/usr/share/locale`) |
 | `qt` | `BINDING`, los nombres de QtCore/QtGui/QtQml con la API de PySide6, `cast`, `rol`, `roles`, `version_qt` |
 | `galeria.esquema.entorno_con_esquema(colors)` | el entorno de un proceso con otro esquema de color de KDE (kdeglobals temporal) |
@@ -116,5 +138,6 @@ que se llama al aceptar o aplicar; señal `guardado()`. Páginas con `FormCard`.
 ## 3. Lo que falta (2.x)
 
 - `org.kde.kirigamiaddons.settings` cuando Kubuntu lo empaquete (hoy `DialogoAjustes` reproduce su anatomía).
-- Anchos de columna de `TablaDatos` recordados entre sesiones (hoy se recuerdan los paneles y la geometría).
+- Orden por cabecera en `ArbolDatos` (un `KSortFilterProxyModel` de `org.kde.kitemmodels` sobre el árbol) cuando un
+  studio lo pida.
 - `Grafico` (`org.kde.quickcharts`) para Simuladores; `PaginaFormulario` generada desde fichas para Raphi (F5).

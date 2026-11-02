@@ -6,10 +6,12 @@
 // `habilitado` (falso) atenúa la fila y `icono` pone un icono delante del texto de las columnas `conIcono`.
 // columnas: [{ancho (unidades de rejilla; 0 = toma el resto), minimo, alinear ("izquierda"|"centro"|"derecha"),
 //            mono, semantica, conIcono, visible, estrecho, secundaria (texto tenue)}]
+// Con `claveAjustes`, los anchos que el usuario arrastró se recuerdan en QSettings entre sesiones (2.1).
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls as QQC2
 import QtQml.Models
+import QtCore
 import org.kde.kirigami as Kirigami
 
 QQC2.Control {
@@ -25,6 +27,7 @@ QQC2.Control {
     property QQC2.Menu menuContextual: null
     property string mensajeVacio: ""
     property string iconoVacio: "edit-none"
+    property string claveAjustes: ""
     readonly property alias seleccion: seleccionModelo
     readonly property alias vista: tabla
     readonly property int filaActual: tabla.currentRow
@@ -123,6 +126,27 @@ QQC2.Control {
 
     onEstrechaChanged: tabla.forceLayout()
     onColumnasChanged: tabla.forceLayout()
+
+    // anchos de columna recordados (solo los que el usuario fijó arrastrando)
+    Settings {
+        id: ajustes
+        category: raiz.claveAjustes !== "" ? "tablas/" + raiz.claveAjustes : "tablas/sin-clave"
+        property var anchos: []
+    }
+    function restaurarAnchos() {
+        if (raiz.claveAjustes === "" || !ajustes.anchos) return
+        for (let c = 0; c < ajustes.anchos.length && c < tabla.columns; c++)
+            if (ajustes.anchos[c] > 0) tabla.setColumnWidth(c, ajustes.anchos[c])
+        tabla.forceLayout()
+    }
+    function guardarAnchos() {
+        if (raiz.claveAjustes === "") return
+        const lista = []
+        for (let c = 0; c < tabla.columns; c++) lista.push(tabla.explicitColumnWidth(c))
+        ajustes.anchos = lista
+    }
+    Component.onCompleted: Qt.callLater(restaurarAnchos)
+    Component.onDestruction: guardarAnchos()
 
     contentItem: ColumnLayout {
         spacing: 0

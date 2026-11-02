@@ -10,3 +10,5 @@ Mensajes 2.0 Mensajes.qml
 PaletaOrdenes 2.0 PaletaOrdenes.qml
 DialogoAjustes 2.0 DialogoAjustes.qml
 BarraEstado 2.0 BarraEstado.qml
+ArbolDatos 2.1 ArbolDatos.qml
+CampoRuta 2.1 CampoRuta.qml

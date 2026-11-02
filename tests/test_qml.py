@@ -28,6 +28,8 @@ PROPIEDADES = {
     "PaletaOrdenes": 'acciones: studio.acciones',
     "DialogoAjustes": 'modulos: [{titulo: "General", icono: "configure", pagina: null}]',
     "BarraEstado": 'resumen: "3 cosas"; contexto: "uno · main"; tareas: studio.tareas',
+    "ArbolDatos": 'modelo: studio.arbol; columnas: [{ancho: 0, minimo: 8, conIcono: true}, {ancho: 6, semantica: true}]; expandirAlCargar: -1',
+    "CampoRuta": 'texto: "/tmp"; carpeta: true',
 }
 
 GUION = r'''
@@ -37,7 +39,7 @@ from gui_comun.nucleo import Aplicacion
 from gui_comun.acciones import Acciones
 from gui_comun.consola import Consola
 from gui_comun.tareas import Tareas
-from gui_comun.modelos import ModeloLista, ModeloFiltrado
+from gui_comun.modelos import ModeloLista, ModeloFiltrado, ModeloArbol
 from gui_comun.qt import QUrl, QTimer, Qt
 app = Aplicacion("gui-comun-prueba", "Prueba", version="0")
 acciones = Acciones(); acciones.estandar("Prueba")
@@ -47,7 +49,8 @@ acciones.definir_menus([("&Archivo", ["a.uno", "|", "a.dos", "|", "app.salir"]),
 acciones.definir_barra(["a.uno", "|", "a.dos"])
 consola = Consola(); tareas = Tareas(consola)
 tabla = ModeloFiltrado(ModeloLista(("display", "nivel", "icono"), [{"display": "uno", "nivel": "positivo", "icono": "vcs-normal"}, {"display": "dos", "nivel": "negativo", "icono": "vcs-conflicting"}]))
-for n, o in (("acciones", acciones), ("consola", consola), ("tareas", tareas), ("tabla", tabla)): app.exponer(n, o)
+arbol = ModeloArbol(("Nombre", "Estado"), [{"valores": ["uno", "ok"], "nivel": "positivo", "icono": "folder", "hijos": [{"valores": ["uno/a", ""]}]}, {"valores": ["dos", "mal"], "nivel": "negativo"}])
+for n, o in (("acciones", acciones), ("consola", consola), ("tareas", tareas), ("tabla", tabla), ("arbol", arbol)): app.exponer(n, o)
 componente, props = sys.argv[2], sys.argv[3]
 ruta = os.path.join(os.environ["PRUEBA_TMP"], "Prueba_" + componente + ".qml")
 cuerpo = "import QtQuick\nimport GuiComun\n%s { id: raiz; %s }\n" % (componente, props)
