@@ -1,19 +1,27 @@
+# pyproject.toml — gui-comun: el paquete Python `gui_comun` y el módulo QML `GuiComun`, el marco común de la familia de studios.
 [build-system]
 requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "gui-comun"
-version = "1.4.0"
-description = "El marco común de la familia de studios PySide6: diseño claro/oscuro con acento, barra lateral, paleta de comandos, avisos, consola y workers"
+version = "2.0.0"
+description = "El marco común de la familia de studios: módulo QML GuiComun sobre Kirigami (ventana de trabajo, tabla, paneles, consola, paleta de órdenes, ajustes) con núcleo, acciones, tareas y consola en Python; los widgets de 1.x, congelados"
 readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.10"
-dependencies = ["PySide6>=6.6"]
+# el binding lo pone el sistema (python3-pyside6.* o python3-pyqt6 junto a qml6-module-org-kde-kirigami); con pip, PySide6
+dependencies = []
 authors = [{ name = "Edison Achalma" }]
+
+[project.optional-dependencies]
+pyside6 = ["PySide6>=6.8"]
 
 [project.urls]
 Repositorio = "https://github.com/achalmed/gui-comun"
 
 [tool.setuptools]
-packages = ["gui_comun", "gui_comun.widgets", "gui_comun.workers"]
+packages = ["gui_comun", "gui_comun.widgets", "gui_comun.workers", "gui_comun.galeria"]
+
+[tool.setuptools.package-data]
+gui_comun = ["qml/GuiComun/*.qml", "qml/GuiComun/qmldir", "galeria/qml/*.qml"]

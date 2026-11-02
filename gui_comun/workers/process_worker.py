@@ -8,7 +8,7 @@ integrada. Nada de la salida del backend se oculta.
 
 import subprocess
 
-from PySide6.QtCore import QThread, Signal
+from gui_comun.qt import QThread, Signal
 
 
 class ProcessWorker(QThread):

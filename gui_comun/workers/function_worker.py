@@ -14,7 +14,7 @@ y debe lanzar OperationCancelled cuando cancel_cb() sea True.
 import threading
 import time
 
-from PySide6.QtCore import QThread, Signal
+from gui_comun.qt import QThread, Signal
 
 
 class OperationCancelled(Exception):

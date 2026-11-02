@@ -7,7 +7,7 @@ página Reportes. Persistido en QSettings como JSON.
 
 import json
 
-from PySide6.QtCore import QSettings
+from gui_comun.qt import QSettings
 
 from gui_comun.format import timestamp
 

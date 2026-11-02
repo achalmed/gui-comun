@@ -9,7 +9,7 @@ import json
 import os
 from pathlib import Path
 
-from PySide6.QtCore import QSettings
+from gui_comun.qt import QSettings
 
 DEFAULT_THEME = "sistema"
 

@@ -1,0 +1,12 @@
+module GuiComun
+VentanaStudio 2.0 VentanaStudio.qml
+MenuAcciones 2.0 MenuAcciones.qml
+BotonAccion 2.0 BotonAccion.qml
+PanelNavegacion 2.0 PanelNavegacion.qml
+TablaDatos 2.0 TablaDatos.qml
+PanelDetalles 2.0 PanelDetalles.qml
+PanelInferior 2.0 PanelInferior.qml
+Mensajes 2.0 Mensajes.qml
+PaletaOrdenes 2.0 PaletaOrdenes.qml
+DialogoAjustes 2.0 DialogoAjustes.qml
+BarraEstado 2.0 BarraEstado.qml

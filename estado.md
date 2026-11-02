@@ -1,7 +1,7 @@
 ---
 tipo: estado
 estado: activo
-actualizado: 2026-10-31
+actualizado: 2026-11-01
 ---
 # estado.md — gui-comun
 
@@ -9,6 +9,8 @@ actualizado: 2026-10-31
 
 | fecha | qué | dónde se ve |
 |---|---|---|
+| 2026-11-01 | **2.0.0, fase 2 de la modernización**: módulo QML `GuiComun` (VentanaStudio, PanelNavegacion, TablaDatos, PanelDetalles, PanelInferior, BarraEstado, Mensajes, PaletaOrdenes, DialogoAjustes, MenuAcciones, BotonAccion) sobre Kirigami 6.24 + Addons 1.11 + `org.kde.desktop`, sin colores propios; núcleo Python (`nucleo`, `acciones`, `tareas`, `consola`, `modelos`, `i18n`, `qt` con PySide6/PyQt6 del sistema); la galería con `--captura` y `--esquema`; 29 pruebas (`tests/run.sh`); `widgets` congelado; hallazgos heredados del validador corregidos; F1b: el autor instaló `python3-pyside6.*` 6.10.2 | `CHANGELOG.md` 2.0.0; `docs/componentes.md`; `docs/figuras/galeria-*.png`; `python3 -m gui_comun.galeria` |
+| 2026-11-01 | Fase 1 de la modernización visual de la familia (encargo del autor): auditoría de `gui-comun` y de los diez studios, inventario de lo compartido y lo divergente, sistema de diseño «escritorio KDE» (paleta, fuentes e iconos del sistema; sin hoja global) y plan E0–E6 con Git Studio de piloto; sin tocar código | `docs/modernizacion-visual-kde.md` |
 | 2026-10-31 | Remoto público `achalmed/gui-comun` con la etiqueta `v1.0.0`; se instala desde GitHub (probado en un entorno limpio) | `pip install "gui-comun @ git+https://github.com/achalmed/gui-comun.git@v1.0.0"` |
 | 2026-10-31 | Nace como repo y paquete propio (1.0.0), separado de `core/py-common/gui_comun` con su historia, para que Raphi Studio corra fuera del espacio de trabajo; `rutas` ya no exige `core/` | `CHANGELOG.md`; `core/docs/decisiones.md` §2.12 |
 
@@ -18,7 +20,16 @@ nada en curso
 
 ## Por hacer
 
-nada
+- 2026-11-01 · **autor**: P2, aprobar la galería (`/usr/bin/python3 -m gui_comun.galeria`; capturas en
+  `docs/figuras/galeria-*.png`) como lenguaje visual de la familia; D8 de `arquitectura-qml-kirigami.md` §9 (HIG de
+  KDE, documentación de Kirigami y Addons, Qt Quick, especificación freedesktop a Calibre) sigue pendiente del autor.
+- 2026-11-01 · director: lo que falta en 2.x (`docs/componentes.md` §3): anchos de columna de `TablaDatos`
+  recordados; `Grafico` (`org.kde.quickcharts`) para Simuladores; `PaginaFormulario` generada desde fichas para
+  Raphi; `org.kde.kirigamiaddons.settings` cuando Kubuntu lo empaquete. Se hacen en F4 (2.1) con lo aprendido del
+  piloto. Dependencias Python que faltan en el Python del sistema para los studios de F5: `openpyxl`, `matplotlib`,
+  `pandas`, `coloraide`, `markdown` (Quarto, Simuladores, Lliphi): `.venv --system-site-packages` por studio o apt.
+- 2026-11-01 · director: empujar `wip/2026-11-01-qml` y la etiqueta `v2.0.0` al remoto público cuando el autor dé
+  por buena la fase 2 (el repo es público; la rama queda local hasta entonces).
 
 ## Futuro
 
