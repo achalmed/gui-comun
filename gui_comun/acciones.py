@@ -27,10 +27,11 @@ from gui_comun.qt import (QAbstractListModel, QByteArray, QGuiApplication, QKeyS
 
 StandardKey = QKeySequence.StandardKey
 
-# los atajos estándar de KDE, fijos: sin plataforma `QKeySequence(StandardKey)` aborta y con `offscreen` devuelve «Settings»
+# los atajos estándar de KDE, fijos: sin plataforma `QKeySequence(StandardKey)` aborta y con `offscreen` devuelve «Settings».
+# Pantalla completa es Ctrl+Mayús+F (KDE, Dolphin): F11 es el panel de detalles en la familia (rediseno.md §3.3)
 _ESTANDAR_SIN_PLATAFORMA = {StandardKey.Refresh: "F5", StandardKey.Quit: "Ctrl+Q", StandardKey.Preferences: "Ctrl+Shift+,",
                             StandardKey.Find: "Ctrl+F", StandardKey.New: "Ctrl+N", StandardKey.Open: "Ctrl+O",
-                            StandardKey.Save: "Ctrl+S", StandardKey.SelectAll: "Ctrl+A", StandardKey.FullScreen: "F11",
+                            StandardKey.Save: "Ctrl+S", StandardKey.SelectAll: "Ctrl+A", StandardKey.FullScreen: "Ctrl+Shift+F",
                             StandardKey.HelpContents: "F1", StandardKey.Delete: "Del", StandardKey.Close: "Ctrl+W",
                             StandardKey.Copy: "Ctrl+C", StandardKey.Paste: "Ctrl+V", StandardKey.Undo: "Ctrl+Z",
                             StandardKey.Print: "Ctrl+P", StandardKey.ZoomIn: "Ctrl++", StandardKey.ZoomOut: "Ctrl+-"}
