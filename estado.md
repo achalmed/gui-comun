@@ -9,6 +9,7 @@ actualizado: 2026-11-01
 
 | fecha | qué | dónde se ve |
 |---|---|---|
+| 2026-11-01 | **2.0.1**: lo que el piloto Git Studio pidió al marco (`Tareas.funcion(silenciosa=)`, `acentos.py` para que el lanzador no arrastre QtSvg, barra de progreso solo con tarea, esquema temporal) | `CHANGELOG.md` 2.0.1; etiqueta `v2.0.1` |
 | 2026-11-01 | **2.0.0, fase 2 de la modernización**: módulo QML `GuiComun` (VentanaStudio, PanelNavegacion, TablaDatos, PanelDetalles, PanelInferior, BarraEstado, Mensajes, PaletaOrdenes, DialogoAjustes, MenuAcciones, BotonAccion) sobre Kirigami 6.24 + Addons 1.11 + `org.kde.desktop`, sin colores propios; núcleo Python (`nucleo`, `acciones`, `tareas`, `consola`, `modelos`, `i18n`, `qt` con PySide6/PyQt6 del sistema); la galería con `--captura` y `--esquema`; 29 pruebas (`tests/run.sh`); `widgets` congelado; hallazgos heredados del validador corregidos; F1b: el autor instaló `python3-pyside6.*` 6.10.2 | `CHANGELOG.md` 2.0.0; `docs/componentes.md`; `docs/figuras/galeria-*.png`; `python3 -m gui_comun.galeria` |
 | 2026-11-01 | Fase 1 de la modernización visual de la familia (encargo del autor): auditoría de `gui-comun` y de los diez studios, inventario de lo compartido y lo divergente, sistema de diseño «escritorio KDE» (paleta, fuentes e iconos del sistema; sin hoja global) y plan E0–E6 con Git Studio de piloto; sin tocar código | `docs/modernizacion-visual-kde.md` |
 | 2026-10-31 | Remoto público `achalmed/gui-comun` con la etiqueta `v1.0.0`; se instala desde GitHub (probado en un entorno limpio) | `pip install "gui-comun @ git+https://github.com/achalmed/gui-comun.git@v1.0.0"` |
@@ -28,8 +29,10 @@ nada en curso
   Raphi; `org.kde.kirigamiaddons.settings` cuando Kubuntu lo empaquete. Se hacen en F4 (2.1) con lo aprendido del
   piloto. Dependencias Python que faltan en el Python del sistema para los studios de F5: `openpyxl`, `matplotlib`,
   `pandas`, `coloraide`, `markdown` (Quarto, Simuladores, Lliphi): `.venv --system-site-packages` por studio o apt.
-- 2026-11-01 · director: empujar `wip/2026-11-01-qml` y la etiqueta `v2.0.0` al remoto público cuando el autor dé
-  por buena la fase 2 (el repo es público; la rama queda local hasta entonces).
+- 2026-11-01 · director: empujar `wip/2026-11-01-qml` y las etiquetas `v2.0.0` y `v2.0.1` al remoto público cuando el
+  autor dé por buena la fase 2 (el repo es público; la rama queda local hasta entonces). `core/validador/comun.py`
+  exime los `.qml` de kebab-case (el tipo QML empieza por mayúscula); los avisos RQ-DOC-06 de `docs/arquitectura-qml-kirigami.md`
+  y `docs/modernizacion-visual-kde.md` (rutas de ejemplo de otros studios) se limpian al pasar esos documentos a `hecho` en F6.
 
 ## Futuro
 
