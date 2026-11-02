@@ -29,8 +29,8 @@ nada en curso
   Raphi; `org.kde.kirigamiaddons.settings` cuando Kubuntu lo empaquete. Se hacen en F4 (2.1) con lo aprendido del
   piloto. Dependencias Python que faltan en el Python del sistema para los studios de F5: `openpyxl`, `matplotlib`,
   `pandas`, `coloraide`, `markdown` (Quarto, Simuladores, Lliphi): `.venv --system-site-packages` por studio o apt.
-- 2026-11-01 · director: empujar `wip/2026-11-01-qml` y las etiquetas `v2.0.0` y `v2.0.1` al remoto público cuando el
-  autor dé por buena la fase 2 (el repo es público; la rama queda local hasta entonces). `core/validador/comun.py`
+- 2026-11-01 · director: la rama `wip/2026-11-01-qml` y las etiquetas `v2.0.0` y `v2.0.1` están en el remoto público
+  (empujadas con el visto bueno del autor); falta fusionar la rama en `main` cuando pase la P3. `core/validador/comun.py`
   exime los `.qml` de kebab-case (el tipo QML empieza por mayúscula); los avisos RQ-DOC-06 de `docs/arquitectura-qml-kirigami.md`
   y `docs/modernizacion-visual-kde.md` (rutas de ejemplo de otros studios) se limpian al pasar esos documentos a `hecho` en F6.
 
