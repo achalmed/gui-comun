@@ -1,4 +1,4 @@
-"""python3 -m gui_comun.galeria — abre la galería (ver galeria.py)."""
+"""gui_comun/galeria/__main__.py — `python3 -m gui_comun.galeria` abre la galería (ver galeria.py)."""
 
 import sys
 

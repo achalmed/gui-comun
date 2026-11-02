@@ -24,19 +24,7 @@ from PySide6.QtWidgets import QApplication, QStyleFactory, QWidget
 
 MODOS = ("sistema", "claro", "oscuro")
 
-# --- Acentos: uno por studio, con su variante clara para el modo oscuro ---
-ACENTOS = {
-    "verde": {"claro": "#0d9488", "oscuro": "#2dd4bf"},    # Filesystem Studio
-    "naranja": {"claro": "#ea580c", "oscuro": "#fb923c"},  # Git Studio
-    "azul": {"claro": "#2563eb", "oscuro": "#60a5fa"},     # Quarto Studio
-    "violeta": {"claro": "#7c3aed", "oscuro": "#a78bfa"},  # Raphi Studio
-    "rosa": {"claro": "#db2777", "oscuro": "#f472b6"},     # LaTeX Studio
-    "lima": {"claro": "#65a30d", "oscuro": "#a3e635"},     # Simuladores Studio
-    "sepia": {"claro": "#9a6b3f", "oscuro": "#d6a874"},    # Biblioteca Studio
-    "grafito": {"claro": "#475569", "oscuro": "#94a3b8"},  # Huella Studio
-    "indigo": {"claro": "#4f46e5", "oscuro": "#818cf8"},   # Dotfiles Studio
-    "carmesi": {"claro": "#c53133", "oscuro": "#ef6661"},  # Lliphi Studio (el rojo OKLCH 25° de Lliphi)
-}
+from gui_comun.acentos import ACENTOS  # noqa: E402  (el acento por studio; también lo usa el lanzador)
 
 # --- Tokens neutros: superficies, bordes y texto ---
 _BASE = {

@@ -19,7 +19,7 @@ import shutil
 import subprocess
 from pathlib import Path
 
-from gui_comun.diseno import ACENTOS
+from gui_comun.acentos import ACENTOS
 
 
 def _datos() -> Path:

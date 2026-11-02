@@ -53,6 +53,7 @@ def kdeglobals_con_esquema(colors: Path, destino: Path, kdeglobals: Path | None 
 def entorno_con_esquema(colors: Path, carpeta: Path | None = None) -> dict[str, str]:
     """El entorno de un proceso hijo que verá ese esquema: `XDG_CONFIG_HOME` temporal con el kdeglobals derivado."""
     carpeta = carpeta or Path(tempfile.mkdtemp(prefix="gui-comun-esquema-"))
+    carpeta.mkdir(parents=True, exist_ok=True)
     config_usuario = Path(os.environ.get("XDG_CONFIG_HOME") or Path.home() / ".config")
     for nombre in ("kdeglobals", "kcminputrc", "kwinrc", "Kvantum"):      # lo que afecta al aspecto, copiado
         origen = config_usuario / nombre

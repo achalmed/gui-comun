@@ -92,7 +92,7 @@ QQC2.Control {
                     text: panel.consola ? panel.consola.salida.texto : ""
                     selectByMouse: true
                     Accessible.name: "Salida"
-                    onTextChanged: cursorPosition = length
+                    onTextChanged: cursorPosition = text.lastIndexOf("\n") + 1     // la última línea, sin desplazar a la derecha
                     Loader {
                         source: "ResaltadoSalida.qml"
                         onLoaded: { item.nombreDefinicion = panel.definicion; item.textEdit = salida }
@@ -109,7 +109,7 @@ QQC2.Control {
                     text: panel.consola ? panel.consola.registro.textoConHora : ""
                     selectByMouse: true
                     Accessible.name: "Registro"
-                    onTextChanged: cursorPosition = length
+                    onTextChanged: cursorPosition = text.lastIndexOf("\n") + 1
                 }
             }
             Repeater {

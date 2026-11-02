@@ -10,6 +10,22 @@ La versión vive en `gui_comun/__init__.py` y en `pyproject.toml`. Las secciones
 
 ## [Unreleased]
 
+## [2.0.1] - 2026-11-01
+
+Lo que el piloto (Git Studio, fase 3) pidió al marco; sin cambios de API.
+
+### Added
+
+- `Tareas.funcion(..., silenciosa=True)`: una consulta breve (los detalles del elemento seleccionado) que no es «la
+  tarea en curso»: no aparece en la barra de estado, no abre el panel inferior ni anota en el registro.
+
+### Fixed
+
+- `lanzador` ya no importa `diseno` (que arrastra QtWidgets y QtSvg, ausentes en el Python del sistema): los acentos
+  viven en `gui_comun/acentos.py` (`diseno.ACENTOS` sigue existiendo).
+- `BarraEstado`: la barra de progreso existe solo mientras hay tarea (el estilo Breeze avisaba al destruirla).
+- `galeria.esquema.entorno_con_esquema` crea la carpeta temporal que se le pasa.
+
 ## [2.0.0] - 2026-11-01
 
 La familia pasa de Qt Widgets a Qt Quick + Kirigami (`docs/arquitectura-qml-kirigami.md`). Se añade sin quitar:

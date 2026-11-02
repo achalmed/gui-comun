@@ -43,10 +43,15 @@ class Tareas(QObject):
 
     # ----------------------------------------------------------- lanzar
     def funcion(self, nombre: str, fn: Callable, *args, al_terminar: Callable | None = None,
-                al_fallar: Callable | None = None, descripcion: str = "", **kwargs) -> FunctionWorker:
-        """Corre `fn(*args, progress_cb=, cancel_cb=, message_cb=, **kwargs)` en un hilo."""
+                al_fallar: Callable | None = None, descripcion: str = "", silenciosa: bool = False, **kwargs) -> FunctionWorker:
+        """Corre `fn(*args, progress_cb=, cancel_cb=, message_cb=, **kwargs)` en un hilo.
+
+        `silenciosa`: una consulta breve (los detalles del elemento seleccionado) que no es «la tarea en curso»: no
+        aparece en la barra de estado, no abre el panel inferior ni anota en el registro; sus mensajes sí van a la salida."""
         worker = FunctionWorker(fn, *args, description=descripcion or nombre, **kwargs)
-        worker.progress.connect(self._progreso_de)
+        worker.silenciosa = silenciosa
+        if not silenciosa:
+            worker.progress.connect(self._progreso_de)
         worker.message.connect(lambda nivel, texto: self._linea(texto, nivel))
         worker.result_ready.connect(lambda resultado, w=worker: self._fin(w, "ok", "", al_terminar, resultado))
         worker.failed.connect(lambda error, w=worker: self._fin(w, "error", error, al_fallar, error))
@@ -67,12 +72,14 @@ class Tareas(QObject):
 
     def _arrancar(self, worker, nombre: str) -> None:
         self._vivos.append(worker)
-        self._activo, self._nombre, self._progreso, self._elemento = worker, nombre, -1, ""
-        self._inicio = time.perf_counter()
-        self.cambiada.emit()
-        self.iniciada.emit(nombre)
-        if self._consola is not None:
-            self._consola.registrar("info", f"Inicia: {nombre}")
+        worker.inicio = time.perf_counter()
+        if not getattr(worker, "silenciosa", False):
+            self._activo, self._nombre, self._progreso, self._elemento = worker, nombre, -1, ""
+            self._inicio = worker.inicio
+            self.cambiada.emit()
+            self.iniciada.emit(nombre)
+            if self._consola is not None:
+                self._consola.registrar("info", f"Inicia: {nombre}")
         worker.start()
 
     # ------------------------------------------------------------ eventos
@@ -87,15 +94,25 @@ class Tareas(QObject):
 
     def _fin(self, worker, nivel: str, detalle: str, retorno: Callable | None, valor) -> None:
         nombre = self._nombre if worker is self._activo else getattr(worker, "description", "")
-        duracion = format_duration(time.perf_counter() - self._inicio)
+        duracion = format_duration(time.perf_counter() - getattr(worker, "inicio", self._inicio))
+        silenciosa = getattr(worker, "silenciosa", False)
         if worker in self._vivos:
             worker.wait(2000)
             self._vivos.remove(worker)
         if worker is self._activo:
-            self._activo = self._vivos[-1] if self._vivos else None
+            ruidosos = [w for w in self._vivos if not getattr(w, "silenciosa", False)]
+            self._activo = ruidosos[-1] if ruidosos else None
             if self._activo is None:
                 self._nombre, self._progreso, self._elemento = "", -1, ""
+            else:
+                self._nombre = getattr(self._activo, "description", "")
             self.cambiada.emit()
+        if silenciosa:
+            if nivel == "error" and self._consola is not None:
+                self._consola.registrar("error", f"{nombre}: {detalle}")
+            if retorno is not None:
+                retorno(valor)
+            return
         if self._consola is not None:
             self._consola.registrar(nivel, f"Termina: {nombre} ({duracion})" + (f" · {detalle}" if detalle else ""))
         if retorno is not None:
@@ -126,7 +143,7 @@ class Tareas(QObject):
 
     @Property(int, notify=cambiada)
     def cuantas(self) -> int:
-        return len(self._vivos)
+        return sum(1 for w in self._vivos if not getattr(w, "silenciosa", False))
 
     def esperar(self, ms: int = 30000) -> None:
         """Para las pruebas: espera a que terminen los hilos (el bucle de eventos debe correr aparte)."""

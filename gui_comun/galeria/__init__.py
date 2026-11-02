@@ -1,4 +1,4 @@
-"""gui_comun/galeria — la galería de componentes de GuiComun (al estilo Kirigami Gallery): cada componente con datos
+"""gui_comun/galeria/__init__.py — la galería de componentes de GuiComun (al estilo Kirigami Gallery): cada componente con datos
 de muestra, en claro y oscuro según el esquema del escritorio. Es el prototipo de alta fidelidad permanente de la
 familia y la prueba visual de regresión.
 
