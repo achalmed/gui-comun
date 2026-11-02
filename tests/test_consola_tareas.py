@@ -146,6 +146,9 @@ def test_tarea_proceso_con_entrada_y_entorno(app):
     t.proceso("sin entrada", ["sh", "-c", "read -r r; echo \"leido=[$r]\""], al_terminar=codigos.append)
     _esperar(app, t)
     assert "leido=[]" in c.salida.texto                       # sin `entrada`, la entrada está cerrada: no se cuelga
+    t.proceso("colores", ["sh", "-c", "printf '\\033[1m\\033[34m[4/4] index.qmd\\033[0m\\n'"], al_terminar=codigos.append)
+    _esperar(app, t)
+    assert "[4/4] index.qmd" in c.salida.texto.splitlines() and "\x1b" not in c.salida.texto   # 2.5: sin secuencias ANSI
 
 
 @requiere_binding

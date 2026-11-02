@@ -16,6 +16,7 @@ Propiedades para QML: `activa`, `nombre`, `progreso` (−1 indeterminado, 0–10
 
 from __future__ import annotations
 
+import re
 import time
 from typing import Callable
 
@@ -23,6 +24,9 @@ from gui_comun.format import format_duration
 from gui_comun.qt import QObject, Property, Signal, Slot
 from gui_comun.workers.function_worker import FunctionWorker
 from gui_comun.workers.process_worker import ProcessWorker
+
+
+_ANSI = re.compile(r"\x1b\[[0-9;?]*[ -/]*[@-~]|\x1b\][^\x07]*\x07|\x1b[()][A-Za-z0-9]|\r")
 
 
 class Tareas(QObject):
@@ -104,6 +108,7 @@ class Tareas(QObject):
         self.cambiada.emit()
 
     def _linea(self, texto: str, nivel: str) -> None:
+        texto = _ANSI.sub("", texto)          # 2.5: los colores y controles de terminal de un guion no llegan a la consola
         self.linea.emit(texto, nivel)
         if self._consola is not None:
             self._consola.escribir(texto, nivel)

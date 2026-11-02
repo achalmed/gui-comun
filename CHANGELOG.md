@@ -20,6 +20,8 @@ Lo que la fase 5 (Quarto Studio, el sexto tras el piloto) pidió al marco; se a�
   escribe en la entrada estándar del proceso y se cierra (las respuestas a las confirmaciones de un guion que la
   ventana ya confirmó con el usuario: el respaldo y «eliminar rotos» de Quarto Studio); sin ella la entrada está
   cerrada (`DEVNULL`), así un guion que pregunta no se cuelga. `entorno` añade variables al entorno del proceso.
+- `Tareas` limpia las secuencias ANSI (colores y controles de terminal) de la salida de un proceso antes de pasarla a la
+  consola y a `linea`: los guiones de Bash que colorean su salida (el gestor de blogs de Quarto Studio) se leen limpios.
 
 ## [2.4.0] - 2026-11-02
 
