@@ -9,6 +9,7 @@ actualizado: 2026-11-02
 
 | fecha | qué | dónde se ve |
 |---|---|---|
+| 2026-11-02 | **Fase 5 completa**: los diez studios (Git, Filesystem, Dotfiles, Huella, LaTeX, Biblioteca, Quarto, Simuladores, Raphi, Lliphi) corren en QML + Kirigami sobre `gui-comun` 2.7.0; ningún studio importa ya `widgets/` | los `docs/rediseno.md` y `docs/figuras/` de cada studio; `python3 -m gui_comun.galeria` |
 | 2026-11-02 | **2.7.0** con lo que pidió Raphi Studio (`PaginaFormulario`, el formulario generado desde fichas, en la galería): `wip/2026-11-02-qml-raphi` fusionada en `main`, `v2.7.0` en el remoto público | `CHANGELOG.md` 2.7.0; `git ls-remote --tags origin` |
 | 2026-11-02 | **2.7.0 (fase 5, con lo que pidió Raphi Studio)**: `PaginaFormulario` (formulario generado desde una lista de campos sobre `Kirigami.FormLayout`: un control por tipo, ayuda, obligatorios; `valores`, `fijar`, `poner`, `restablecer`, `cambiado`); página en la galería y pruebas; rama `wip/2026-11-02-qml-raphi`, etiqueta `v2.7.0` **local**, sin empujar hasta el visto bueno del autor | `CHANGELOG.md` 2.7.0; `docs/componentes.md`; `python3 -m gui_comun.galeria --pagina formulario_ficha` |
 | 2026-11-02 | **2.6.0** con lo que pidió Simuladores Studio (`Grafico` sobre `org.kde.quickcharts`, en la galería): `wip/2026-11-02-qml-simuladores` fusionada en `main`, `v2.6.0` en el remoto público | `CHANGELOG.md` 2.6.0; `git ls-remote --tags origin` |
@@ -34,6 +35,13 @@ nada en curso
 
 ## Por hacer
 
+- 2026-11-02 · dueño: **el autor** · usar los diez studios en la sesión real (cada `estado.md` tiene su guion de prueba) y decir
+  qué no convence; lo que salga se corrige en `main` o vuelve a `gui-comun`. Decidir cuándo sale **3.0**: retira `widgets/`,
+  `diseno`, `theming`, `marco`, `ui_loader` e `icons` (1.x, congelada desde 2.0.0 y ya sin consumidores; `rg "gui_comun.widgets|gui_comun.diseno"`
+  en los studios da 0) y sube la mayor en `CHANGELOG.md`.
+- 2026-11-02 · dueño: director (fase 6) · `meta/workspace.yml` describe aún a `gui-comun` y a varios studios como «PySide6»;
+  actualizar las descripciones y regenerar el `CLAUDE.md` raíz (`meta/generadores/workspace.py claude --aplicar`); `latex-studio`
+  sigue sin empujar (capturas con la carpeta de inicio: regenerarlas con `HOME` temporal y empujar).
 - 2026-11-01 · **autor**: P2, aprobar la galería (`/usr/bin/python3 -m gui_comun.galeria`; capturas en
   `docs/figuras/galeria-*.png`) como lenguaje visual de la familia; D8 de `arquitectura-qml-kirigami.md` §9 (HIG de
   KDE, documentación de Kirigami y Addons, Qt Quick, especificación freedesktop a Calibre) sigue pendiente del autor.
