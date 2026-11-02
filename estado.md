@@ -22,6 +22,10 @@ nada en curso
 
 ## Por hacer
 
+- 2026-11-02 · director: **`VistaTexto` para 2.2**: la vista de texto de solo lectura con resaltado de
+  KSyntaxHighlighting (o Markdown) y mensaje de vacío se repite ya en tres studios (`VistaTexto` de Filesystem,
+  `DialogoDiferencia` de Git, `VistaTexto` de Dotfiles): sube al módulo `GuiComun` con el siguiente studio de la fase 5
+  (Huella). Dotfiles Studio no necesitó nada más del marco.
 - 2026-11-01 · **autor**: P2, aprobar la galería (`/usr/bin/python3 -m gui_comun.galeria`; capturas en
   `docs/figuras/galeria-*.png`) como lenguaje visual de la familia; D8 de `arquitectura-qml-kirigami.md` §9 (HIG de
   KDE, documentación de Kirigami y Addons, Qt Quick, especificación freedesktop a Calibre) sigue pendiente del autor.
