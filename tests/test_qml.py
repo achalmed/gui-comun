@@ -13,7 +13,7 @@ import pytest
 
 from conftest import QML, correr_hijo, requiere_kirigami
 
-COMPONENTES = sorted(p.stem for p in QML.glob("*.qml") if p.stem != "ResaltadoSalida")
+COMPONENTES = sorted(p.stem for p in QML.glob("*.qml") if p.stem not in ("ResaltadoSalida", "GraficoQuickCharts"))   # los carga un Loader
 
 # lo mínimo que cada componente necesita para instanciarse; `studio.*` lo pone el guion
 PROPIEDADES = {
@@ -32,6 +32,7 @@ PROPIEDADES = {
     "CampoRuta": 'texto: "/tmp"; carpeta: true',
     "VistaTexto": 'texto: "# Hola\\n\\nun *documento*"; markdown: true; mensajeVacio: "nada"',
     "ListaDiagnosticos": 'modelo: studio.diagnosticos; mensajeVacio: "sin problemas"',
+    "Grafico": 'series: [{nombre: "a", y: [1, 2, 3]}, {nombre: "b", y: [3, 2, 1]}]; etiquetasX: ["0", "1", "2"]; xMaximo: 2; yMaximo: 3; equilibrio: ({x: 1, y: 2, etiqueta: "E"}); marcas: [{x: 1, etiqueta: "x"}]; anotacion: "nota"',
 }
 
 GUION = r'''

@@ -31,6 +31,7 @@ VentanaStudio {
         { nombre: "formulario", texto: "Formularios (Addons)", icono: "document-edit" },
         { nombre: "texto", texto: "VistaTexto", icono: "text-x-generic" },
         { nombre: "diagnosticos", texto: "ListaDiagnosticos", icono: "data-warning" },
+        { nombre: "grafico", texto: "Grafico", icono: "office-chart-line" },
         { nombre: "tema", texto: "Tema y unidades", icono: "preferences-desktop-color" }
     ]
     property string paginaActual: paginaInicial || "espacio"
@@ -312,7 +313,39 @@ VentanaStudio {
             }
         }
 
-        // 11. Tema
+        // 11. Grafico
+        Pagina {
+            titulo: "Grafico"
+            texto: "Un gráfico de líneas o de barras sobre org.kde.quickcharts: las series sobre una rejilla común de x, las etiquetas de los ejes, la rejilla, la leyenda, los puntos marcados, el equilibrio, las marcas y una anotación. Los colores de las series salen de la paleta de QuickCharts sobre el acento de Kirigami.Theme. Sin el módulo, muestra la imagen alternativa (un PNG) o el mensaje de vacío. La pestaña Resultados de Simuladores Studio."
+            RowLayout {
+                Layout.fillWidth: true
+                Layout.preferredHeight: Kirigami.Units.gridUnit * 16
+                spacing: Kirigami.Units.largeSpacing
+                Grafico {
+                    Layout.fillWidth: true; Layout.fillHeight: true
+                    series: [{ nombre: "IS", y: [10, 7.5, 5, 2.5, 0] }, { nombre: "LM", y: [0, 2.5, 5, 7.5, 10] }]
+                    etiquetasX: ["0", "250", "500", "750", "1 000"]
+                    xMinimo: 0; xMaximo: 1000; yMinimo: 0; yMaximo: 10
+                    equilibrio: ({ x: 500, y: 5, etiqueta: "E" })
+                    marcas: [{ x: 500, etiqueta: "Y*" }]
+                    etiquetaX: "Producto (Y)"; etiquetaY: "Tasa de interés (r)"; anotacion: "Y* = 500 · r* = 5,00"
+                    nombreAccesible: "IS-LM de muestra"
+                }
+                Grafico {
+                    Layout.preferredWidth: Kirigami.Units.gridUnit * 18; Layout.fillHeight: true
+                    barras: ({ categorias: ["S", "T", "M", "I", "G", "X"], valores: [120, 90, 60, 200, 150, 250] })
+                    yMinimo: 0; yMaximo: 275
+                    etiquetaY: "Flujo (u. m.)"; anotacion: "filtraciones = inyecciones"
+                    nombreAccesible: "Flujo circular de muestra"
+                }
+                Grafico {
+                    Layout.preferredWidth: Kirigami.Units.gridUnit * 12; Layout.fillHeight: true
+                    mensajeVacio: "Corre un escenario (F5) para ver sus curvas"
+                }
+            }
+        }
+
+        // 12. Tema
         Pagina {
             titulo: "Tema y unidades"
             texto: "Cero colores propios: todo sale de Kirigami.Theme (el esquema del usuario) y Kirigami.Units."

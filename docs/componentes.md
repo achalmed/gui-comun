@@ -132,6 +132,20 @@ mensaje en varias líneas y «archivo · línea n» debajo; `mensajeVacio` · `i
 `filaActualCambiada(fila)`. Funciones: `seleccionarFila(fila)`, `iconoDe(nivel)`, `colorDe(nivel)`,
 `textoNivel(nivel)`. La pestaña Problemas de LaTeX Studio.
 
+### Grafico (2.6)
+
+Un gráfico de líneas o de barras sobre `org.kde.quickcharts`: `series` (`[{nombre, y}]`, todas con el mismo número de
+valores: QuickCharts posiciona cada valor por su índice, así que quien lo usa remuestrea sus curvas sobre una rejilla
+común de x), `etiquetasX` (repartidas de izquierda a derecha), `xMinimo` · `xMaximo` (sitúan puntos, equilibrio y
+marcas), `yMinimo` · `yMaximo` (el rango que se dibuja), `barras` (`{categorias, valores}`, en vez de líneas),
+`puntos` (`[{x, y, etiqueta}]`), `equilibrio` (`{x, y, etiqueta}`), `marcas` (`[{x, etiqueta}]` o `[{y, etiqueta}]`:
+líneas verticales u horizontales), `etiquetaX` · `etiquetaY`, `anotacion`, `conLeyenda`; `imagen` (un PNG: se muestra
+si falta el módulo o con `preferirImagen`), `mensajeVacio` · `iconoVacio`, `nombreAccesible`; `hayModulo`, `hayDatos`,
+`conImagen`. Los colores de las series salen de `ColorGradientSource` sobre `Kirigami.Theme.highlightColor` (la paleta
+de QuickCharts), las barras del acento y el resto de `Kirigami.Theme`. Sin pantalla, la plataforma `offscreen` elige el
+renderizador por software, que no dibuja los materiales de QuickCharts: una captura necesita `QT_QUICK_BACKEND=rhi`.
+La pestaña Resultados de Simuladores Studio.
+
 ### MenuAcciones · BotonAccion
 
 `MenuAcciones { acciones; elementos; titulo; conAtajos }`: un `Menu` construido desde `[{tipo: "accion", nombre} |
@@ -160,4 +174,4 @@ mensaje en varias líneas y «archivo · línea n» debajo; `mensajeVacio` · `i
 - `org.kde.kirigamiaddons.settings` cuando Kubuntu lo empaquete (hoy `DialogoAjustes` reproduce su anatomía).
 - Orden por cabecera en `ArbolDatos` (un `KSortFilterProxyModel` de `org.kde.kitemmodels` sobre el árbol) cuando un
   studio lo pida.
-- `Grafico` (`org.kde.quickcharts`) para Simuladores; `PaginaFormulario` generada desde fichas para Raphi (F5).
+- `PaginaFormulario` generada desde fichas para Raphi (F5).

@@ -10,6 +10,19 @@ La versión vive en `gui_comun/__init__.py` y en `pyproject.toml`. Las secciones
 
 ## [Unreleased]
 
+## [2.6.0] - 2026-11-02
+
+Lo que la fase 5 (Simuladores Studio, el séptimo tras el piloto) pidió al marco; se añade sin quitar.
+
+### Added
+
+- `Grafico` (QML): un gráfico de líneas o de barras sobre `org.kde.quickcharts` con las series sobre una rejilla común
+  de x, las etiquetas de los ejes, la rejilla, la leyenda, los puntos marcados, el equilibrio, las marcas verticales u
+  horizontales y una anotación; los colores de las series salen de la paleta de QuickCharts sobre el acento de
+  `Kirigami.Theme`, nunca de una lista propia. Si el módulo falta, muestra la imagen alternativa (`imagen`, un PNG) o
+  el mensaje de vacío. El interior que importa QuickCharts (`GraficoQuickCharts.qml`) se carga con un `Loader`, así
+  `Grafico` existe aunque el módulo no esté. Página en la galería (`--pagina grafico`) y prueba.
+
 ## [2.5.0] - 2026-11-02
 
 Lo que la fase 5 (Quarto Studio, el sexto tras el piloto) pidió al marco; se añade sin quitar.
