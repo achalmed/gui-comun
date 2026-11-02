@@ -87,3 +87,14 @@ def test_atajo_legible():
     assert atajo_legible("Shift+F4") == "Mayús+F4"
     assert atajo_legible("Del") == "Supr"
     assert atajo_legible("") == ""
+
+
+@requiere_binding
+def test_atajos_estandar_sin_repetir(app):
+    """Ningún atajo repetido entre las acciones de toda ventana (F11 es detalles; pantalla completa, Ctrl+Mayús+F)."""
+    from gui_comun.acciones import Acciones
+    a = Acciones()
+    a.estandar("Prueba")
+    atajos = [a[n].atajo for n in a.nombres() if a[n].atajo]
+    assert len(atajos) == len(set(atajos)), atajos
+    assert a["ventana.detalles"].atajo == "F11" and a["ventana.pantalla_completa"].atajo == "Ctrl+Shift+F"

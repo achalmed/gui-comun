@@ -34,6 +34,13 @@ Lo que la fase 5 (Filesystem Studio, el primero tras el piloto) pidió al marco;
 
 - `Accion.textoPlano` avisa al cambiar el texto (era constante): un botón de la barra cuyo texto cambia con el
   contexto («Ejecutar» según la herramienta) se actualiza.
+- `MenuAcciones`: el atajo se dibujaba encima del texto. El `MenuItem` de `org.kde.desktop` (KF 6.24, Qt 6.10) no suma
+  el ancho del atajo ni en un menú estático; el elemento pinta ahora su contenido (icono, texto con mnemónico, atajo
+  corto en español: «Ctrl+Mayús+N», no «Control+Mayúsculas+N») con el ancho medido, y el menú fija su ancho al abrirse.
+- «Pantalla completa» pasa a Ctrl+Mayús+F (el de KDE y Dolphin): con `StandardKey.FullScreen` (F11) chocaba con el panel
+  de detalles y ninguno de los dos funcionaba.
+- `VentanaStudio`: el «Acerca de» crecía hasta el largo de la descripción; ahora tiene ancho fijo, el texto se ajusta y
+  lleva el icono del studio.
 
 ## [2.0.1] - 2026-11-01
 

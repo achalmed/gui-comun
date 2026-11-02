@@ -266,14 +266,40 @@ Kirigami.AbstractApplicationWindow {
         readonly property var datos: typeof aplicacionStudio !== "undefined" ? aplicacionStudio : null
         title: "Acerca de " + (datos ? datos.nombre : "")
         standardButtons: QQC2.Dialog.Close
-        preferredWidth: Kirigami.Units.gridUnit * 26
-        padding: Kirigami.Units.largeSpacing
-        Kirigami.FormLayout {
-            Kirigami.Heading { Kirigami.FormData.isSection: true; level: 2; text: (acerca.datos ? acerca.datos.nombre : "") + (acerca.datos && acerca.datos.version ? " " + acerca.datos.version : "") }
-            QQC2.Label { visible: ventana.descripcion !== ""; text: ventana.descripcion; wrapMode: Text.WordWrap; Layout.fillWidth: true }
-            QQC2.Label { Kirigami.FormData.label: "Autor:"; visible: ventana.autor !== ""; text: ventana.autor }
-            QQC2.Label { Kirigami.FormData.label: "Sitio:"; visible: ventana.sitio !== ""; text: "<a href=\"" + ventana.sitio + "\">" + ventana.sitio + "</a>"; onLinkActivated: link => Qt.openUrlExternally(link) }
-            QQC2.Label { Kirigami.FormData.label: "Marco:"; text: "gui-comun " + (acerca.datos ? acerca.datos.versionGuiComun : "") + " · Kirigami · " + (acerca.datos ? acerca.datos.binding : "") + " · Qt " + (acerca.datos ? acerca.datos.versionQt : ""); color: Kirigami.Theme.disabledTextColor }
+        // ancho fijo y texto que se ajusta: sin esto el diálogo crecía hasta el largo de la descripción
+        readonly property real anchoTexto: Kirigami.Units.gridUnit * 24
+        preferredWidth: anchoTexto + Kirigami.Units.largeSpacing * 4
+        maximumWidth: Kirigami.Units.gridUnit * 32
+        padding: Kirigami.Units.largeSpacing * 2
+        ColumnLayout {
+            spacing: Kirigami.Units.largeSpacing
+            RowLayout {
+                spacing: Kirigami.Units.largeSpacing
+                Kirigami.Icon {
+                    source: acerca.datos ? acerca.datos.appId : ""
+                    fallback: "applications-development"
+                    implicitWidth: Kirigami.Units.iconSizes.large
+                    implicitHeight: implicitWidth
+                }
+                ColumnLayout {
+                    spacing: 0
+                    Kirigami.Heading { level: 2; text: acerca.datos ? acerca.datos.nombre : "" }
+                    QQC2.Label { visible: acerca.datos && acerca.datos.version !== ""; text: "Versión " + (acerca.datos ? acerca.datos.version : ""); color: Kirigami.Theme.disabledTextColor }
+                }
+            }
+            QQC2.Label {
+                visible: ventana.descripcion !== ""
+                text: ventana.descripcion
+                wrapMode: Text.WordWrap
+                Layout.preferredWidth: acerca.anchoTexto
+                Layout.maximumWidth: acerca.anchoTexto
+            }
+            Kirigami.FormLayout {
+                Layout.maximumWidth: acerca.anchoTexto
+                QQC2.Label { Kirigami.FormData.label: "Autor:"; visible: ventana.autor !== ""; text: ventana.autor; wrapMode: Text.WordWrap; Layout.maximumWidth: acerca.anchoTexto * 0.7 }
+                QQC2.Label { Kirigami.FormData.label: "Sitio:"; visible: ventana.sitio !== ""; text: "<a href=\"" + ventana.sitio + "\">" + ventana.sitio + "</a>"; onLinkActivated: link => Qt.openUrlExternally(link); elide: Text.ElideMiddle; Layout.maximumWidth: acerca.anchoTexto * 0.7 }
+                QQC2.Label { Kirigami.FormData.label: "Marco:"; text: "gui-comun " + (acerca.datos ? acerca.datos.versionGuiComun : "") + " · Kirigami · " + (acerca.datos ? acerca.datos.binding : "") + " · Qt " + (acerca.datos ? acerca.datos.versionQt : ""); color: Kirigami.Theme.disabledTextColor; wrapMode: Text.WordWrap; Layout.maximumWidth: acerca.anchoTexto * 0.7 }
+            }
         }
     }
 }
