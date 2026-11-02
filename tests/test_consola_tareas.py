@@ -112,6 +112,25 @@ def test_tarea_proceso(app):
 
 
 @requiere_binding
+def test_tarea_proceso_con_progreso_leido_de_la_salida(app):
+    """2.3: `progreso_de(texto)` convierte las líneas del proceso en progreso y elemento de la barra de estado."""
+    import re
+    from gui_comun.consola import Consola
+    from gui_comun.tareas import Tareas
+    t = Tareas(Consola())
+    vistos = []
+    t.cambiada.connect(lambda: vistos.append((t.progreso, t.elemento)))
+
+    def progreso(texto):
+        m = re.search(r"Pasada (\d+)/(\d+)", texto)
+        return (int((int(m[1]) - 1) * 100 / int(m[2])), f"pasada {m[1]} de {m[2]}") if m else None
+    t.proceso("pasadas", ["sh", "-c", "echo 'Pasada 1/2 con lualatex'; echo otra; echo 'Pasada 2/2 con lualatex'"], progreso_de=progreso)
+    _esperar(app, t)
+    assert (0, "pasada 1 de 2") in vistos and (50, "pasada 2 de 2") in vistos
+    assert not t.activa and t.progreso == -1 and t.elemento == ""
+
+
+@requiere_binding
 def test_cancelar_un_proceso_termina_a_sus_hijos(app, tmp_path):
     """2.2.0: `cancel()` avisa al grupo entero; el nieto (`sleep`) no sobrevive a la cancelación del `sh` padre."""
     import os

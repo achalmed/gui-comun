@@ -30,6 +30,7 @@ VentanaStudio {
         { nombre: "acciones", texto: "Acciones y menús", icono: "configure-shortcuts" },
         { nombre: "formulario", texto: "Formularios (Addons)", icono: "document-edit" },
         { nombre: "texto", texto: "VistaTexto", icono: "text-x-generic" },
+        { nombre: "diagnosticos", texto: "ListaDiagnosticos", icono: "data-warning" },
         { nombre: "tema", texto: "Tema y unidades", icono: "preferences-desktop-color" }
     ]
     property string paginaActual: paginaInicial || "espacio"
@@ -290,7 +291,28 @@ VentanaStudio {
             }
         }
 
-        // 10. Tema
+        // 10. ListaDiagnosticos
+        Pagina {
+            titulo: "ListaDiagnosticos"
+            texto: "La lista de errores y avisos de una herramienta: nivel (icono y color semántico: error, aviso, información, tipografía), mensaje en varias líneas, archivo y línea; Intro o doble clic «va a» (`activada(fila)`); menú contextual; mensaje de vacío. Para la pestaña Problemas de un panel de detalles, donde una tabla no deja leer el mensaje entero."
+            RowLayout {
+                Layout.fillWidth: true
+                Layout.preferredHeight: Kirigami.Units.gridUnit * 14
+                spacing: Kirigami.Units.largeSpacing
+                ListaDiagnosticos {
+                    Layout.fillWidth: true; Layout.fillHeight: true
+                    modelo: diagnosticos
+                    nombreAccesible: "Problemas de muestra"
+                    onActivada: fila => ventana.mensajes.mostrar("Ir a " + diagnosticos.fila(fila).archivo + ", línea " + diagnosticos.fila(fila).linea, "informacion")
+                }
+                ListaDiagnosticos {
+                    Layout.preferredWidth: Kirigami.Units.gridUnit * 16; Layout.fillHeight: true
+                    mensajeVacio: "Sin errores ni avisos"
+                }
+            }
+        }
+
+        // 11. Tema
         Pagina {
             titulo: "Tema y unidades"
             texto: "Cero colores propios: todo sale de Kirigami.Theme (el esquema del usuario) y Kirigami.Units."

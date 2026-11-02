@@ -10,6 +10,21 @@ La versión vive en `gui_comun/__init__.py` y en `pyproject.toml`. Las secciones
 
 ## [Unreleased]
 
+## [2.3.0] - 2026-11-02
+
+Lo que la fase 5 (LaTeX Studio, el cuarto tras el piloto) pidió al marco; se añade sin quitar.
+
+### Added
+
+- `ListaDiagnosticos` (QML): la lista de errores y avisos de una herramienta con nivel (icono y color semántico:
+  error, aviso, información, tipografía), mensaje en varias líneas, archivo y línea; `activada(fila)` con Intro o
+  doble clic («ir a»), `filaActualCambiada`, `menuContextual`, `mensajeVacio`, `seleccionarFila`. Para la pestaña
+  Problemas de un panel de detalles, donde una tabla no deja leer el mensaje entero. La galería la muestra en su página.
+- `Tareas.proceso(…, progreso_de=)`: una función que recibe cada línea de la salida del proceso y devuelve
+  `(porcentaje, elemento)` o `None`; la barra de estado muestra así el progreso de un proceso que anuncia sus pasos
+  («Pasada 2/3 con lualatex…») sin que el proceso sepa nada de la ventana.
+- `gui_comun.qt` exporta también `QFileSystemWatcher` («Recompilar al guardar» de LaTeX Studio).
+
 ## [2.2.0] - 2026-11-02
 
 Lo que la fase 5 (Huella Studio, el tercero tras el piloto) pidió al marco; se añade sin quitar.

@@ -133,6 +133,12 @@ def construir(app):
         {"hash": "c9ec7fe", "mensaje": "Piloto QML + Kirigami", "hace": "hace 10 min", "autor": "Edison Achalma"},
         {"hash": "f493538", "mensaje": "Servicios intactos; controladores nuevos", "hace": "ayer", "autor": "Edison Achalma"},
         {"hash": "2858abf", "mensaje": "Pruebas en offscreen", "hace": "hace 3 d", "autor": "Edison Achalma"}])
+    diagnosticos = ModeloLista(("nivel", "mensaje", "archivo", "linea", "detalle"), [
+        {"nivel": "error", "mensaje": "Undefined control sequence.", "archivo": "./articulo.tex", "linea": 41, "detalle": "\\comandoquenoexiste"},
+        {"nivel": "aviso", "mensaje": "Reference `fig:modelo' on page 3 undefined", "archivo": "./articulo.tex", "linea": 23, "detalle": ""},
+        {"nivel": "aviso", "mensaje": "hyperref: Token not allowed in a PDF string (Unicode): removing `\\label'", "archivo": "./articulo.tex", "linea": 7, "detalle": ""},
+        {"nivel": "tipografia", "mensaje": "Overfull \\hbox (12.0pt too wide)", "archivo": "./articulo.tex", "linea": 31, "detalle": ""},
+        {"nivel": "informacion", "mensaje": "Biber: 14 entradas leídas, 9 citadas", "archivo": "", "linea": 0, "detalle": ""}])
     from gui_comun.modelos import ModeloArbol
     arbol = ModeloArbol(("Conjunto / ruta", "Inodo", "Enlaces", "Tamaño", "Ahorro"), [
         {"valores": ["Conjunto 1 — _partials/pie.qmd", "1203", "3", "1,2 KB", "2,4 KB"], "icono": "folder", "nivel": "positivo",
@@ -150,9 +156,9 @@ def construir(app):
     consola.registrar("info", "Galería de GuiComun " + __version__)
 
     for nombre, objeto in (("acciones", acciones), ("tareas", tareas), ("consola", consola), ("repos", filtrado),
-                           ("cambios", cambios), ("historial", historial), ("arbol", arbol)):
+                           ("cambios", cambios), ("historial", historial), ("arbol", arbol), ("diagnosticos", diagnosticos)):
         app.exponer(nombre, objeto)
-    app._vivos = (acciones, tareas, consola, tabla, filtrado, cambios, historial, arbol)    # que no los recoja el GC
+    app._vivos = (acciones, tareas, consola, tabla, filtrado, cambios, historial, arbol, diagnosticos)    # que no los recoja el GC
     return acciones
 
 

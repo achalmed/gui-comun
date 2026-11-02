@@ -21,7 +21,7 @@ BINDING = "PySide6" if importlib.util.find_spec("PySide6") else "PyQt6"
 if BINDING == "PySide6":
     from PySide6.QtCore import (  # noqa: F401
         QAbstractItemModel, QAbstractListModel, QAbstractTableModel, QByteArray, QCoreApplication, QDir, QEvent,
-        QFileInfo, QLocale, QMimeDatabase, QModelIndex, QObject, QPoint, QProcess, QSettings, QSize,
+        QFileInfo, QFileSystemWatcher, QLocale, QMimeDatabase, QModelIndex, QObject, QPoint, QProcess, QSettings, QSize,
         QSortFilterProxyModel, QStandardPaths, Qt, QThread, QTimer, QTranslator, QUrl, Signal, Slot, Property,
         QItemSelectionModel,
     )
@@ -43,7 +43,7 @@ if BINDING == "PySide6":
 else:
     from PyQt6.QtCore import (  # noqa: F401
         QAbstractItemModel, QAbstractListModel, QAbstractTableModel, QByteArray, QCoreApplication, QDir, QEvent,
-        QFileInfo, QLocale, QMimeDatabase, QModelIndex, QObject, QPoint, QProcess, QSettings, QSize,
+        QFileInfo, QFileSystemWatcher, QLocale, QMimeDatabase, QModelIndex, QObject, QPoint, QProcess, QSettings, QSize,
         QSortFilterProxyModel, QStandardPaths, Qt, QThread, QTimer, QTranslator, QUrl, QItemSelectionModel,
     )
     from PyQt6.QtCore import pyqtProperty as Property, pyqtSignal as Signal, pyqtSlot as Slot  # noqa: F401

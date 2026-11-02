@@ -59,10 +59,22 @@ class Tareas(QObject):
         self._arrancar(worker, nombre)
         return worker
 
-    def proceso(self, nombre: str, argv: list[str], cwd: str | None = None, al_terminar: Callable | None = None) -> ProcessWorker:
-        """Corre un proceso externo y pasa su salida, íntegra, a la consola; `al_terminar(codigo)`."""
+    def proceso(self, nombre: str, argv: list[str], cwd: str | None = None, al_terminar: Callable | None = None,
+                progreso_de: Callable[[str], tuple | None] | None = None) -> ProcessWorker:
+        """Corre un proceso externo y pasa su salida, íntegra, a la consola; `al_terminar(codigo)`.
+
+        `progreso_de(texto)` (2.3): se llama con cada línea de la salida y, si devuelve `(porcentaje, elemento)`
+        (o solo `(porcentaje,)`), la barra de estado lo muestra: el progreso de un proceso que anuncia sus pasos
+        («Pasada 2/3 con lualatex…») sin que el proceso sepa nada de la ventana. `None` deja el progreso como está."""
         worker = ProcessWorker(argv, cwd=cwd, description=nombre)
-        worker.line.connect(lambda texto, es_err: self._linea(texto, "err" if es_err else "out"))
+
+        def linea(texto: str, es_err: bool, w=worker) -> None:
+            self._linea(texto, "err" if es_err else "out")
+            if progreso_de is not None and w is self._activo:
+                p = progreso_de(texto)
+                if p:
+                    self._progreso_de(int(p[0]), str(p[1]) if len(p) > 1 else self._elemento)
+        worker.line.connect(linea)
         worker.finished_with_code.connect(
             lambda codigo, w=worker: self._fin(w, "ok" if codigo == 0 else "error",
                                                "" if codigo == 0 else f"código de salida {codigo}", al_terminar, codigo))

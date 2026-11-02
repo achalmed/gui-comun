@@ -31,6 +31,7 @@ PROPIEDADES = {
     "ArbolDatos": 'modelo: studio.arbol; columnas: [{ancho: 0, minimo: 8, conIcono: true}, {ancho: 6, semantica: true}]; expandirAlCargar: -1',
     "CampoRuta": 'texto: "/tmp"; carpeta: true',
     "VistaTexto": 'texto: "# Hola\\n\\nun *documento*"; markdown: true; mensajeVacio: "nada"',
+    "ListaDiagnosticos": 'modelo: studio.diagnosticos; mensajeVacio: "sin problemas"',
 }
 
 GUION = r'''
@@ -51,7 +52,8 @@ acciones.definir_barra(["a.uno", "|", "a.dos"])
 consola = Consola(); tareas = Tareas(consola)
 tabla = ModeloFiltrado(ModeloLista(("display", "nivel", "icono"), [{"display": "uno", "nivel": "positivo", "icono": "vcs-normal"}, {"display": "dos", "nivel": "negativo", "icono": "vcs-conflicting"}]))
 arbol = ModeloArbol(("Nombre", "Estado"), [{"valores": ["uno", "ok"], "nivel": "positivo", "icono": "folder", "hijos": [{"valores": ["uno/a", ""]}]}, {"valores": ["dos", "mal"], "nivel": "negativo"}])
-for n, o in (("acciones", acciones), ("consola", consola), ("tareas", tareas), ("tabla", tabla), ("arbol", arbol)): app.exponer(n, o)
+diagnosticos = ModeloLista(("nivel", "mensaje", "archivo", "linea"), [{"nivel": "error", "mensaje": "Undefined control sequence.", "archivo": "./a.tex", "linea": 4}, {"nivel": "aviso", "mensaje": "Reference `x' undefined", "archivo": "./a.tex", "linea": 3}])
+for n, o in (("acciones", acciones), ("consola", consola), ("tareas", tareas), ("tabla", tabla), ("arbol", arbol), ("diagnosticos", diagnosticos)): app.exponer(n, o)
 componente, props = sys.argv[2], sys.argv[3]
 ruta = os.path.join(os.environ["PRUEBA_TMP"], "Prueba_" + componente + ".qml")
 cuerpo = "import QtQuick\nimport GuiComun\n%s { id: raiz; %s }\n" % (componente, props)
