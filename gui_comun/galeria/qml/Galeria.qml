@@ -332,14 +332,14 @@ VentanaStudio {
                     nombreAccesible: "IS-LM de muestra"
                 }
                 Grafico {
-                    Layout.preferredWidth: Kirigami.Units.gridUnit * 18; Layout.fillHeight: true
+                    Layout.preferredWidth: Kirigami.Units.gridUnit * 14; Layout.fillHeight: true
                     barras: ({ categorias: ["S", "T", "M", "I", "G", "X"], valores: [120, 90, 60, 200, 150, 250] })
                     yMinimo: 0; yMaximo: 275
                     etiquetaY: "Flujo (u. m.)"; anotacion: "filtraciones = inyecciones"
                     nombreAccesible: "Flujo circular de muestra"
                 }
                 Grafico {
-                    Layout.preferredWidth: Kirigami.Units.gridUnit * 12; Layout.fillHeight: true
+                    Layout.preferredWidth: Kirigami.Units.gridUnit * 9; Layout.fillHeight: true
                     mensajeVacio: "Corre un escenario (F5) para ver sus curvas"
                 }
             }
