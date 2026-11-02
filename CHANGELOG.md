@@ -10,6 +10,18 @@ La versión vive en `gui_comun/__init__.py` y en `pyproject.toml`. Las secciones
 
 ## [Unreleased]
 
+## [2.4.0] - 2026-11-02
+
+Lo que la fase 5 (Biblioteca Studio, el quinto tras el piloto) pidió al marco; se añade sin quitar.
+
+### Fixed
+
+- `PanelDetalles`: los botones de las pestañas ya no se recrean cuando cambia un contador o la visibilidad de una pestaña
+  (el modelo del `Repeater` es el número de pestañas y cada botón lee la suya): el `TabBar` de `org.kde.desktop` leía la
+  altura del botón actual mientras se destruía y fallaba con «Cannot read property 'height' of null». Si la pestaña actual
+  pasa a oculta, el panel salta a la primera visible. Biblioteca Studio cambia la lista de pestañas por vista (el libro:
+  Resumen y Fichas; una etapa: Elemento, Operación, Plan y Registro).
+
 ## [2.3.0] - 2026-11-02
 
 Lo que la fase 5 (LaTeX Studio, el cuarto tras el piloto) pidió al marco; se añade sin quitar.

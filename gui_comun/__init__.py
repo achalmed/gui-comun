@@ -7,4 +7,4 @@ instala con pip (`pip install gui-comun`, o desde su repo) o, dentro del espacio
 subiendo carpetas hasta el repo `gui-comun/`. Los studios QML corren con el Python del sistema, cuyo Qt trae Kirigami.
 """
 
-__version__ = "2.3.0"
+__version__ = "2.4.0"

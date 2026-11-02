@@ -5,7 +5,7 @@ forma: referencia
 titulo: "Componentes de GuiComun 2.x: qué es cada uno, sus propiedades y señales, y la API Python que los alimenta"
 creado: 2026-11-01
 ---
-# Componentes de GuiComun (2.3)
+# Componentes de GuiComun (2.4)
 
 La referencia del módulo QML `GuiComun` (`gui_comun/qml/GuiComun/`) y del núcleo Python que lo alimenta. La anatomía
 y la justificación están en `arquitectura-qml-kirigami.md` §4–5 y en `git-studio/docs/rediseno.md` §4–7; la galería
@@ -76,8 +76,10 @@ flecha de la primera columna expande con el ratón; ← y → con el teclado (�
 ### PanelDetalles
 
 `titulo`, `subtitulo`, `icono`, `accionesCabecera` (lista de `Accion`: botones de icono), `pestanas:
-[{titulo, contador, visible}]`, `pestanaActual`; los hijos son las páginas, en el orden de las pestañas;
-`mensajeVacio` cuando no hay título; `anchoPreferido` (24) · `anchoMinimo` (18).
+[{titulo, contador, visible}]`, `pestanaActual`; los hijos son las páginas, en el orden de las pestañas (una pestaña
+con `visible: false` conserva su índice: su página sigue siendo el hijo de esa posición); `mensajeVacio` cuando no hay
+título; `anchoPreferido` (24) · `anchoMinimo` (18). 2.4: cambiar un contador o la visibilidad no recrea los botones ni
+mueve `pestanaActual`; si la actual pasa a oculta, salta a la primera visible.
 
 ### PanelInferior
 

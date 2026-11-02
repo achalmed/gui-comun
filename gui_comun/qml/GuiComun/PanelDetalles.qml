@@ -27,6 +27,13 @@ QQC2.Control {
     Kirigami.Theme.inherit: false
     Accessible.name: "Detalles" + (titulo ? ": " + titulo : "")
 
+    // si la pestaña actual pasa a oculta (cambió la lista), salta a la primera visible
+    function primeraVisible() { return pestanas.findIndex(p => !p || p.visible !== false) }
+    onPestanasChanged: {
+        const p = pestanas[pestanaActual]
+        if (p && p.visible === false) { const i = primeraVisible(); if (i >= 0) pestanaActual = i }
+    }
+
     background: Rectangle { color: Kirigami.Theme.backgroundColor }
 
     contentItem: ColumnLayout {
@@ -75,13 +82,16 @@ QQC2.Control {
             id: barra
             visible: panel.titulo !== "" && panel.pestanas.length > 1
             Layout.fillWidth: true
+            // el modelo es el NÚMERO de pestañas: así un cambio de contador o de visibilidad no recrea los botones (el TabBar
+            // de org.kde.desktop lee la altura del botón actual y fallaba con «Cannot read property 'height' of null»)
             Repeater {
-                model: panel.pestanas
+                model: panel.pestanas.length
                 delegate: QQC2.TabButton {
-                    required property var modelData
-                    visible: modelData.visible === undefined ? true : modelData.visible
+                    required property int index
+                    readonly property var pestana: panel.pestanas[index] || {}
+                    visible: pestana.visible === undefined ? true : pestana.visible
                     width: visible ? implicitWidth : 0
-                    text: modelData.titulo + (modelData.contador > 0 ? " (" + modelData.contador + ")" : "")
+                    text: (pestana.titulo || "") + (pestana.contador > 0 ? " (" + pestana.contador + ")" : "")
                 }
             }
         }

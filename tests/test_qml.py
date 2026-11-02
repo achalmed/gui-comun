@@ -129,3 +129,42 @@ print(app.mensaje_de_fallo())
     r = correr_hijo(guion, tmp_path)
     assert r.returncode == 0, r.stderr[-2000:]
     assert "CARGA False" in r.stdout and "no se pudo cargar la interfaz QML" in r.stderr
+
+
+@requiere_kirigami
+def test_panel_detalles_conserva_las_pestanas(tmp_path):
+    """Cambiar un contador o la visibilidad de una pestaña no recrea los botones ni mueve la pestaña actual; si la actual
+    pasa a oculta, salta a la primera visible (2.4.0: Biblioteca Studio cambia la lista de pestañas por vista)."""
+    guion = r'''
+import sys, os, json; sys.path.insert(0, sys.argv[1])
+from gui_comun.nucleo import Aplicacion
+from gui_comun.qt import QTimer
+app = Aplicacion("gui-comun-prueba", "Prueba")
+ruta = os.path.join(os.environ["PRUEBA_TMP"], "Detalles.qml")
+open(ruta, "w").write("""import QtQuick
+import GuiComun
+Window { visible: false; width: 900; height: 600
+  PanelDetalles { id: raiz; titulo: "uno"; pestanas: [{titulo: "A"}, {titulo: "B", contador: 2}, {titulo: "C"}]
+    Item { objectName: "a" } Item { objectName: "b" } Item { objectName: "c" } } }
+""")
+errores = []
+app.motor.warnings.connect(lambda avisos: errores.extend(a.toString() for a in avisos))
+ok = app.cargar(ruta)
+panel = app.motor.rootObjects()[0].findChild(type(app.motor.rootObjects()[0]).__mro__[0], "") if False else None
+raiz = app.motor.rootObjects()[0]
+from gui_comun.qt import QObject
+panel = [c for c in raiz.findChildren(QObject) if c.property("pestanas") is not None and c.property("anchoPreferido") is not None][0]
+panel.setProperty("pestanaActual", 1)
+panel.setProperty("pestanas", [{"titulo": "A"}, {"titulo": "B", "contador": 5}, {"titulo": "C"}])
+sigue = panel.property("pestanaActual")
+panel.setProperty("pestanas", [{"titulo": "A", "visible": False}, {"titulo": "B", "visible": False}, {"titulo": "C"}])
+salta = panel.property("pestanaActual")
+QTimer.singleShot(300, app.app.quit); app.app.exec(); app.cerrar()
+print(json.dumps({"ok": ok, "sigue": sigue, "salta": salta, "errores": errores}))
+'''
+    import json
+    r = correr_hijo(guion, tmp_path)
+    assert r.returncode == 0, r.stderr[-3000:]
+    datos = json.loads(r.stdout.strip().splitlines()[-1])
+    assert datos["ok"] and datos["sigue"] == 1 and datos["salta"] == 2
+    assert not [e for e in datos["errores"] if "TypeError" in e], "\n".join(datos["errores"])
