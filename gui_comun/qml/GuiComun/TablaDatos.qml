@@ -199,10 +199,12 @@ QQC2.Control {
             }
         }
 
+        Item {
+        Layout.fillWidth: true
+        Layout.fillHeight: true
         TableView {
             id: tabla
-            Layout.fillWidth: true
-            Layout.fillHeight: true
+            anchors.fill: parent
             clip: true
             model: raiz.modelo
             boundsBehavior: Flickable.StopAtBounds
@@ -256,7 +258,7 @@ QQC2.Control {
                 RowLayout {
                     anchors.fill: parent
                     anchors.leftMargin: celda.column === 0 ? Kirigami.Units.largeSpacing : Kirigami.Units.smallSpacing
-                    anchors.rightMargin: Kirigami.Units.smallSpacing
+                    anchors.rightMargin: celda.column === tabla.columns - 1 ? Kirigami.Units.largeSpacing * 2 : Kirigami.Units.smallSpacing
                     spacing: Kirigami.Units.smallSpacing
                     Kirigami.Icon {
                         visible: celda.col.conIcono === true && celda.model.icono !== undefined && celda.model.icono !== ""
@@ -293,14 +295,14 @@ QQC2.Control {
                     }
                 }
             }
-
-            Kirigami.PlaceholderMessage {
-                anchors.centerIn: parent
-                width: parent.width - Kirigami.Units.gridUnit * 4
-                visible: tabla.rows === 0 && raiz.mensajeVacio !== ""
-                text: raiz.mensajeVacio
-                icon.name: raiz.iconoVacio
-            }
+        }
+        Kirigami.PlaceholderMessage {
+            anchors.centerIn: parent
+            width: parent.width - Kirigami.Units.gridUnit * 4
+            visible: tabla.rows === 0 && raiz.mensajeVacio !== ""
+            text: raiz.mensajeVacio
+            icon.name: raiz.iconoVacio
+        }
         }
     }
 }

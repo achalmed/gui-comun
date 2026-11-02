@@ -107,7 +107,7 @@ class Accion(QObject):
     def descripcion(self) -> str:
         return self._descripcion
 
-    @Property(str, constant=True)
+    @Property(str, notify=textoCambiado)
     def textoPlano(self) -> str:
         """El texto sin el `&` del mnemónico ni los puntos suspensivos finales (para la paleta y la barra)."""
         return self._texto.replace("&&", "\0").replace("&", "").replace("\0", "&").removesuffix("…")

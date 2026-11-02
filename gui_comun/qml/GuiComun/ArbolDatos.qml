@@ -120,7 +120,9 @@ QQC2.Control {
 
     onEstrechaChanged: arbol.forceLayout()
     onColumnasChanged: arbol.forceLayout()
-    onModeloChanged: Qt.callLater(() => { if (raiz.expandirAlCargar !== 0 && raiz.modelo) arbol.expandRecursively(-1, raiz.expandirAlCargar) })
+    function expandirInicial() { if (raiz.expandirAlCargar !== 0 && raiz.modelo) Qt.callLater(() => arbol.expandRecursively(-1, raiz.expandirAlCargar)) }
+    onModeloChanged: expandirInicial()
+    Connections { target: raiz.modelo; function onModelReset() { raiz.expandirInicial() } }
 
     contentItem: ColumnLayout {
         spacing: 0
@@ -153,10 +155,12 @@ QQC2.Control {
             }
         }
 
+        Item {
+        Layout.fillWidth: true
+        Layout.fillHeight: true
         TreeView {
             id: arbol
-            Layout.fillWidth: true
-            Layout.fillHeight: true
+            anchors.fill: parent
             clip: true
             model: raiz.modelo
             Binding { target: arbol; property: "rootIndex"; value: raiz.raiz; when: raiz.raiz !== null && raiz.raiz !== undefined }
@@ -226,7 +230,7 @@ QQC2.Control {
                 RowLayout {
                     anchors.fill: parent
                     anchors.leftMargin: celda.column === 0 ? Kirigami.Units.smallSpacing + celda.depth * celda.sangria : Kirigami.Units.smallSpacing
-                    anchors.rightMargin: Kirigami.Units.smallSpacing
+                    anchors.rightMargin: celda.column === arbol.columns - 1 ? Kirigami.Units.largeSpacing * 2 : Kirigami.Units.smallSpacing
                     spacing: Kirigami.Units.smallSpacing
                     Item {                                   // la flecha de expandir, solo en la primera columna
                         visible: celda.column === 0
@@ -277,14 +281,14 @@ QQC2.Control {
                     }
                 }
             }
-
-            Kirigami.PlaceholderMessage {
-                anchors.centerIn: parent
-                width: parent.width - Kirigami.Units.gridUnit * 4
-                visible: arbol.rows === 0 && raiz.mensajeVacio !== ""
-                text: raiz.mensajeVacio
-                icon.name: raiz.iconoVacio
-            }
+        }
+        Kirigami.PlaceholderMessage {
+            anchors.centerIn: parent
+            width: parent.width - Kirigami.Units.gridUnit * 4
+            visible: arbol.rows === 0 && raiz.mensajeVacio !== ""
+            text: raiz.mensajeVacio
+            icon.name: raiz.iconoVacio
+        }
         }
     }
 }

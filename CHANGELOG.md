@@ -30,6 +30,11 @@ Lo que la fase 5 (Filesystem Studio, el primero tras el piloto) pidió al marco;
   carga de los dos componentes.
 - `gui_comun.qt` exporta también `QDir`, `QFileInfo` y `QMimeDatabase` (el explorador de Filesystem Studio).
 
+### Fixed
+
+- `Accion.textoPlano` avisa al cambiar el texto (era constante): un botón de la barra cuyo texto cambia con el
+  contexto («Ejecutar» según la herramienta) se actualiza.
+
 ## [2.0.1] - 2026-11-01
 
 Lo que el piloto (Git Studio, fase 3) pidió al marco; sin cambios de API.
