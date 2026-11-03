@@ -3,7 +3,9 @@
 // secundaria), filas alternas, selección por filas (Ctrl y Mayús), menú contextual, doble clic e Intro, expandir y
 // contraer con el ratón (la flecha) y el teclado (← →). El modelo es cualquier QAbstractItemModel jerárquico con los
 // roles `display`, `nivel`, `icono` y `habilitado` (p. ej. `gui_comun.modelos.ModeloArbol`); `raiz` acota la vista a un
-// índice del modelo (el explorador de carpetas). Sin colores propios: Kirigami.Theme y Kirigami.Units.
+// índice del modelo (el explorador de carpetas). 3.1: con `ordenable`, un clic en la cabecera ordena cada nivel por esa
+// columna (la segunda vez, al revés) con `modelo.ordenar(columna, descendente)` (gui_comun.modelos.ModeloArbol) y emite
+// `ordenar`; la flecha marca la columna. Sin colores propios: Kirigami.Theme y Kirigami.Units.
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls as QQC2
@@ -23,6 +25,9 @@ QQC2.Control {
     property string mensajeVacio: ""
     property string iconoVacio: "edit-none"
     property int expandirAlCargar: 0                 // niveles que se expanden solos al poner el modelo (0: ninguno; -1: todos)
+    property bool ordenable: false                   // 3.1: clic en la cabecera para ordenar
+    property int columnaOrden: -1
+    property bool descendente: false
     readonly property alias seleccion: seleccionModelo
     readonly property alias vista: arbol
     readonly property int filaActual: arbol.currentRow
@@ -32,6 +37,14 @@ QQC2.Control {
     signal suprimir()
     signal filaActualCambiada(int fila)
     signal seleccionCambiada()
+    signal ordenar(int columna, bool descendente)
+
+    function ordenarPor(columna, desc) {
+        raiz.columnaOrden = columna
+        raiz.descendente = desc
+        if (raiz.modelo && typeof raiz.modelo.ordenar === "function") raiz.modelo.ordenar(columna, desc)
+        raiz.ordenar(columna, desc)
+    }
 
     padding: 0
     Kirigami.Theme.colorSet: Kirigami.Theme.View
@@ -142,15 +155,30 @@ QQC2.Control {
                 leftPadding: index === 0 ? Kirigami.Units.largeSpacing : Kirigami.Units.smallSpacing
                 Accessible.role: Accessible.ColumnHeader
                 Accessible.name: model.display !== undefined ? model.display : ""
+                readonly property bool ordenaAqui: raiz.ordenable && raiz.columnaOrden === index
                 background: Rectangle {
-                    color: Kirigami.Theme.backgroundColor
+                    color: raiz.ordenable && celdaCabecera.hovered ? Qt.alpha(Kirigami.Theme.hoverColor, 0.3) : Kirigami.Theme.backgroundColor
                     Kirigami.Separator { anchors.right: parent.right; height: parent.height }
                     Kirigami.Separator { anchors.bottom: parent.bottom; width: parent.width }
                 }
-                contentItem: QQC2.Label {
-                    text: celdaCabecera.model.display !== undefined ? celdaCabecera.model.display : ""
-                    elide: Text.ElideRight
-                    horizontalAlignment: raiz.alineacion(celdaCabecera.index)
+                contentItem: RowLayout {
+                    spacing: Kirigami.Units.smallSpacing
+                    QQC2.Label {
+                        Layout.fillWidth: true
+                        text: celdaCabecera.model.display !== undefined ? celdaCabecera.model.display : ""
+                        elide: Text.ElideRight
+                        horizontalAlignment: raiz.alineacion(celdaCabecera.index)
+                    }
+                    Kirigami.Icon {
+                        visible: celdaCabecera.ordenaAqui
+                        source: raiz.descendente ? "arrow-down-symbolic" : "arrow-up-symbolic"
+                        implicitWidth: Kirigami.Units.iconSizes.small
+                        implicitHeight: implicitWidth
+                    }
+                }
+                TapHandler {
+                    enabled: raiz.ordenable
+                    onTapped: raiz.ordenarPor(celdaCabecera.index, raiz.columnaOrden === celdaCabecera.index ? !raiz.descendente : false)
                 }
             }
         }

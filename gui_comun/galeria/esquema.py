@@ -62,6 +62,12 @@ def entorno_con_esquema(colors: Path, carpeta: Path | None = None) -> dict[str, 
         elif origen.is_file():
             shutil.copy2(origen, carpeta / nombre)
     kdeglobals_con_esquema(colors, carpeta / "kdeglobals")
+    # 3.1: con QApplication (3.0) los controles los pinta el QStyle (Kvantum) con la paleta de su tema; el tema de
+    # Kvantum ha de ir a juego con el esquema forzado (LliphiOscuro.colors → LliphiOscuro) o salen campos y pestañas
+    # claros en una captura oscura. Solo si ese tema de Kvantum existe; si no, el del usuario (copiado arriba)
+    kvantum = carpeta / "Kvantum"
+    if (kvantum / colors.stem).is_dir():
+        (kvantum / "kvantum.kvconfig").write_text(f"[General]\ntheme={colors.stem}\n", encoding="utf-8")
     env = dict(os.environ)
     env["XDG_CONFIG_HOME"] = str(carpeta)
     return env

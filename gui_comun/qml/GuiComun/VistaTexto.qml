@@ -1,7 +1,8 @@
 // VistaTexto (2.2) — texto de solo lectura con mensaje de vacío: un documento en Markdown (los enlaces abren fuera) o
 // texto monoespaciado con resaltado de KSyntaxHighlighting (`definicion`: «Bash», «Diff», «Markdown», «JSON»…; vacía,
 // sin resaltar). Lo que tres studios repetían: el árbol de `tree`, la diferencia de un cambio, la guía del repo.
-// Sin colores ni fuentes propios: Kirigami.Theme y Kirigami.Units.
+// Sin colores ni fuentes propios: Kirigami.Theme y Kirigami.Units. 3.1: la única de la familia (Dotfiles y Filesystem
+// la usan en vez de su copia); el resaltado sigue al tema claro u oscuro.
 import QtQuick
 import QtQuick.Controls as QQC2
 import org.kde.kirigami as Kirigami
@@ -17,6 +18,7 @@ QQC2.Control {
     property string nombreAccesible: markdown ? "Documento" : "Texto"
     property bool ajustarLineas: markdown                // sin markdown, por omisión no se parten las líneas
     readonly property alias area: area
+    readonly property bool oscuro: Kirigami.Theme.backgroundColor.hslLightness < 0.5
 
     // tamaño implícito propio (no el del texto): dentro de un Layout, el contenido no dicta el ancho ni provoca bucles
     implicitWidth: Kirigami.Units.gridUnit * 20
@@ -47,8 +49,8 @@ QQC2.Control {
             Accessible.name: raiz.nombreAccesible
             Loader {
                 active: !raiz.markdown && raiz.definicion !== ""
-                source: "ResaltadoSalida.qml"
-                onLoaded: { item.nombreDefinicion = raiz.definicion; item.textEdit = area }
+                source: "ResaltadoEditor.qml"         // 3.1: con el tema de KSyntaxHighlighting claro u oscuro
+                onLoaded: { item.nombreDefinicion = raiz.definicion; item.oscuro = Qt.binding(() => raiz.oscuro); item.textEdit = area }
             }
         }
     }

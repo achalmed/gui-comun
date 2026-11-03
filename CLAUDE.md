@@ -22,7 +22,9 @@ El marco común de los studios. Rige el `CLAUDE.md` raíz de `~/Documents`; aqu�
 - **Los nombres son contrato** de diez studios: en 1.x `aplicar_tema`, `Disenador`, `montar_studio`, `Marco`,
   `Comando`, los widgets de `tarjetas`, las señales de `ConsoleDock` y los workers; en 2.x las propiedades y señales
   de cada componente de `docs/componentes.md` y la API de `Acciones`, `Tareas`, `Consola`, `Aplicacion`. Se añade sin
-  quitar; lo que cambia sube la mayor en `CHANGELOG.md` con su migración, tras `rg` en los studios.
+  quitar; lo que cambia sube la mayor en `CHANGELOG.md` con su migración, tras `rg` en los studios. **Un tipo QML nuevo
+  no se llama como un componente de un studio** (3.1): el de la base taparía al local en su carpeta `componentes/`;
+  antes de añadirlo, `ls ../*/studio/*/qml/componentes ../../.dotfiles/studio/*/qml/componentes | grep -x <Nombre>.qml`.
 - **Cero colores, fuentes, radios o sombras propios en QML**: `Kirigami.Theme` y `Kirigami.Units`; ningún nombre ni
   logotipo de la aplicación dentro de la ventana; cada control sin texto declara `Accessible.name`
   (`tests/test_qml.py` lo vigila).

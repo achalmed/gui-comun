@@ -10,10 +10,67 @@ La versión vive en `gui_comun/__init__.py` y en `pyproject.toml`. Las secciones
 
 ## [Unreleased]
 
+## [3.1.0] - 2026-11-03
+
+Aditiva: lo que los studios repetían tras la reingeniería del 2026-11-02 sube a la base, cada pieza con su página en
+la galería, sus pruebas y su entrada en `docs/componentes.md`. Nada cambia de nombre ni se retira; los diez studios
+arrancan igual. Las copias de cada studio pueden quedarse hasta que su repo las cambie por la de la base.
+
+**Nombres propios, a propósito.** Un tipo de `GuiComun` con el mismo nombre que un componente local de un studio *lo
+tapa* en los archivos de su carpeta `componentes/` (la importación del módulo manda sobre la de la carpeta implícita):
+con el nombre de la copia, la `EtiquetaEstado` de la base rompía Dotfiles y Lliphi (su API usa `texto`), y el editor
+de LaTeX habría cambiado al abrir un archivo. Por eso las piezas promovidas llevan nombre nuevo; un studio las adopta
+cambiando el nombre y borrando su copia:
+
+| copia en el studio | en la base (3.1) |
+|---|---|
+| `EditorArchivo` (LaTeX, Quarto) · `controladores/editor.py` | `EditorTexto` · `gui_comun.editor.ControladorEditor` |
+| `BarraBusqueda` (LaTeX, Quarto) | `BarraBuscarReemplazar` |
+| `VisorPdf` (LaTeX) · `visor.py` · `controladores/visor.py` | `VistaPdf` · `gui_comun.visor_pdf.VisorPdf` (SyncTeX queda en el studio) |
+| `ListaProblemas` (LaTeX) | `ListaErrores` (roles `ubicacion` en vez de `relativa`) |
+| `VistaDiferencia` (Git, Dotfiles, Lliphi) · `diferencias.py` | `VistaComparacion` · `gui_comun.diferencias` |
+| `PasosOperacion` (Filesystem, Lliphi) · `PasosPuerta` (Biblioteca) · `pasos.py` | `PasosEscritura` · `LineaPasos` · `gui_comun.pasos` |
+| `GraficoCientifico` (Simuladores) · `servicios/paleta.py` · `ColoresCategoria` (Filesystem) | `GraficoXY` · `gui_comun.paleta` · `PaletaCategorica` |
+| `EtiquetaEstado` (Dotfiles, Lliphi; `texto`) | `EtiquetaNivel` (`text`) |
+| `controladores/portadas.py` (Biblioteca) | `gui_comun.miniaturas.ProveedorMiniaturas` |
+
+### Added
+- `VistaComparacion` + `gui_comun.diferencias` (de Git, que Dotfiles y Lliphi copiaron): la diferencia lado a lado con
+  qué es cada lado y sus notas, botones por trozo pedidos por el studio (`accionesTrozo` → `trozoPedido`), **selección
+  de líneas sueltas** (`seleccionable`, `filasElegidas`) y `parche_de_lineas` para prepararlas o quitarlas del índice;
+  `comparar(antes, despues)` sin git.
+- `EditorTexto` + `BarraBuscarReemplazar` + `gui_comun.editor.ControladorEditor` (de LaTeX, que Quarto copió): las
+  definiciones de resaltado y el comentario de línea por lenguaje como parámetros; autocompletado y Ctrl+clic como
+  ganchos (`completar`, `disparaCompletado`, `ctrlClic`).
+- `VistaPdf` + `gui_comun.visor_pdf.VisorPdf` (de LaTeX): QtQuick.Pdf si está instalado, `pdftoppm` de respaldo
+  (`GUI_COMUN_VISOR=pdftoppm`); `dobleClic(pagina, x, y)` y `marcarRecuadro` para lo propio de cada disciplina (SyncTeX).
+- `ListaErrores` (de LaTeX): errores y avisos presentables en lista, con causa, acción y detalle desplegable.
+- `PasosEscritura`, `LineaPasos` + `gui_comun.pasos` (de Filesystem, Lliphi y Biblioteca): los seis pasos de una
+  escritura, el plan con sus conflictos que bloquean, la verificación y el informe en Markdown; la línea de pasos con
+  estado.
+- `GraficoXY` + `PaletaCategorica` + `gui_comun.paleta` (de Simuladores y Filesystem): el gráfico con el x de
+  cada línea, la base punteada y la marca de lo no verificado; colores con significado llevados al tema.
+- `EtiquetaNivel` (de Dotfiles y Lliphi); `gui_comun.miniaturas.ProveedorMiniaturas` (de las portadas de Biblioteca).
+- `ArbolDatos.ordenable` y `ModeloArbol.ordenar(columna, descendente)`: el orden por cabecera que pidieron Filesystem,
+  Dotfiles y Huella (grupos primero, valores crudos por columna, los hijos perezosos se ordenan al cargarse).
+- `ModeloLista.todas()` es un `Slot` (Git tuvo que exponer otra propiedad para leer la lista desde QML).
+- `gui_comun.qt` exporta `QImage`, `QImageReader`, `QQuickImageProvider` y `QQmlImageProviderBase`.
+- La galería: seis páginas nuevas (VistaComparacion, EditorTexto, VistaPdf, ListaErrores, pasos, GraficoXY)
+  y el árbol ordenable, sobre muestras en una carpeta temporal que se borra al salir.
+
+### Changed
+- `VistaTexto` resalta con el tema de KSyntaxHighlighting claro u oscuro según el fondo (`ResaltadoEditor`).
+- `Aplicacion` fija `AA_ShareOpenGLContexts` antes de crear la aplicación (lo exige QtWebEngine de QML: la vista
+  previa de Quarto).
+- `galeria.esquema.entorno_con_esquema` pone también el tema de Kvantum del mismo nombre (con `QApplication` los
+  controles los pinta Kvantum; una captura oscura salía con campos claros). Cinco `capturar.py` lo hacían a mano.
+
 ### Fixed
 - **Un diálogo de archivo o carpeta con el título vacío salía con el de Qt, en inglés («Select Folder»)**, visto en la
   sesión real con Quarto y Biblioteca, cuyo `CampoRuta` recibe la etiqueta de una entrada que aún no se conoce:
   `ElegirCarpeta`, `ElegirArchivos` y `GuardarComo` ponen el suyo por omisión, y `CampoRuta` tiene `tituloVisible`.
+- El editor de LaTeX Studio se marcaba como modificado nada más abrir un archivo: en la base, «modificado» compara con
+  el texto leído. La lista de problemas se leía mal en la fila elegida (rojo sobre el color de selección).
 
 ## [3.0.0] - 2026-11-02
 

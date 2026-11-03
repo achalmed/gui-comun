@@ -23,3 +23,13 @@ DialogoConfirmacion 3.0 DialogoConfirmacion.qml
 ElegirArchivos 3.0 ElegirArchivos.qml
 ElegirCarpeta 3.0 ElegirCarpeta.qml
 GuardarComo 3.0 GuardarComo.qml
+VistaComparacion 3.1 VistaComparacion.qml
+EditorTexto 3.1 EditorTexto.qml
+BarraBuscarReemplazar 3.1 BarraBuscarReemplazar.qml
+VistaPdf 3.1 VistaPdf.qml
+ListaErrores 3.1 ListaErrores.qml
+PasosEscritura 3.1 PasosEscritura.qml
+LineaPasos 3.1 LineaPasos.qml
+GraficoXY 3.1 GraficoXY.qml
+PaletaCategorica 3.1 PaletaCategorica.qml
+EtiquetaNivel 3.1 EtiquetaNivel.qml

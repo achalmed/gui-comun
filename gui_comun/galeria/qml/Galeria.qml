@@ -37,6 +37,12 @@ VentanaStudio {
         { nombre: "escritorio", texto: "Escritorio y diálogos (3.0)", icono: "system-file-manager" },
         { nombre: "errores", texto: "Errores presentables (3.0)", icono: "dialog-error" },
         { nombre: "operaciones", texto: "Operaciones (3.0)", icono: "dialog-question" },
+        { nombre: "diferencias", texto: "VistaComparacion (3.1)", icono: "document-compare" },
+        { nombre: "editor", texto: "EditorTexto (3.1)", icono: "document-edit" },
+        { nombre: "pdf", texto: "VistaPdf (3.1)", icono: "application-pdf" },
+        { nombre: "problemas", texto: "ListaErrores (3.1)", icono: "data-error" },
+        { nombre: "pasos", texto: "Pasos y estados (3.1)", icono: "run-build" },
+        { nombre: "cientifico", texto: "GraficoXY (3.1)", icono: "office-chart-line" },
         { nombre: "tema", texto: "Tema y unidades", icono: "preferences-desktop-color" }
     ]
     property string paginaActual: paginaInicial || "espacio"
@@ -149,12 +155,13 @@ VentanaStudio {
         // 3. ArbolDatos
         Pagina {
             titulo: "ArbolDatos"
-            texto: "TreeView de Qt Quick con la misma anatomía y roles que TablaDatos (display, nivel, icono, habilitado): flecha de expandir en la primera columna, ← → por teclado, selección por filas, menú contextual, doble clic e Intro. El modelo es un ModeloArbol (nodos de diccionario; los hijos pueden cargarse al expandir: el tercer conjunto) o cualquier QAbstractItemModel; `raiz` acota la vista a un índice."
+            texto: "TreeView de Qt Quick con la misma anatomía y roles que TablaDatos (display, nivel, icono, habilitado): flecha de expandir en la primera columna, ← → por teclado, selección por filas, menú contextual, doble clic e Intro; con `ordenable` (3.1), un clic en la cabecera ordena cada nivel. El modelo es un ModeloArbol (nodos de diccionario; los hijos pueden cargarse al expandir: el tercer conjunto) o cualquier QAbstractItemModel; `raiz` acota la vista a un índice."
             ArbolDatos {
                 Layout.fillWidth: true
                 Layout.preferredHeight: Kirigami.Units.gridUnit * 14
                 modelo: arbol
                 expandirAlCargar: 1
+                ordenable: true                          // 3.1: clic en la cabecera
                 columnas: [
                     { ancho: 0, minimo: 14, conIcono: true, semantica: true },
                     { ancho: 5, mono: true, alinear: "derecha", secundaria: true },
@@ -481,7 +488,150 @@ VentanaStudio {
             QQC2.Label { text: "Escribir verifica bien; instalar termina pero su verificación no pasa (error presentable); publicar falla con «no se pudo resolver el servidor»; eliminar no borra nada (es una muestra)."; color: Kirigami.Theme.disabledTextColor; wrapMode: Text.WordWrap; Layout.fillWidth: true }
         }
 
-        // 17. Tema
+        // 17. VistaComparacion (3.1)
+        Pagina {
+            titulo: "VistaComparacion"
+            texto: "La diferencia de un archivo lado a lado (Git, Dotfiles y Lliphi tenían cada uno su copia): el archivo y sus cifras, qué es cada lado y sus notas, las filas con números de línea y las líneas cambiadas emparejadas. Cada trozo lleva los botones que el studio pida (accionesTrozo → trozoPedido(clave, trozo)); con «seleccionable», un clic elige una línea (Ctrl o Mayús para varias): preparar líneas sueltas. Las filas: gui_comun.diferencias (analizar o comparar)."
+            VistaComparacion {
+                id: muestraDiferencia
+                Layout.fillWidth: true
+                Layout.preferredHeight: Kirigami.Units.gridUnit * 16
+                diferencia: diferenciaMuestra
+                seleccionable: true
+                accionesTrozo: [{ clave: "aplicar", texto: "Usar lo generado", icono: "dialog-ok-apply" }]
+                onTrozoPedido: (clave, trozo) => ventana.mensajes.mostrar("«" + clave + "» en el trozo " + (trozo + 1) + " (muestra: no se escribe nada).", "informacion")
+            }
+            QQC2.Label { text: "Elegidas: " + JSON.stringify(muestraDiferencia.filasElegidas); color: Kirigami.Theme.disabledTextColor }
+        }
+
+        // 18. EditorTexto (3.1)
+        Pagina {
+            titulo: "EditorTexto y BarraBuscarReemplazar"
+            texto: "El editor de LaTeX Studio (Quarto lo copió): resaltado de KSyntaxHighlighting claro u oscuro según el tema, números de línea, comentar la selección con el comentario del lenguaje, ir a línea, autocompletado si el studio da la función, Ctrl+clic con su señal. Nunca escribe solo: guardar() lo pide el studio (Ctrl+S) al controlador (gui_comun.editor), que no pisa un cambio hecho fuera. La barra busca y reemplaza con expresiones regulares de Python (Ctrl+Z deshace)."
+            ColumnLayout {
+                Layout.fillWidth: true
+                Layout.preferredHeight: Kirigami.Units.gridUnit * 18
+                spacing: 0
+                RowLayout {
+                    Layout.fillWidth: true
+                    QQC2.Button { text: "Buscar"; icon.name: "edit-find"; onClicked: busqueda.abrir(false) }
+                    QQC2.Button { text: "Reemplazar"; icon.name: "edit-find-replace"; onClicked: busqueda.abrir(true) }
+                    QQC2.Button { text: "Comentar"; icon.name: "format-text-code"; onClicked: editorMuestra.comentar() }
+                    QQC2.Button { text: "Ir a la línea 6"; onClicked: editorMuestra.irALinea(6, 0) }
+                    Item { Layout.fillWidth: true }
+                    QQC2.Label { text: "línea " + editorMuestra.lineaActual + ", columna " + (editorMuestra.columnaActual + 1) + (editorMuestra.modificado ? " · modificado" : ""); color: Kirigami.Theme.disabledTextColor }
+                }
+                EditorTexto {
+                    id: editorMuestra
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    controlador: editor
+                    ruta: articuloMuestra
+                    definicion: "LaTeX"
+                    Component.onCompleted: cargar()
+                    onCtrlClic: (linea, columna) => ventana.mensajes.mostrar("Ctrl+clic en la línea " + linea + " (en LaTeX: ir al PDF).", "informacion")
+                }
+                BarraBuscarReemplazar {
+                    id: busqueda
+                    Layout.fillWidth: true
+                    editor: editorMuestra
+                    onReemplazados: n => ventana.mensajes.mostrar(n + " reemplazos (Ctrl+Z los deshace).", "informacion")
+                }
+            }
+        }
+
+        // 19. VistaPdf (3.1)
+        Pagina {
+            titulo: "VistaPdf"
+            texto: "Un PDF integrado (de LaTeX Studio; Raphi y Quarto lo necesitaban): con QtQuick.Pdf, Qt pinta cada página; sin él, pdftoppm las renderiza por demanda a la resolución del zoom, en hilos y con una caché acotada. Miniaturas, zoom con Ctrl+rueda, ajustar al ancho, recargar conservando la página, abrir con su aplicación. Doble clic: dobleClic(pagina, x, y) en puntos (SyncTeX en LaTeX); marcarRecuadro marca una zona."
+            QQC2.Label { text: "Motor: " + visor.motor + (visor.motor === "qtpdf" ? " (QtQuick.Pdf)" : " (pdftoppm)"); color: Kirigami.Theme.disabledTextColor }
+            VistaPdf {
+                Layout.fillWidth: true
+                Layout.preferredHeight: Kirigami.Units.gridUnit * 20
+                visor: studio.visor
+                barraExtra: [ QQC2.ToolButton { icon.name: "edit-find"; text: "Marcar un recuadro"; display: QQC2.AbstractButton.IconOnly; Accessible.name: text; onClicked: studio.visor.marcarRecuadro(2, 72, 100, 220, 30) } ]
+                onDobleClic: (pagina, x, y) => ventana.mensajes.mostrar("Doble clic en la página " + pagina + " (" + Math.round(x) + ", " + Math.round(y) + " pt).", "informacion")
+            }
+        }
+
+        // 20. ListaErrores (3.1)
+        Pagina {
+            titulo: "ListaErrores"
+            texto: "Errores y avisos como errores presentables, en lista (de LaTeX Studio): título comprensible, archivo y línea, causa probable, qué hacer y el detalle técnico desplegable. Un clic o Intro: elegido(indice), ir a la línea. Arriba, lo que el studio ponga (sus filtros)."
+            ListaErrores {
+                Layout.fillWidth: true
+                Layout.preferredHeight: Kirigami.Units.gridUnit * 16
+                modelo: problemas
+                cabecera: [ QQC2.Label { text: "3 problemas"; Layout.fillWidth: true }, QQC2.ToolButton { icon.name: "tools-check-spelling"; text: "Revisar"; Accessible.name: text } ]
+                onElegido: i => ventana.mensajes.mostrar("Ir a " + problemas.fila(i).ubicacion + ":" + problemas.fila(i).linea, "informacion")
+            }
+        }
+
+        // 21. Pasos (3.1)
+        Pagina {
+            titulo: "Pasos de una escritura y estados"
+            texto: "PasosEscritura: los seis pasos de una escritura (Plan · Afectados · Conflictos · Ejecutar · Verificar · Informe), que Filesystem y Lliphi dibujaban igual; gui_comun.pasos da el plan, las cuentas, la verificación y el informe en Markdown. LineaPasos: los pasos de un proceso que ocurre fuera (la puerta de escritura de Biblioteca, las fases de Huella) con su estado. EtiquetaNivel: el nivel semántico en una etiqueta."
+            property int pasoActual: 2
+            id: paginaPasos
+            PasosEscritura {
+                Layout.fillWidth: true
+                alcanzado: 4
+                actual: paginaPasos.pasoActual
+                cuentas: cuentasMuestra
+                onElegido: paso => paginaPasos.pasoActual = paso
+            }
+            QQC2.Label { text: planMuestra.descripcion + " · " + planMuestra.nAfectados + " afectados, " + planMuestra.nConflictos + " conflicto"; wrapMode: Text.WordWrap; Layout.fillWidth: true }
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: Kirigami.Units.gridUnit
+                LineaPasos { Layout.preferredWidth: Kirigami.Units.gridUnit * 22; titulo: "La puerta de escritura"; resumen: "respaldando"; pasos: lineaMuestra }
+                Flow {
+                    Layout.fillWidth: true
+                    spacing: Kirigami.Units.smallSpacing
+                    Repeater {
+                        model: [["instalado", "positivo", "data-success"], ["con cambios", "neutro", ""], ["conflicto", "negativo", "data-warning"], ["en curso", "activo", ""], ["sin generar", "inactivo", ""]]
+                        delegate: EtiquetaNivel { required property var modelData; text: modelData[0]; nivel: modelData[1]; icono: modelData[2] }
+                    }
+                }
+            }
+        }
+
+        // 22. GraficoXY (3.1)
+        Pagina {
+            titulo: "GraficoXY y PaletaCategorica"
+            texto: "El gráfico de Simuladores Studio, dibujado con Canvas: cada línea con su propio x (sin remuestrear), barras, puntos, equilibrio con guías, líneas de referencia, la base punteada debajo, el valor bajo el cursor y la marca de un resultado sin verificar. Los colores son roles con significado (azul, rojo, verde…: gui_comun.paleta) que PaletaCategorica pinta con el tema; para categorías sin significado, el acento girado en séptimos."
+            RowLayout {
+                Layout.fillWidth: true
+                Layout.preferredHeight: Kirigami.Units.gridUnit * 16
+                spacing: Kirigami.Units.largeSpacing
+                GraficoXY {
+                    Layout.fillWidth: true; Layout.fillHeight: true
+                    datos: ({ lineas: [{ nombre: "IS", rol: "azul", x: [0, 250, 500, 750, 1000], y: [10, 7.5, 5, 2.5, 0] },
+                                       { nombre: "LM", rol: "rojo", x: [0, 1000], y: [0, 10] }],
+                              equilibrio: { x: 500, y: 5 }, verticales: [{ x: 600, nombre: "Y potencial", rol: "verde" }],
+                              limites: { xMin: 0, xMax: 1000, yMin: 0, yMax: 10 }, etiquetaX: "Producto (Y)", etiquetaY: "Tasa de interés (r)",
+                              anotacion: "Y* = 500 · r* = 5,00" })
+                    base: ({ lineas: [{ nombre: "IS₀", rol: "morado", x: [0, 800], y: [8, 0] }], limites: { xMin: 0, xMax: 1000, yMin: 0, yMax: 10 } })
+                    nombreAccesible: "IS-LM de muestra"
+                }
+                ColumnLayout {
+                    Layout.preferredWidth: Kirigami.Units.gridUnit * 12
+                    PaletaCategorica { id: paletaMuestra }
+                    Repeater {
+                        model: ["azul", "rojo", "verde", "dorado", "morado", "cian", "gris"]
+                        delegate: RowLayout {
+                            required property string modelData
+                            required property int index
+                            Rectangle { implicitWidth: Kirigami.Units.gridUnit; implicitHeight: implicitWidth; color: paletaMuestra.rol(modelData); radius: Kirigami.Units.cornerRadius }
+                            Rectangle { implicitWidth: Kirigami.Units.gridUnit; implicitHeight: implicitWidth; color: paletaMuestra.indice(index); radius: Kirigami.Units.cornerRadius }
+                            QQC2.Label { text: modelData + " · categoría " + (index + 1) }
+                        }
+                    }
+                }
+            }
+        }
+
+        // 23. Tema
         Pagina {
             titulo: "Tema y unidades"
             texto: "Cero colores propios: todo sale de Kirigami.Theme (el esquema del usuario) y Kirigami.Units."

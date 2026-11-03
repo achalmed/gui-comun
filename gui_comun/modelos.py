@@ -8,7 +8,7 @@
 - `ModeloTabla` (2.1): una tabla desde filas de dict con columnas (título, clave), roles `nivel`, `icono`,
   `habilitado` y el valor crudo para ordenar.
 - `ModeloArbol` (2.1): un árbol desde nodos de dict (`valores` por columna, `hijos` como lista o función perezosa),
-  para `ArbolDatos`.
+  para `ArbolDatos`; `ordenar(columna, descendente)` (3.1) ordena cada nivel por la cabecera.
 """
 
 from __future__ import annotations
@@ -54,7 +54,9 @@ class ModeloLista(QAbstractListModel):
             i = self.index(indice, 0)
             self.dataChanged.emit(i, i)
 
+    @Slot(result="QVariantList")
     def todas(self) -> list[dict]:
+        """Todas las filas (3.1: también desde QML, para leer la lista entera sin exponer otra propiedad)."""
         return list(self._filas)
 
     @Slot(int, result="QVariantMap")
@@ -291,13 +293,45 @@ class _Nodo:
         self.padre, self.fila, self.datos = padre, fila, datos
         self._hijos = None
 
-    def hijos(self) -> list:
+    def hijos(self, orden=None) -> list:
         if self._hijos is None:
             fuente = self.datos.get("hijos") or []
             if callable(fuente):                       # perezoso: se consulta una vez, al expandir
                 fuente = fuente(self.datos)
             self._hijos = [_Nodo(self, i, d) for i, d in enumerate(fuente)]
+            if orden is not None:
+                self.ordenar(*orden, recursivo=False)
         return self._hijos
+
+    def ordenar(self, columna: int, descendente: bool, recursivo: bool = True) -> None:
+        """Ordena los hijos ya cargados (los perezosos se ordenan al cargarse): por `grupo` (las carpetas antes que
+        los archivos, siempre arriba) y por el valor de la columna; `orden` (lista por columna) da el valor crudo
+        (un tamaño en bytes en vez de «1,2 KB»). Los números van antes que los textos y los vacíos al final."""
+        if self._hijos is None:
+            return
+
+        def clave(n):
+            d = n.datos
+            crudos = d.get("orden") or d.get("valores") or []
+            v = crudos[columna] if columna < len(crudos) else None
+            vacio = v is None or v == ""
+            if isinstance(v, (int, float)) and not isinstance(v, bool):
+                valor = (0, float(v), "")
+            else:
+                valor = (1, 0.0, str(v if v is not None else "").casefold())
+            return vacio, valor
+
+        grupos = sorted({n.datos.get("grupo", 0) for n in self._hijos})
+        ordenados = []
+        for g in grupos:
+            del_grupo = [n for n in self._hijos if n.datos.get("grupo", 0) == g]
+            llenos = sorted((n for n in del_grupo if not clave(n)[0]), key=lambda n: clave(n)[1], reverse=descendente)
+            ordenados += llenos + [n for n in del_grupo if clave(n)[0]]
+        self._hijos = ordenados
+        for i, n in enumerate(self._hijos):
+            n.fila = i
+            if recursivo:
+                n.ordenar(columna, descendente)
 
     def cargado(self) -> bool:
         return self._hijos is not None
@@ -316,19 +350,46 @@ class ModeloArbol(QAbstractItemModel):
     """
 
     filasCambiadas = Signal()
+    ordenCambiado = Signal()
     R_NIVEL, R_ICONO, R_HABILITADO = rol(1), rol(2), rol(3)
 
     def __init__(self, columnas: tuple[str, ...], raices: list[dict] | None = None, parent=None):
         super().__init__(parent)
         self._columnas = tuple(columnas)
         self._raiz = _Nodo(None, -1, {"hijos": list(raices or [])})
+        self._orden: tuple[int, bool] | None = None
 
     # ----------------------------------------------------------- escritura
     def poner(self, raices: list[dict]) -> None:
         self.beginResetModel()
         self._raiz = _Nodo(None, -1, {"hijos": list(raices)})
+        if self._orden is not None:
+            self._raiz.hijos(self._orden)
         self.endResetModel()
         self.filasCambiadas.emit()
+
+    @Slot(int, bool)
+    def ordenar(self, columna: int, descendente: bool = False) -> None:
+        """Ordena cada nivel por `columna` (3.1, la cabecera de `ArbolDatos`); lo expandido sigue expandido."""
+        if not 0 <= columna < len(self._columnas):
+            return
+        self.layoutAboutToBeChanged.emit()
+        viejos = self.persistentIndexList()
+        nodos = [(i.internalPointer(), i.column()) for i in viejos]
+        self._orden = (columna, bool(descendente))
+        self._raiz.hijos()
+        self._raiz.ordenar(columna, bool(descendente))
+        self.changePersistentIndexList(viejos, [self.createIndex(n.fila, c, n) for n, c in nodos])
+        self.layoutChanged.emit()
+        self.ordenCambiado.emit()
+
+    @Property(int, notify=ordenCambiado)
+    def columnaOrden(self) -> int:
+        return self._orden[0] if self._orden else -1
+
+    @Property(bool, notify=ordenCambiado)
+    def descendente(self) -> bool:
+        return bool(self._orden and self._orden[1])
 
     def recargar(self, index=QModelIndex()) -> None:
         """Olvida los hijos cargados de ese nodo (o de la raíz) para volver a consultarlos."""
@@ -358,10 +419,10 @@ class ModeloArbol(QAbstractItemModel):
 
     @Property(int, notify=filasCambiadas)
     def filas(self) -> int:
-        return len(self._raiz.hijos())
+        return len(self._raiz.hijos(self._orden))
 
     def todas(self, index=QModelIndex()) -> list[dict]:
-        return [n.datos for n in self._nodo(index).hijos()]
+        return [n.datos for n in self._nodo(index).hijos(self._orden)]
 
     # ---------------------------------------------------------- overrides
     def _nodo(self, index) -> _Nodo:
@@ -369,7 +430,7 @@ class ModeloArbol(QAbstractItemModel):
 
     def index(self, fila, columna, parent=QModelIndex()):
         padre = self._nodo(parent)
-        hijos = padre.hijos()
+        hijos = padre.hijos(self._orden)
         if 0 <= fila < len(hijos) and 0 <= columna < len(self._columnas):
             return self.createIndex(fila, columna, hijos[fila])
         return QModelIndex()
@@ -385,7 +446,7 @@ class ModeloArbol(QAbstractItemModel):
     def rowCount(self, parent=QModelIndex()) -> int:
         if parent.isValid() and parent.column() != 0:
             return 0
-        return len(self._nodo(parent).hijos())
+        return len(self._nodo(parent).hijos(self._orden))
 
     def columnCount(self, parent=QModelIndex()) -> int:
         return len(self._columnas)

@@ -13,7 +13,8 @@ import pytest
 
 from conftest import QML, correr_hijo, requiere_kirigami
 
-COMPONENTES = sorted(p.stem for p in QML.glob("*.qml") if p.stem not in ("ResaltadoSalida", "GraficoQuickCharts"))   # los carga un Loader
+AUXILIARES = ("ResaltadoSalida", "ResaltadoEditor", "GraficoQuickCharts", "DocumentoQtPdf", "PaginaQtPdf")      # los carga un Loader
+COMPONENTES = sorted(p.stem for p in QML.glob("*.qml") if p.stem not in AUXILIARES)
 
 # lo mínimo que cada componente necesita para instanciarse; `studio.*` lo pone el guion
 PROPIEDADES = {
@@ -40,6 +41,16 @@ PROPIEDADES = {
     "ElegirArchivos": 'multiple: true; filtros: ["Documentos PDF (*.pdf)", {nombre: "LaTeX", patrones: ["*.tex", "*.bib"]}]; carpetaInicial: "/tmp"',
     "ElegirCarpeta": 'carpetaInicial: "/tmp"',
     "GuardarComo": 'nombreSugerido: "informe.pdf"; sufijo: "pdf"; carpetaInicial: "/tmp"',
+    "VistaComparacion": 'diferencia: studio.diferencia; accionesTrozo: [{clave: "preparar", texto: "Preparar trozo", icono: "list-add"}, {clave: "descartar", texto: "Descartar", icono: "edit-undo", noEnNuevo: true}]; seleccionable: true; filasElegidas: [2]',
+    "EditorTexto": 'controlador: studio.editor; ruta: studio.rutaMuestra; definicion: "LaTeX"; width: 600; height: 400; Component.onCompleted: { cargar(); comentar(); irALinea(2, 1) }',
+    "BarraBuscarReemplazar": 'visible: true; conReemplazo: true',
+    "VistaPdf": 'visor: studio.visor; width: 600; height: 400; mensajeVacio: "Sin PDF"',
+    "ListaErrores": 'modelo: studio.problemas; actual: 0; cabecera: [Text { text: "filtros" }]',
+    "PasosEscritura": 'alcanzado: 3; actual: 2; cuentas: ["", "12", "1", "", "", ""]; bloqueado: true',
+    "LineaPasos": 'titulo: "La puerta"; resumen: "en curso"; elegible: true; actual: 1; pasos: [{titulo: "Plan", explicacion: "qué", estado: "hecho", detalle: "listo"}, {titulo: "Ejecutar", explicacion: "la escritura", estado: "en_curso", detalle: ""}, {titulo: "Verificar", explicacion: "en el disco", estado: "pendiente", detalle: ""}]',
+    "GraficoXY": 'width: 500; height: 300; datos: ({lineas: [{nombre: "IS", rol: "azul", x: [0, 1, 2], y: [2, 1, 0]}, {nombre: "LM", rol: "rojo", x: [0, 2], y: [0, 2]}], equilibrio: {x: 1, y: 1}, verticales: [{x: 1.5, nombre: "Y*", rol: "verde"}], limites: {xMin: 0, xMax: 2, yMin: 0, yMax: 2}, etiquetaX: "Y", etiquetaY: "r"}); base: ({lineas: [{nombre: "IS0", rol: "morado", x: [0, 2], y: [1.5, 0]}], limites: {xMin: 0, xMax: 2, yMin: 0, yMax: 2}}); invalido: "SIN VERIFICAR"',
+    "PaletaCategorica": 'property color c0: indice(0); property color c1: indice(1); property color azul: rol("azul"); property color cian: rol("cian")',
+    "EtiquetaNivel": 'text: "conflicto"; nivel: "negativo"; icono: "data-warning"',
     "Grafico": 'series: [{nombre: "a", y: [1, 2, 3]}, {nombre: "b", y: [3, 2, 1]}]; etiquetasX: ["0", "1", "2"]; xMaximo: 2; yMaximo: 3; equilibrio: ({x: 1, y: 2, etiqueta: "E"}); marcas: [{x: 1, etiqueta: "x"}]; anotacion: "nota"',
 }
 
@@ -52,6 +63,9 @@ from gui_comun.consola import Consola
 from gui_comun.tareas import Tareas
 from gui_comun.modelos import ModeloLista, ModeloFiltrado, ModeloArbol
 from gui_comun.qt import QUrl, QTimer, Qt
+from gui_comun import diferencias as _dif
+from gui_comun.editor import ControladorEditor
+from gui_comun.visor_pdf import VisorPdf
 app = Aplicacion("gui-comun-prueba", "Prueba", version="0")
 acciones = Acciones(); acciones.estandar("Prueba")
 acciones.registrar("a.uno", "&Uno", "list-add", "F5", "G", descripcion="la primera")
@@ -62,7 +76,16 @@ consola = Consola(); tareas = Tareas(consola)
 tabla = ModeloFiltrado(ModeloLista(("display", "nivel", "icono"), [{"display": "uno", "nivel": "positivo", "icono": "vcs-normal"}, {"display": "dos", "nivel": "negativo", "icono": "vcs-conflicting"}]))
 arbol = ModeloArbol(("Nombre", "Estado"), [{"valores": ["uno", "ok"], "nivel": "positivo", "icono": "folder", "hijos": [{"valores": ["uno/a", ""]}]}, {"valores": ["dos", "mal"], "nivel": "negativo"}])
 diagnosticos = ModeloLista(("nivel", "mensaje", "archivo", "linea"), [{"nivel": "error", "mensaje": "Undefined control sequence.", "archivo": "./a.tex", "linea": 4}, {"nivel": "aviso", "mensaje": "Reference `x' undefined", "archivo": "./a.tex", "linea": 3}])
-for n, o in (("acciones", acciones), ("consola", consola), ("tareas", tareas), ("tabla", tabla), ("arbol", arbol), ("diagnosticos", diagnosticos)): app.exponer(n, o)
+muestra = os.path.join(os.environ["PRUEBA_TMP"], "muestra.tex")
+open(muestra, "w").write("\\documentclass{article}\n\\begin{document}\nHola\n\\end{document}\n")
+editor = ControladorEditor(consola)
+visor = VisorPdf(cache=os.path.join(os.environ["PRUEBA_TMP"], "cache-visor"))
+problemas = ModeloLista(("nivel", "titulo", "mensaje", "causa", "accion", "detalle", "ubicacion", "linea"), [{"nivel": "error", "titulo": "Orden desconocida", "mensaje": "Undefined control sequence.", "causa": "Una errata", "accion": "Corríjala", "detalle": "l.4 \\holaa", "ubicacion": "a.tex", "linea": 4}, {"nivel": "aviso", "titulo": "", "mensaje": "Reference undefined", "causa": "", "accion": "", "detalle": "", "ubicacion": "", "linea": 0}])
+diferencia = _dif.comparar("uno\ndos\ntres\n", "uno\nDOS\ntres\ncuatro\n", ruta="a.txt", izquierda="Instalado", derecha="Generado")
+diferencia["notas"] = ["Un secreto oculto"]
+app.exponer("rutaMuestra", muestra)
+for n, o in (("acciones", acciones), ("consola", consola), ("tareas", tareas), ("tabla", tabla), ("arbol", arbol), ("diagnosticos", diagnosticos),
+             ("editor", editor), ("visor", visor), ("problemas", problemas), ("diferencia", diferencia)): app.exponer(n, o)
 componente, props = sys.argv[2], sys.argv[3]
 ruta = os.path.join(os.environ["PRUEBA_TMP"], "Prueba_" + componente + ".qml")
 cuerpo = "import QtQuick\nimport org.kde.kirigami as Kirigami\nimport GuiComun\n%s { id: raiz; %s }\n" % (componente, props)
@@ -74,6 +97,7 @@ app.motor.warnings.connect(lambda avisos: errores.extend(a.toString() for a in a
 ok = app.cargar(ruta)
 QTimer.singleShot(400, app.app.quit)
 app.app.exec()
+editor.soltar(); visor.apagar()
 app.cerrar()
 print(json.dumps({"ok": ok, "errores": errores, "traducciones": app.traducciones, "studio": app.studio.keys()}))
 '''
@@ -168,7 +192,8 @@ panel.setProperty("pestanas", [{"titulo": "A"}, {"titulo": "B", "contador": 5}, 
 sigue = panel.property("pestanaActual")
 panel.setProperty("pestanas", [{"titulo": "A", "visible": False}, {"titulo": "B", "visible": False}, {"titulo": "C"}])
 salta = panel.property("pestanaActual")
-QTimer.singleShot(300, app.app.quit); app.app.exec(); app.cerrar()
+QTimer.singleShot(300, app.app.quit); app.app.exec()
+app.cerrar()
 print(json.dumps({"ok": ok, "sigue": sigue, "salta": salta, "errores": errores}))
 '''
     import json
@@ -208,7 +233,8 @@ fijados = f.property("valores").toVariant()
 defecto = f.valor("a")
 f.restablecer()
 campos = f.property("nCampos")
-QTimer.singleShot(300, app.app.quit); app.app.exec(); app.cerrar()
+QTimer.singleShot(300, app.app.quit); app.app.exec()
+app.cerrar()
 print(json.dumps({"ok": ok, "vacios": vacios, "puestos": puestos, "fijados": fijados, "defecto": defecto, "avisos": avisos, "campos": campos, "errores": errores}))
 '''
     import json
@@ -293,3 +319,58 @@ print(json.dumps(r))
     assert datos["ida"] == "file:///home/x/00%20metodo/a%23b.tex" and datos["vuelta"] == "/home/x/00 metodo/a#b.tex"
     assert datos["filtros"] == ["PDF (*.pdf)", "LaTeX (*.tex *.bib)", "Todos los archivos (*)"]
     assert not [e for e in datos["errores"] if "TypeError" in e or "ReferenceError" in e or "Unable to assign" in e], "\n".join(datos["errores"])
+
+
+GUION_VISOR = r'''
+import os, sys, json
+sys.path.insert(0, sys.argv[1])
+from gui_comun.nucleo import Aplicacion
+from gui_comun.visor_pdf import VisorPdf
+from gui_comun.qt import QTimer
+app = Aplicacion("gui-comun-prueba", "Prueba", version="0")
+visor = VisorPdf(cache=os.path.join(os.environ["PRUEBA_TMP"], "cache-visor"))
+app.exponer("visor", visor)
+ruta = os.path.join(os.environ["PRUEBA_TMP"], "Visor.qml")
+open(ruta, "w").write("import QtQuick\nimport GuiComun\nWindow { visible: true; width: 700; height: 500\n"
+                      " VistaPdf { id: v; objectName: 'visor'; anchors.fill: parent; visor: studio.visor }\n"
+                      " Timer { interval: 300; running: true; onTriggered: { studio.visor.marcarRecuadro(2, 50, 60, 100, 20) } } }\n")
+errores = []
+app.motor.warnings.connect(lambda avisos: errores.extend(a.toString() for a in avisos))
+visor.abrir(sys.argv[2])
+ok = app.cargar(ruta)
+estado = {}
+def mirar():
+    filas = visor.paginas.todas()
+    estado.update(motor=visor.motor, total=visor.total, imagenes=sum(1 for f in filas if f["imagen"]))
+    app.app.quit()
+QTimer.singleShot(2500, mirar)
+app.app.exec()
+visor.apagar()
+app.cerrar()
+print(json.dumps({"ok": ok, "errores": errores, **estado}))
+'''
+
+
+@requiere_kirigami
+@pytest.mark.parametrize("motor", ["qtpdf", "pdftoppm"])
+def test_visor_pdf_con_un_documento(motor, tmp_path):
+    """El visor abre un PDF de dos páginas sin avisos con los dos motores; con pdftoppm, las páginas visibles se
+    renderizan por demanda (QtPdf las pinta Qt: no hay imágenes en el modelo)."""
+    import json
+    import shutil
+    from conftest import PYTHON_SISTEMA, REPO, entorno_hijo
+    from test_comunes_31 import _pdf
+    if motor == "pdftoppm" and not shutil.which("pdftoppm"):
+        pytest.skip("sin poppler")
+    pdf = _pdf(tmp_path / "doc.pdf", 2)
+    env = entorno_hijo(tmp_path, GUI_COMUN_VISOR="pdftoppm" if motor == "pdftoppm" else "")
+    import subprocess
+    r = subprocess.run([PYTHON_SISTEMA, "-c", GUION_VISOR, str(REPO), str(pdf)], env=env, capture_output=True, text=True, timeout=120)
+    assert r.returncode == 0, r.stderr[-3000:]
+    d = json.loads(r.stdout.strip().splitlines()[-1])
+    assert d["ok"] and not d["errores"], d["errores"]
+    assert d["total"] == 2
+    if motor == "pdftoppm":
+        assert d["motor"] == "pdftoppm" and d["imagenes"] >= 1
+    elif d["motor"] != "qtpdf":
+        pytest.skip("QtQuick.Pdf no está instalado")

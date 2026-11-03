@@ -193,10 +193,56 @@ def construir(app):
                                   ("Ay&uda", ["app.acerca"])])
     app.exponer("accionesLibre", acciones_libre)
 
+    # 3.1: las piezas promovidas de los studios, sobre muestras en una carpeta temporal que se borra al salir
+    import atexit
+    import shutil
+    import tempfile
+    from gui_comun import diferencias, pasos
+    from gui_comun.editor import ControladorEditor
+    from gui_comun.galeria import muestras
+    from gui_comun.visor_pdf import VisorPdf
+    temporal = Path(tempfile.mkdtemp(prefix="gui-comun-galeria-"))
+    atexit.register(shutil.rmtree, temporal, True)
+    articulo = temporal / "articulo.tex"
+    articulo.write_text(muestras.TEX, encoding="utf-8")
+    editor = ControladorEditor(consola)
+    editor.abrir(str(articulo))
+    visor = VisorPdf(cache=temporal / "cache")
+    visor.abrir(str(muestras.pdf(temporal / "articulo.pdf", 3)))
+    diferencia = diferencias.comparar("[General]\nColorScheme=LliphiClaro\nfont=Inter,10\nwidgetStyle=kvantum\n",
+                                      "[General]\nColorScheme=LliphiOscuro\nfont=Inter,10\nwidgetStyle=kvantum\nAccentColor=196,63,72\n",
+                                      ruta="~/.config/kdeglobals", izquierda="Instalado", derecha="Generado")
+    diferencia["notas"] = ["Muestra: el archivo instalado y el que generaría el tema."]
+    problemas = ModeloLista(("nivel", "titulo", "mensaje", "causa", "accion", "detalle", "ubicacion", "linea"), [
+        {"nivel": "error", "titulo": "Orden desconocida: \\comandoquenoexiste", "mensaje": "Undefined control sequence.",
+         "causa": "Una errata en el nombre de la orden o un paquete sin cargar.", "accion": "Corrija el nombre o añada el \\usepackage que la define.",
+         "detalle": "! Undefined control sequence.\nl.41 \\comandoquenoexiste", "ubicacion": "articulo.tex", "linea": 41},
+        {"nivel": "aviso", "titulo": "Referencia sin definir: eq:islm", "mensaje": "Reference `eq:islm' on page 1 undefined",
+         "causa": "Falta la \\label o hace falta otra pasada.", "accion": "Compile otra vez; si sigue, añada \\label{eq:islm}.",
+         "detalle": "", "ubicacion": "articulo.tex", "linea": 9},
+        {"nivel": "tipografia", "titulo": "Línea demasiado larga (12 pt)", "mensaje": "Overfull \\hbox (12.0pt too wide)", "causa": "",
+         "accion": "", "detalle": "", "ubicacion": "articulo.tex", "linea": 31}])
+    plan = pasos.Plan("muestra", "Crear carpetas en lote", "~/muestra", "Crear 3 carpetas; las que ya existen se omiten.",
+                      afectados=[{"ruta": f"~/muestra/{n}", "accion": "crear", "detalle": ""} for n in ("2026", "2027", "2028")],
+                      conflictos=[{"ruta": "~/muestra/2025", "motivo": "ya existe: se omite"}])
+    app.exponer("diferenciaMuestra", diferencia)
+    app.exponer("planMuestra", plan.como_dict())
+    app.exponer("cuentasMuestra", pasos.cuentas(plan, {"hechos": 3}, None))
+    app.exponer("lineaMuestra", pasos.fijar(pasos.fijar(pasos.linea([
+        ("cerrada", "Calibre cerrado", "no puede estar abierto mientras se escribe"),
+        ("respaldo", "Respaldo verificado", "copia de la base con quick_check = ok"),
+        ("aplicar", "Aplicar los cambios", "la suite escribe por calibredb"),
+        ("integridad", "Integridad verificada", "PRAGMA integrity_check")]), "cerrada", "hecho", "cerrado ahora"),
+        "respaldo", "en_curso", "copiando metadata.db…"))
+    app.exponer("articuloMuestra", str(articulo))
+    app.app.aboutToQuit.connect(lambda: (editor.soltar(), visor.apagar()))   # el vigía de inotify, dentro del bucle
+
     for nombre, objeto in (("acciones", acciones), ("tareas", tareas), ("consola", consola), ("repos", filtrado),
-                           ("cambios", cambios), ("historial", historial), ("arbol", arbol), ("diagnosticos", diagnosticos)):
+                           ("cambios", cambios), ("historial", historial), ("arbol", arbol), ("diagnosticos", diagnosticos),
+                           ("editor", editor), ("visor", visor), ("problemas", problemas)):
         app.exponer(nombre, objeto)
-    app._vivos = (acciones, acciones_libre, tareas, consola, tabla, filtrado, cambios, historial, arbol, diagnosticos)    # que no los recoja el GC
+    app._vivos = (acciones, acciones_libre, tareas, consola, tabla, filtrado, cambios, historial, arbol, diagnosticos,
+                  editor, visor, problemas)    # que no los recoja el GC
     return acciones
 
 

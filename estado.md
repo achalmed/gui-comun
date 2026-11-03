@@ -1,7 +1,7 @@
 ---
 tipo: estado
 estado: activo
-actualizado: 2026-11-02
+actualizado: 2026-11-03
 ---
 # estado.md — gui-comun
 
@@ -9,6 +9,7 @@ actualizado: 2026-11-02
 
 | fecha | qué | dónde se ve |
 |---|---|---|
+| 2026-11-03 | **3.1.0, lo que los studios repetían, en la base** (pendientes del 2026-11-03, carril A): `VistaComparacion` + `diferencias` (con preparar líneas sueltas), `EditorTexto` + `BarraBuscarReemplazar` + `editor.ControladorEditor`, `VistaPdf` + `visor_pdf.VisorPdf` (QtPdf o `pdftoppm`), `ListaErrores`, `PasosEscritura` + `LineaPasos` + `pasos`, `GraficoXY` + `PaletaCategorica` + `paleta`, `EtiquetaNivel`, `miniaturas.ProveedorMiniaturas`, `ArbolDatos.ordenable` + `ModeloArbol.ordenar`, `ModeloLista.todas()` como `Slot`, Kvantum a juego en `entorno_con_esquema`, `AA_ShareOpenGLContexts`; **nombres propios** porque un tipo de la base con el nombre de una copia la tapa en `componentes/` (se vio con `EtiquetaEstado` en Dotfiles y Lliphi); seis páginas en la galería; 86 pruebas; los diez studios arrancan (`--smoke` con su `Exec`); rama `wip/2026-11-03-pendientes` (worktree `~/.cache/pendientes/gui-comun`), sin fusionar ni empujar | `CHANGELOG.md` 3.1.0 (tabla copia → base); `docs/componentes.md`; `python3 -m gui_comun.galeria --pagina diferencias` |
 | 2026-11-02 | **3.0.0, la base de la reingeniería de los diez studios** (carril A): `Aplicacion` con `QApplication` (el diálogo de archivos de KDE; comprobado en Plasma 6.6 Wayland), `Escritorio` (abrir con su aplicación, mostrar en Dolphin, abrir carpeta), `ElegirArchivos`/`ElegirCarpeta`/`GuardarComo`, `VentanaBase` sin plantilla (y `VentanaStudio` encima, misma API), errores presentables (`errores`, `TarjetaError`, `DialogoError`; `Tareas` los presenta al fallar), estados de operación con confirmación redactada (`DialogoConfirmacion`), verificación aparte del éxito, atajos por disciplina (`estandar(paneles=, atajos=)`, `fijar_atajo`, `conflictos`); `CampoRuta` ya no devuelve «%20»; 4 páginas nuevas en la galería; 61 pruebas; los diez studios arrancan (`--smoke`) con la base nueva; rama `wip/2026-11-02-reingenieria-base` (worktree `~/.cache/reingenieria/gui-comun`), etiqueta `v3.0.0` **local**, sin fusionar ni empujar (lo hace el director) | `CHANGELOG.md` 3.0.0; `docs/integracion-kde.md`; `docs/componentes.md`; `python3 -m gui_comun.galeria --pagina operaciones` |
 | 2026-11-02 | **Fase 5 completa**: los diez studios (Git, Filesystem, Dotfiles, Huella, LaTeX, Biblioteca, Quarto, Simuladores, Raphi, Lliphi) corren en QML + Kirigami sobre `gui-comun` 2.7.0; ningún studio importa ya `widgets/` | los `docs/rediseno.md` y `docs/figuras/` de cada studio; `python3 -m gui_comun.galeria` |
 | 2026-11-02 | **2.7.0** con lo que pidió Raphi Studio (`PaginaFormulario`, el formulario generado desde fichas, en la galería): `wip/2026-11-02-qml-raphi` fusionada en `main`, `v2.7.0` en el remoto público | `CHANGELOG.md` 2.7.0; `git ls-remote --tags origin` |
@@ -49,7 +50,7 @@ nada en curso
 - 2026-11-01 · **autor**: P2, aprobar la galería (`/usr/bin/python3 -m gui_comun.galeria`; capturas en
   `docs/figuras/galeria-*.png`) como lenguaje visual de la familia; D8 de `arquitectura-qml-kirigami.md` §9 (HIG de
   KDE, documentación de Kirigami y Addons, Qt Quick, especificación freedesktop a Calibre) sigue pendiente del autor.
-- 2026-11-02 · director: los `VistaTexto` propios de Filesystem (`studio/fs_app/qml/componentes/VistaTexto.qml`), Dotfiles (`studio/dotfiles_app/qml/componentes/VistaTexto.qml` y `Resaltado.qml`) y el `DialogoDiferencia` de Git pueden pasar a `GuiComun.VistaTexto` cuando cada repo se toque; no urge (funcionan).
+- 2026-11-03 · dueño: director (carril B) · adoptar las piezas de 3.1 en LaTeX (`EditorTexto`, `BarraBuscarReemplazar`, `VistaPdf` heredando `VisorPdf` para SyncTeX, `ListaErrores`), Quarto (`EditorTexto`, `BarraBuscarReemplazar`), Raphi (`VistaPdf`), Biblioteca (`LineaPasos`, `ProveedorMiniaturas`) y Simuladores (`GraficoXY`, `paleta`): cambiar el nombre y borrar la copia (tabla del `CHANGELOG.md` 3.1.0).
 - 2026-11-01 · director: lo que falta en 2.x (`docs/componentes.md` §3): `Grafico` (`org.kde.quickcharts`) para Simuladores; `PaginaFormulario` generada desde fichas para
   Raphi; `org.kde.kirigamiaddons.settings` cuando Kubuntu lo empaquete. Se hacen en F4 (2.1) con lo aprendido del
   piloto. Dependencias Python que faltan en el Python del sistema para los studios de F5: `openpyxl`, `matplotlib`,

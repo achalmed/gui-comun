@@ -34,8 +34,8 @@ from gui_comun import __version__ as _VERSION_GUI_COMUN
 from gui_comun import errores as _errores
 from gui_comun import i18n
 from gui_comun.escritorio import Escritorio
-from gui_comun.qt import (BINDING, Property, QApplication, QEvent, QGuiApplication, QIcon, QObject,
-                          QQmlApplicationEngine, QQmlPropertyMap, QQuickWindow, QTimer, QTranslator, QUrl, cast,
+from gui_comun.qt import (BINDING, Property, QApplication, QCoreApplication, QEvent, QGuiApplication, QIcon, QObject,
+                          QQmlApplicationEngine, QQmlPropertyMap, QQuickWindow, Qt, QTimer, QTranslator, QUrl, cast,
                           version_qt)
 
 RUTA_QML = Path(__file__).resolve().parent / "qml"          # el módulo QML GuiComun vive en gui_comun/qml/GuiComun/
@@ -93,6 +93,10 @@ class Aplicacion:
         # QApplication (no QGuiApplication): el diálogo de archivos de KDE y el QStyle de org.kde.desktop la necesitan
         # (ver el docstring del módulo); sin QtWidgets en el binding, la de siempre
         clase = QApplication if QApplication is not None else QGuiApplication
+        if clase.instance() is None:
+            # 3.1: QtWebEngine de QML (la vista previa de Quarto) exige el contexto OpenGL compartido antes de crear la
+            # aplicación; no cuesta nada a quien no lo usa (pedido por Quarto Studio, registro de la reingeniería)
+            QCoreApplication.setAttribute(Qt.ApplicationAttribute.AA_ShareOpenGLContexts, True)
         self.app = clase.instance() or clase(argv if argv is not None else sys.argv)
         if not QIcon.themeName():               # sin tema de escritorio (offscreen, otro entorno): el de Plasma
             QIcon.setThemeName("breeze")
