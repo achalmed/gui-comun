@@ -168,9 +168,11 @@ Item {
         const p = area.cursorPosition
         area.remove(p - sugerencias.prefijo.length, p)
         area.insert(area.cursorPosition, e.insertar)
-        if (e.cierre) {
-            const resto = area.getText(area.cursorPosition, Math.min(area.length, area.cursorPosition + e.cierre.length))
-            if (resto !== e.cierre) area.insert(area.cursorPosition, e.cierre)
+        if (e.cierre) {                              // el cierre va tras el cursor: \fra → \frac{|}{}
+            const p0 = area.cursorPosition
+            const resto = area.getText(p0, Math.min(area.length, p0 + e.cierre.length))
+            if (resto !== e.cierre) area.insert(p0, e.cierre)
+            area.cursorPosition = p0
         }
         sugerencias.close()
     }

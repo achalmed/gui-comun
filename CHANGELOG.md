@@ -28,6 +28,9 @@ El visor completo: lo que LaTeX Studio ganó hoy en su visor (`latex-studio` 07d
 - La galería: el PDF de muestra lleva texto que buscar y un enlace interno y uno externo.
 
 ### Fixed
+- `EditorTexto.aceptarSugerencia` dejaba el cursor detrás del `cierre` (aceptar «\frac» tras «\fra» daba
+  `\frac{}{}|`); el cierre va tras el cursor, como dice su documentación: `\frac{|}{}` (lo vio el carril B al
+  adoptar el editor en LaTeX). Prueba nueva con el cierre ausente y ya presente.
 - La primera búsqueda saltaba al segundo resultado: `PdfSearchModel` empieza en 0 y no admite −1; el primer Intro va
   ahora al primero (también en LaTeX, que lo tiene igual: anotado para el carril B).
 

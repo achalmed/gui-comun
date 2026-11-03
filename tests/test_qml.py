@@ -374,3 +374,68 @@ def test_visor_pdf_con_un_documento(motor, tmp_path):
         assert d["motor"] == "pdftoppm" and d["imagenes"] >= 1
     elif d["motor"] != "qtpdf":
         pytest.skip("QtQuick.Pdf no está instalado")
+
+
+GUION_SUGERENCIA = r'''
+import os, sys, json
+sys.path.insert(0, sys.argv[1])
+from gui_comun.nucleo import Aplicacion
+from gui_comun.editor import ControladorEditor
+from gui_comun.qt import QTimer, QObject
+from PySide6.QtCore import QMetaObject, Q_RETURN_ARG
+app = Aplicacion("gui-comun-prueba", "Prueba", version="0")
+editor = ControladorEditor()
+app.exponer("editor", editor)
+ruta = os.path.join(os.environ["PRUEBA_TMP"], "Sugerencia.qml")
+open(ruta, "w").write("""import QtQuick
+import GuiComun
+Window {
+    visible: true; width: 600; height: 400
+    EditorTexto {
+        id: e
+        objectName: "editor"
+        anchors.fill: parent
+        controlador: studio.editor
+        definicion: "LaTeX"
+        // como LaTeX: la orden con su llave abierta y el cierre que va detrás del cursor
+        completar: (antes, forzado) => ({ tipo: "orden", prefijo: "fra",
+                                          elementos: [{ texto: "frac", detalle: "", insertar: "frac{", cierre: "}{}" }] })
+    }
+    function probar(texto, pos) {
+        e.area.text = texto; e.area.cursorPosition = pos
+        e.abrirSugerencias(true); e.aceptarSugerencia()
+        return JSON.stringify({ texto: e.area.text, cursor: e.area.cursorPosition })
+    }
+}
+""")
+errores = []
+app.motor.warnings.connect(lambda avisos: errores.extend(a.toString() for a in avisos))
+assert app.cargar(ruta)
+raiz = app._raiz
+resultados = []
+def correr():
+    from PySide6.QtCore import Q_ARG
+    for texto, pos in (("fra", 3), ("fra}{} y más", 3)):
+        r = QMetaObject.invokeMethod(raiz, "probar", Q_RETURN_ARG("QVariant"), Q_ARG("QVariant", texto), Q_ARG("QVariant", pos))
+        resultados.append(json.loads(r))
+    app.app.quit()
+QTimer.singleShot(300, correr)
+app.app.exec()
+editor.soltar()
+app.cerrar()
+print(json.dumps({"errores": errores, "resultados": resultados}))
+'''
+
+
+@requiere_kirigami
+def test_editor_texto_sugerencia_deja_el_cursor_antes_del_cierre(tmp_path):
+    """Aceptar «\\frac» tras escribir «\\fra» da «\\frac{|}{}»: el cursor dentro de la primera llave, el cierre detrás
+    (no «\\frac{}{}|»); si el cierre ya estaba, no se repite (lo vio el carril B al adoptar el editor en LaTeX)."""
+    import json
+    r = correr_hijo(GUION_SUGERENCIA, tmp_path, plazo=120)
+    assert r.returncode == 0, r.stderr[-3000:]
+    datos = json.loads(r.stdout.strip().splitlines()[-1])
+    assert not [e for e in datos["errores"] if "Error" in e], datos["errores"]
+    nuevo, existente = datos["resultados"]
+    assert nuevo == {"texto": "frac{}{}", "cursor": 5}, nuevo                 # frac{|}{}
+    assert existente == {"texto": "frac{}{} y más", "cursor": 5}, existente
