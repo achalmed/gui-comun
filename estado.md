@@ -44,9 +44,8 @@ nada en curso
 - 2026-11-02 · dueño: director (reingeniería) · fusionar `wip/2026-11-02-reingenieria-base` en `main` (local) para el
   carril B; empujar `v3.0.0` al remoto público solo con el visto bueno del autor. Lo que cada studio construya y parezca
   común va a «Para promover a gui-comun» del registro de la jornada.
-- 2026-11-02 · dueño: director (fase 6) · `meta/workspace.yml` describe aún a `gui-comun` y a varios studios como «PySide6»;
-  actualizar las descripciones y regenerar el `CLAUDE.md` raíz (`meta/generadores/workspace.py claude --aplicar`); `latex-studio`
-  sigue sin empujar (capturas con la carpeta de inicio: regenerarlas con `HOME` temporal y empujar).
+- 2026-11-02 · dueño: director (fase 6) · `latex-studio` sigue sin empujar (capturas con la carpeta de inicio: regenerarlas
+  con `HOME` temporal y empujar). (Lo de `meta/workspace.yml` y el `CLAUDE.md` raíz se hizo el 2026-11-03, `meta` `ee7d366`.)
 - 2026-11-01 · **autor**: P2, aprobar la galería (`/usr/bin/python3 -m gui_comun.galeria`; capturas en
   `docs/figuras/galeria-*.png`) como lenguaje visual de la familia; D8 de `arquitectura-qml-kirigami.md` §9 (HIG de
   KDE, documentación de Kirigami y Addons, Qt Quick, especificación freedesktop a Calibre) sigue pendiente del autor.
