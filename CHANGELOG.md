@@ -10,6 +10,30 @@ La versión vive en `gui_comun/__init__.py` y en `pyproject.toml`. Las secciones
 
 ## [Unreleased]
 
+## [4.0.0] - 2026-11-03
+
+Retira la capa 1.x de Qt Widgets, congelada desde 2.0.0. Sube la mayor porque desaparecen módulos públicos; lo de
+2.x–3.x no cambia y los diez studios arrancan igual.
+
+**Quién la usaba** (`rg` del 2026-11-03 en todo `~/Documents` y `~/.dotfiles`, con `scripts-linux`, `datafw`,
+`divulgacion`, `qillqa` y los módulos de la plataforma, sin las carpetas sensibles, que solo se miran por estructura):
+ningún código. Las únicas apariciones son pruebas de los diez studios que **prohíben** importarla
+(`"gui_comun.widgets" not in texto`), y los worktrees viejos `lliphi/.claude/worktrees/*` (ramas de otras sesiones de
+antes de Lliphi Studio 2.0, que aún traen `lliphi_studio/`): no se tocan, y si alguno se volviera a usar con su
+ventana de Widgets, fija `v3.2.0`. Las instalaciones con pip fijan `v3.0.0` (Dotfiles, Lliphi, Raphi): no cambian.
+
+### Removed
+- `gui_comun.widgets` (`marco`: `Marco`, `montar_studio`, `Comando`; `paleta`; `avisos`; `tarjetas`; `grafico_barras`;
+  `console_dock`: `ConsoleDock`), `gui_comun.diseno` (`Disenador`, los tokens y la hoja QSS, `preparar_plataforma`),
+  `gui_comun.theming` (`aplicar_tema`), `gui_comun.ui_loader` e `gui_comun.icons`.
+
+### Changed
+- Se quedan los auxiliares que los studios QML usan: `workers` (los envuelve `tareas`), `lanzador` + `acentos`,
+  `rutas`, `ajustes`, `format`, `history_service`, y `Consola.log` (el nombre de 1.x, que sigue funcionando).
+
+**Migración**: nada que hacer en un studio QML. Un programa de Qt Widgets que use `aplicar_tema`, `montar_studio`,
+`Marco` o los widgets: fijar `gui-comun @ …@v3.2.0`, o pasar a `Aplicacion` + `VentanaBase` (la migración de 2.0.0).
+
 ## [3.2.0] - 2026-11-03
 
 El visor completo: lo que LaTeX Studio ganó hoy en su visor (`latex-studio` 07d19b6, decisiones §1.11) pasa a

@@ -9,18 +9,16 @@ El marco común de los studios. Rige el `CLAUDE.md` raíz de `~/Documents`; aqu�
 
 ## Reglas propias
 
-- **Dos capas que no se mezclan.** 2.x–3.x es QML (`gui_comun/qml/GuiComun/`) con `nucleo`, `acciones`, `tareas`,
-  `consola`, `modelos`, `errores`, `escritorio`, `i18n` y `qt`; 1.x (`widgets/`, `diseno`, `theming`, `marco`,
-  `ui_loader`, `icons`) está **congelada**: solo correcciones, ninguna mejora; 4.0 la retira. Un studio migrado no
-  importa nada de `widgets`.
+- **Una sola capa, QML** (`gui_comun/qml/GuiComun/`) con `nucleo`, `acciones`, `tareas`, `consola`, `modelos`,
+  `errores`, `escritorio`, `i18n`, `qt` y las piezas de 3.1–3.2 (`editor`, `visor_pdf`, `diferencias`, `miniaturas`,
+  `pasos`, `paleta`). La capa 1.x de Qt Widgets se retiró en 4.0.0: no vuelve (quien la necesite fija `v3.2.0`).
 - **La base no impone distribución (3.0).** `VentanaBase` solo aporta lo común; `VentanaStudio` es una distribución más.
   Nada de navegación lateral, tabla, detalles, consola ni atajos de disciplina (F5) por defecto en la base: lo nuevo
   común entra como componente que un studio elige, no como ranura que todos heredan.
 - **`QApplication` y nada más de `QtWidgets`** (3.0): la clase de la aplicación, para el diálogo de archivos de KDE y el
   `QStyle` de `org.kde.desktop` (`docs/integracion-kde.md`). Elegir archivos es `ElegirArchivos`/`ElegirCarpeta`/
   `GuardarComo`; abrir, mostrar en Dolphin y abrir carpeta son tres funciones de `escritorio`, nunca un explorador propio.
-- **Los nombres son contrato** de diez studios: en 1.x `aplicar_tema`, `Disenador`, `montar_studio`, `Marco`,
-  `Comando`, los widgets de `tarjetas`, las señales de `ConsoleDock` y los workers; en 2.x las propiedades y señales
+- **Los nombres son contrato** de diez studios: los workers, `lanzador`, `rutas`, `format`, `history_service`; las propiedades y señales
   de cada componente de `docs/componentes.md` y la API de `Acciones`, `Tareas`, `Consola`, `Aplicacion`. Se añade sin
   quitar; lo que cambia sube la mayor en `CHANGELOG.md` con su migración, tras `rg` en los studios. **Un tipo QML nuevo
   no se llama como un componente de un studio** (3.1): el de la base taparía al local en su carpeta `componentes/`;
@@ -43,7 +41,7 @@ El marco común de los studios. Rige el `CLAUDE.md` raíz de `~/Documents`; aqu�
 ## Verificar
 
 ```bash
-python3 -m py_compile gui_comun/*.py gui_comun/widgets/*.py gui_comun/workers/*.py gui_comun/galeria/*.py
+python3 -m py_compile gui_comun/*.py gui_comun/workers/*.py gui_comun/galeria/*.py
 tests/run.sh                                            # en proceso + cada .qml y la galería con /usr/bin/python3
 GUI_COMUN_DIR=$PWD PYTHONPATH=$PWD QT_QPA_PLATFORM=offscreen <Exec del .desktop> --smoke   # cada studio arranca con esta base
 /usr/bin/python3 -m gui_comun.galeria                   # la galería en la sesión real (claro/oscuro: --esquema)

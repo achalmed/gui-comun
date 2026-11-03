@@ -1,8 +1,7 @@
-"""gui_comun/acentos.py — los acentos de 1.x (un color por studio), solo datos.
+"""gui_comun/acentos.py — los acentos de la familia (un color por studio), solo datos.
 
-Los usa `diseno.py` (la hoja de Widgets) y `lanzador.py` (la losa del icono del menú de aplicaciones); vive aparte
-para que el lanzador no arrastre QtWidgets ni QtSvg, que el Python del sistema puede no tener. En 2.x el acento
-solo existe en ese icono.
+Los usa `lanzador.py` (la losa del icono del menú de aplicaciones); vive aparte para que el lanzador no arrastre QtSvg,
+que el Python del sistema puede no tener. El acento solo existe en ese icono (la interfaz usa el del tema).
 """
 
 # --- Acentos: uno por studio, con su variante clara para el modo oscuro ---

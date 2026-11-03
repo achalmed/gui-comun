@@ -5,8 +5,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "gui-comun"
-version = "3.2.0"
-description = "El marco común de la familia de studios: módulo QML GuiComun sobre Kirigami (ventana de trabajo, tabla, paneles, consola, paleta de órdenes, ajustes) con núcleo, acciones, tareas y consola en Python; los widgets de 1.x, congelados"
+version = "4.0.0"
+description = "El marco común de la familia de studios: módulo QML GuiComun sobre Kirigami (ventana de trabajo, tabla, paneles, consola, paleta de órdenes, ajustes) con núcleo, acciones, tareas y consola en Python"
 readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.10"
@@ -21,7 +21,7 @@ pyside6 = ["PySide6>=6.8"]
 Repositorio = "https://github.com/achalmed/gui-comun"
 
 [tool.setuptools]
-packages = ["gui_comun", "gui_comun.widgets", "gui_comun.workers", "gui_comun.galeria"]
+packages = ["gui_comun", "gui_comun.workers", "gui_comun.galeria"]
 
 [tool.setuptools.package-data]
 gui_comun = ["qml/GuiComun/*.qml", "qml/GuiComun/qmldir", "galeria/qml/*.qml"]

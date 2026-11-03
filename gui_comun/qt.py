@@ -30,7 +30,7 @@ if BINDING == "PySide6":
         from PySide6.QtWidgets import QApplication  # noqa: F401
     except ImportError:   # pragma: no cover
         QApplication = None
-    try:   # QML: no hace falta para los studios de Widgets (1.x), que solo usan QtCore de aquí
+    try:   # QML: sin él, quien solo usa QtCore de aquí (servicios, pruebas) sigue funcionando
         from PySide6.QtQml import QQmlApplicationEngine, QQmlImageProviderBase, QQmlPropertyMap, qmlRegisterType  # noqa: F401
         from PySide6.QtQuick import QQuickImageProvider, QQuickItem, QQuickWindow  # noqa: F401
     except ImportError:   # pragma: no cover

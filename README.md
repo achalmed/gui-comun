@@ -30,12 +30,12 @@ usuario. Ningún nombre ni logotipo dentro de la ventana: la identidad de cada s
 | `gui_comun/qml/GuiComun/` | `VentanaBase` (3.0) · `VentanaStudio` · `ElegirArchivos` · `ElegirCarpeta` · `GuardarComo` · `TarjetaError` · `DialogoError` · `DialogoConfirmacion` (3.0) · `PanelNavegacion` · `TablaDatos` · `ArbolDatos` · `PanelDetalles` · `PanelInferior` · `BarraEstado` · `Mensajes` · `PaletaOrdenes` · `DialogoAjustes` · `MenuAcciones` · `BotonAccion` · `CampoRuta` · `VistaTexto` · `ListaDiagnosticos` · `Grafico` · `PaginaFormulario` · 3.1: `VistaComparacion` · `EditorTexto` · `BarraBuscarReemplazar` · `VistaPdf` · `ListaErrores` · `PasosEscritura` · `LineaPasos` · `GraficoXY` · `PaletaCategorica` · `EtiquetaNivel` (ver `docs/componentes.md`) |
 | `gui_comun/galeria/` | la galería: cada componente con datos de muestra; `--captura` y `--esquema` para verla en claro y oscuro |
 
-| pieza (1.x, Qt Widgets; congelada) | qué hace |
+| pieza auxiliar | qué hace |
 |---|---|
-| `gui_comun/diseno.py` · `gui_comun/theming.py` | tokens claro/oscuro con acento por studio, hoja QSS, `preparar_plataforma()` (XWayland) |
-| `gui_comun/widgets/marco.py` · `gui_comun/widgets/paleta.py` · `gui_comun/widgets/avisos.py` | barra lateral con marca y atajos; paleta Ctrl+K; avisos flotantes |
-| `gui_comun/widgets/tarjetas.py` · `gui_comun/widgets/grafico_barras.py` · `gui_comun/widgets/console_dock.py` | tarjetas, cifras, mosaicos, listas con vacío; gráfico de barras; consola acoplada |
-| `gui_comun/workers/` · `gui_comun/lanzador.py` · `gui_comun/rutas.py` · `gui_comun/ajustes.py` · `gui_comun/icons.py` · `gui_comun/ui_loader.py` · `gui_comun/format.py` · `gui_comun/history_service.py` | workers (los envuelve `tareas`), el acceso directo del menú, rutas del espacio de trabajo, ajustes, iconos SVG, `.ui`, formatos, historial (sin cambio) |
+| `gui_comun/workers/` · `gui_comun/lanzador.py` · `gui_comun/acentos.py` · `gui_comun/rutas.py` · `gui_comun/ajustes.py` · `gui_comun/format.py` · `gui_comun/history_service.py` | workers (los envuelve `tareas`), el acceso directo del menú con su losa de color, rutas del espacio de trabajo, ajustes, formatos, historial |
+
+La capa 1.x de Qt Widgets (`widgets/`, `diseno`, `theming`, `marco`, `ui_loader`, `icons`) se retiró en **4.0.0**
+(`CHANGELOG.md`: quién la usaba y cómo migrar); para un programa viejo que la necesite, `gui-comun` `v3.2.0`.
 
 ## Uso
 
@@ -71,7 +71,6 @@ VentanaStudio { acciones: studio.acciones; navegacion: PanelNavegacion {…}; ce
 ```
 
 Dentro del espacio de trabajo no hace falta instalarlo: cada studio lo busca subiendo carpetas hasta `gui-comun/`.
-Los studios de 1.x siguen con `aplicar_tema` y `montar_studio` sin cambio.
 
 ## Verificar
 
@@ -86,5 +85,5 @@ tests/run.sh          # acciones, consola, tareas, modelos, i18n en proceso; cad
 - **`org.kde.kirigamiaddons.settings` (ConfigurationView) no está empaquetado en Kubuntu 26.04**: `DialogoAjustes`
   reproduce su anatomía sobre `Kirigami.Dialog`.
 - **`rutas` conoce el espacio de trabajo de su autor** (`core/env.py`); fuera de él solo sabe `DOCS_ROOT`.
-- **1.x depende de PySide6 y del estilo Fusion** y no recibe mejoras: sigue congelada en 3.0 (ningún studio la usa) y
-  4.0 la retira.
+- **Sin la capa 1.x desde 4.0**: `aplicar_tema`, `montar_studio`, `Marco` y los widgets ya no existen; quien los
+  necesite fija `v3.2.0`.
