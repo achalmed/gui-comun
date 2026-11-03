@@ -13,7 +13,7 @@ import pytest
 
 from conftest import QML, correr_hijo, requiere_kirigami
 
-AUXILIARES = ("ResaltadoSalida", "ResaltadoEditor", "GraficoQuickCharts", "DocumentoQtPdf", "PaginaQtPdf")      # los carga un Loader
+AUXILIARES = ("ResaltadoSalida", "ResaltadoEditor", "GraficoQuickCharts", "DocumentoQtPdf", "PaginaQtPdf", "CapaQtPdf", "BusquedaQtPdf")      # los carga un Loader
 COMPONENTES = sorted(p.stem for p in QML.glob("*.qml") if p.stem not in AUXILIARES)
 
 # lo mínimo que cada componente necesita para instanciarse; `studio.*` lo pone el guion

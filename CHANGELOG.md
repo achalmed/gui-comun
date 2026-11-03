@@ -10,6 +10,27 @@ La versión vive en `gui_comun/__init__.py` y en `pyproject.toml`. Las secciones
 
 ## [Unreleased]
 
+## [3.2.0] - 2026-11-03
+
+El visor completo: lo que LaTeX Studio ganó hoy en su visor (`latex-studio` 07d19b6, decisiones §1.11) pasa a
+`VistaPdf`, para que Raphi y Quarto lo tengan sin copiarlo. Aditiva.
+
+### Added
+- **Con QtQuick.Pdf**, en `VistaPdf`: seleccionar texto arrastrando (Ctrl+C lo copia, Ctrl+A toma la página, Esc la
+  suelta; clic derecho: copiar, seleccionar la página, buscar y la acción del punto del studio), **enlaces del PDF**
+  (internos: a su página y punto; externos: `VisorPdf.abrirEnlace`, solo `http`, `https` y `mailto`; `file:`, órdenes
+  o `javascript:` no se siguen) y **búsqueda en el PDF** (`buscarEnPdf()`, que el studio ata a su atajo: Ctrl+Alt+F en
+  LaTeX; Intro y Mayús+Intro saltan; cada resultado resaltado en su página). Vive en `CapaQtPdf` y `BusquedaQtPdf`,
+  cargados aparte como `DocumentoQtPdf`: sin el módulo, la vista sigue igual (con `pdftoppm`) y no ofrece nada de eso.
+- `VistaPdf`: `textoSeleccionado`, `buscando`, `buscarEnPdf()`, `cerrarBusqueda()`, `resultado(paso)`,
+  `copiarSeleccion()`, `aVentana(pagina, x, y)` (un punto de la página en la ventana), `textoPunto` y `puntoHabilitado`
+  (la entrada del menú del clic derecho que emite `dobleClic`: «Ir al código de este punto» en LaTeX).
+- La galería: el PDF de muestra lleva texto que buscar y un enlace interno y uno externo.
+
+### Fixed
+- La primera búsqueda saltaba al segundo resultado: `PdfSearchModel` empieza en 0 y no admite −1; el primer Intro va
+  ahora al primero (también en LaTeX, que lo tiene igual: anotado para el carril B).
+
 ## [3.1.0] - 2026-11-03
 
 Aditiva: lo que los studios repetían tras la reingeniería del 2026-11-02 sube a la base, cada pieza con su página en

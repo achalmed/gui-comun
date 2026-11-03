@@ -543,12 +543,14 @@ VentanaStudio {
         // 19. VistaPdf (3.1)
         Pagina {
             titulo: "VistaPdf"
-            texto: "Un PDF integrado (de LaTeX Studio; Raphi y Quarto lo necesitaban): con QtQuick.Pdf, Qt pinta cada página; sin él, pdftoppm las renderiza por demanda a la resolución del zoom, en hilos y con una caché acotada. Miniaturas, zoom con Ctrl+rueda, ajustar al ancho, recargar conservando la página, abrir con su aplicación. Doble clic: dobleClic(pagina, x, y) en puntos (SyncTeX en LaTeX); marcarRecuadro marca una zona."
-            QQC2.Label { text: "Motor: " + visor.motor + (visor.motor === "qtpdf" ? " (QtQuick.Pdf)" : " (pdftoppm)"); color: Kirigami.Theme.disabledTextColor }
+            texto: "Un PDF integrado (de LaTeX Studio; Raphi y Quarto lo necesitaban): con QtQuick.Pdf, Qt pinta cada página; sin él, pdftoppm las renderiza por demanda a la resolución del zoom, en hilos y con una caché acotada. Miniaturas, zoom con Ctrl+rueda, ajustar al ancho, recargar conservando la página, abrir con su aplicación. Doble clic: dobleClic(pagina, x, y) en puntos (SyncTeX en LaTeX); marcarRecuadro marca una zona. 3.2, con QtPdf: arrastrar selecciona el texto (Ctrl+C, Ctrl+A, Esc; clic derecho, el menú), los enlaces se siguen (el interno lleva a la página 2; el externo, solo web y correo, lo abre el escritorio) y la lupa busca («cometa»: Intro y Mayús+Intro saltan)."
+            QQC2.Label { text: "Motor: " + visor.motor + (visor.motor === "qtpdf" ? " (QtQuick.Pdf: selección, enlaces y búsqueda)" : " (pdftoppm: sin selección, enlaces ni búsqueda)") + (vistaPdfMuestra.textoSeleccionado ? " · seleccionado: «" + vistaPdfMuestra.textoSeleccionado + "»" : ""); color: Kirigami.Theme.disabledTextColor; elide: Text.ElideRight; Layout.fillWidth: true }
             VistaPdf {
                 Layout.fillWidth: true
                 Layout.preferredHeight: Kirigami.Units.gridUnit * 20
+                id: vistaPdfMuestra
                 visor: studio.visor
+                textoPunto: "Mostrar este punto (muestra)"
                 barraExtra: [ QQC2.ToolButton { icon.name: "edit-find"; text: "Marcar un recuadro"; display: QQC2.AbstractButton.IconOnly; Accessible.name: text; onClicked: studio.visor.marcarRecuadro(2, 72, 100, 220, 30) } ]
                 onDobleClic: (pagina, x, y) => ventana.mensajes.mostrar("Doble clic en la página " + pagina + " (" + Math.round(x) + ", " + Math.round(y) + " pt).", "informacion")
             }

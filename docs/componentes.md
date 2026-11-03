@@ -5,7 +5,7 @@ forma: referencia
 titulo: "Componentes de GuiComun 3.x: qué es cada uno, sus propiedades y señales, y la API Python que los alimenta"
 creado: 2026-11-01
 ---
-# Componentes de GuiComun (3.1)
+# Componentes de GuiComun (3.2)
 
 La referencia del módulo QML `GuiComun` (`gui_comun/qml/GuiComun/`) y del núcleo Python que lo alimenta. **3.0**: la
 ventana deja de imponer distribución (`VentanaBase`, y `VentanaStudio` como una distribución más), la aplicación es una
@@ -266,6 +266,11 @@ Un PDF integrado (de LaTeX Studio; Raphi y Quarto lo necesitaban): `visor` (`gui
 renderiza por demanda. Zoom con Ctrl+rueda, ajustar al ancho, recargar conservando la página, abrir con su aplicación
 (`studio.escritorio`). El blanco del papel es del documento, no de la interfaz. SyncTeX es de LaTeX: su controlador
 hereda de `VisorPdf` (Python) y conecta `dobleClic`; la marca, `visor.marcarRecuadro(pagina, x, y, ancho, alto)`.
+**3.2, con QtPdf** (sin el módulo no aparece nada de esto): arrastrar selecciona texto (`textoSeleccionado`; Ctrl+C,
+Ctrl+A, Esc; `copiarSeleccion()`), el clic derecho abre un menú (copiar, seleccionar la página, `textoPunto` →
+`dobleClic`, buscar), los enlaces del PDF se siguen (internos: su página; externos: `visor.abrirEnlace`, solo web y
+correo) y `buscarEnPdf()` abre la barra de búsqueda (Intro, Mayús+Intro, Esc; `resultado(paso)`, `cerrarBusqueda()`,
+`buscando`). El atajo lo pone el studio con su acción. `aVentana(pagina, x, y)` da un punto de la página en la ventana.
 
 ### ListaErrores (3.1)
 
@@ -328,7 +333,7 @@ Una etiqueta redondeada con el color semántico de `nivel` (`positivo`, `neutro`
 | `galeria.esquema.entorno_con_esquema(colors)` | el entorno de un proceso con otro esquema de color de KDE (kdeglobals temporal); 3.1: y el tema de Kvantum del mismo nombre si existe (con `QApplication` los controles los pinta Kvantum) |
 | `diferencias` (3.1) | `analizar(texto_diff)` y `comparar(antes, despues, ruta=, izquierda=, derecha=)` → `{cabecera, trozos, filas, anadidas, quitadas, binario, vacia, recortado}` para `VistaComparacion`; `parche_de_trozo(d, i)` y `parche_de_lineas(d, filas, inverso=False)` para `git apply --cached [--recount] [-R]` |
 | `editor.ControladorEditor(consola=None, definiciones=, definicion=)` (3.1) | el de `EditorTexto`: `abiertos` (modelo: ruta, nombre, carpeta, modificado, definicion, solo_lectura), `abrir`, `cerrar`, `cerrarTodos`, `fijarActual`, `actual`, `indiceActual`, `leer`, `guardar(ruta, texto, forzar)`, `guardarComo`, `aceptarDisco`, `cambioEnDisco`, `marcarModificado`, `hayModificados`, `modificados`, `buscar`, `reemplazar`, `definicionDe`, `soltar()` (al cerrar); señales `cambioExterno(ruta)`, `guardadoArchivo`, `aviso`. Sueltas: `definicion_de(ruta, mapa)`, `buscar`, `reemplazos`, `DEFINICIONES`, `COMENTARIOS` |
-| `visor_pdf.VisorPdf(cache, variable_motor=)` (3.1) | el de `VistaPdf`: `abrir(pdf)`, `recargar()`, `cerrar()`, `paginas` (modelo), `motor` (`qtpdf` · `pdftoppm`), `pdf`, `pdfUrl`, `revision`, `total`, `anchoMaximo`, `zoom`, `ajustarAncho`, `escala`, `acercar`, `alejar`, `ajustarA(ancho)`, `pedir`, `pedirMiniatura`, `marcarRecuadro(pagina, x, y, ancho, alto)`, `apagar()`; señales `irAPagina`, `marcar`, `aviso`. Sueltas: `paginas(pdf)`, `renderizar(pdf, pagina, ppp, cache)`, `podar(cache, limite, conservar)`, `hay_qtpdf()` |
+| `visor_pdf.VisorPdf(cache, variable_motor=)` (3.1) | el de `VistaPdf`: `abrir(pdf)`, `recargar()`, `cerrar()`, `paginas` (modelo), `motor` (`qtpdf` · `pdftoppm`), `pdf`, `pdfUrl`, `revision`, `total`, `anchoMaximo`, `zoom`, `ajustarAncho`, `escala`, `acercar`, `alejar`, `ajustarA(ancho)`, `pedir`, `pedirMiniatura`, `marcarRecuadro(pagina, x, y, ancho, alto)`, 3.2: `abrirEnlace(url)` (solo http, https, mailto), `apagar()`; señales `irAPagina`, `marcar`, `aviso`. Sueltas: `paginas(pdf)`, `renderizar(pdf, pagina, ppp, cache)`, `podar(cache, limite, conservar)`, `hay_qtpdf()` |
 | `miniaturas.ProveedorMiniaturas(carpeta, anchos=, tope_mb=, claves_son_rutas=)` (3.1) | un `QQuickImageProvider` asíncrono para `image://<nombre>/<clave>[/<tamaño>]` (con `claves_son_rutas`, `image://<nombre>/<ruta>[@<tamaño>]`): lee el origen en solo lectura escalado al leer y cachea en JPEG con poda por tope; `.fijar_rutas({clave: ruta})`; sueltas `miniatura(origen, carpeta, clave, ancho)` y `podar(carpeta, tope)` (de las portadas de Biblioteca) |
 | `pasos` (3.1) | `Plan(tipo, titulo, carpeta, descripcion, afectados, conflictos, interno)` con `bloqueado` y `como_dict()`; `cuentas(plan, resultado, verificado)`, `verificacion(filas)`, `informe(plan, resultado, verificado, herramienta=)` (Markdown), `nombre_informe(plan)`; para `LineaPasos`: `linea([(clave, titulo, explicacion)])`, `fijar(pasos, clave, estado, detalle)`, `ESTADOS`, `NIVEL` |
 | `paleta` (3.1) | `rol(color, orden)` y `roles(colores)`: un color de matplotlib (hex, nombre, `C0`, `tab:*`) → `azul` · `rojo` · `verde` · `dorado` · `morado` · `cian` · `gris` · `texto` |

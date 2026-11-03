@@ -10,7 +10,8 @@ documento) lo necesitaban igual. Dos motores de página (`motor`):
   tamaño del PDF: recompilar invalida solo ese documento. La caché tiene un tope (200 MB) y se poda por antigüedad.
 
 `GUI_COMUN_VISOR=pdftoppm` (o la variable propia del studio, `variable_motor`) fuerza el segundo. El tamaño de las
-páginas (`pdfinfo`), el zoom, la marca y la recarga conservando la página son los mismos con los dos.
+páginas (`pdfinfo`), el zoom, la marca y la recarga conservando la página son los mismos con los dos; con QtPdf, además
+(3.2), seleccionar y copiar texto, seguir los enlaces (`abrirEnlace`, solo web y correo) y buscar en el PDF.
 
 Lo propio de una disciplina no vive aquí: SyncTeX es de LaTeX (su studio hereda de `VisorPdf`, añade sus `Slot` y
 conecta `dobleClic` de la vista); la base solo ofrece `marcarRecuadro` (ir a la página y marcar un recuadro).
@@ -32,12 +33,13 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 from gui_comun.modelos import ModeloLista
-from gui_comun.qt import QObject, Property, Signal, Slot
+from gui_comun.qt import QDesktopServices, QObject, Property, QUrl, Signal, Slot
 
 LIMITE_CACHE = 200 * 1024 * 1024
 ROLES = ("pagina", "ancho", "alto", "imagen", "miniatura")
 PPP_MINIATURA = 18
 ZOOM_MIN, ZOOM_MAX = 0.25, 4.0
+ESQUEMAS_ENLACE = ("http", "https", "mailto")
 _TAMANO = re.compile(r"^Page\s+(\d+)\s+size:\s+([\d.]+)\s+x\s+([\d.]+)", re.M)
 _PAGINAS = re.compile(r"^Pages:\s+(\d+)", re.M)
 
@@ -334,6 +336,20 @@ class VisorPdf(QObject):
             self._paginas.actualizar(pagina - 1, miniatura=url)
         else:
             self._paginas.actualizar(pagina - 1, imagen=url)
+
+    # ---------------------------------------------------------------------------------------------------- enlaces
+    @Slot(str, result=bool)
+    def abrirEnlace(self, url: str) -> bool:
+        """Un enlace externo del PDF (clic en la capa de QtPdf, 3.2): solo `http`, `https` y `mailto`, con la aplicación
+        del escritorio. Un PDF puede llevar enlaces a `file:` o a órdenes (`launch`): esos no se siguen desde la ventana."""
+        esquema = url.split(":", 1)[0].lower() if ":" in url else ""
+        if esquema not in ESQUEMAS_ENLACE:
+            self.aviso.emit(f"El enlace no se abre desde la ventana (solo http, https y correo): {url}", "aviso")
+            return False
+        if not QDesktopServices.openUrl(QUrl(url)):
+            self.aviso.emit(f"No se pudo abrir el enlace: {url}", "error")
+            return False
+        return True
 
     def apagar(self) -> None:
         """Al cerrar la ventana: no espera a los `pdftoppm` en curso."""

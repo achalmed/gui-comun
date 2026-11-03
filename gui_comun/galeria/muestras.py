@@ -19,16 +19,26 @@ Véase la ecuación~\ref{eq:islm} y \cite{hicks1937}.
 """
 
 
-def pdf(ruta: Path, paginas: int = 2) -> Path:
-    """Un PDF mínimo válido (páginas A4 con una línea de texto), escrito a mano con su tabla xref."""
+def pdf(ruta: Path, paginas: int = 2, enlaces: bool = True) -> Path:
+    """Un PDF mínimo válido (páginas A4 con texto), escrito a mano con su tabla xref. Con `enlaces`, la primera página
+    lleva un enlace interno a la segunda y uno externo (para la selección, los enlaces y la búsqueda de VistaPdf)."""
+    pagina_obj = lambda i: 3 + 3 * i                     # cada página: objeto de página, contenido y anotaciones
+    fuente = 3 + 3 * paginas
     objetos = ["<< /Type /Catalog /Pages 2 0 R >>",
-               "<< /Type /Pages /Kids [" + " ".join(f"{3 + 2 * i} 0 R" for i in range(paginas)) + f"] /Count {paginas} >>"]
-    fuente = 3 + 2 * paginas
+               "<< /Type /Pages /Kids [" + " ".join(f"{pagina_obj(i)} 0 R" for i in range(paginas)) + f"] /Count {paginas} >>"]
     for i in range(paginas):
-        flujo = f"BT /F1 24 Tf 72 720 Td (Pagina {i + 1} de {paginas}) Tj ET"
-        objetos.append(f"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Contents {4 + 2 * i} 0 R "
-                       f"/Resources << /Font << /F1 {fuente} 0 R >> >> >>")
+        lineas = [f"BT /F1 24 Tf 72 720 Td (Pagina {i + 1} de {paginas}) Tj ET",
+                  "BT /F1 12 Tf 72 690 Td (Una muestra con la palabra cometa para buscar.) Tj ET"]
+        anotaciones = []
+        if enlaces and i == 0 and paginas > 1:
+            lineas += ["BT /F1 12 Tf 72 660 Td (Ir a la pagina 2) Tj ET", "BT /F1 12 Tf 72 640 Td (https://example.org) Tj ET"]
+            anotaciones = [f"<< /Type /Annot /Subtype /Link /Rect [70 655 175 672] /Border [0 0 0] /Dest [{pagina_obj(1)} 0 R /XYZ 0 842 0] >>",
+                           "<< /Type /Annot /Subtype /Link /Rect [70 635 190 652] /Border [0 0 0] /A << /S /URI /URI (https://example.org) >> >>"]
+        flujo = "\n".join(lineas)
+        objetos.append(f"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Contents {pagina_obj(i) + 1} 0 R "
+                       f"/Annots {pagina_obj(i) + 2} 0 R /Resources << /Font << /F1 {fuente} 0 R >> >> >>")
         objetos.append(f"<< /Length {len(flujo)} >>\nstream\n{flujo}\nendstream")
+        objetos.append("[" + " ".join(anotaciones) + "]")
     objetos.append("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>")
     salida = b"%PDF-1.4\n"
     desplazamientos = []

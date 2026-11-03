@@ -5,6 +5,11 @@
 // que el studio añada (`barraExtra`). Doble clic en una página: `dobleClic(pagina, x, y)` en puntos (SyncTeX en
 // LaTeX). La marca (`visor.marcarRecuadro`) parpadea sobre el recuadro. Al recargar, la página y el desplazamiento se
 // conservan. Sin colores propios: el blanco del papel es del documento (PaginaQtPdf).
+// 3.2, con QtPdf (CapaQtPdf y BusquedaQtPdf, cargados aparte como DocumentoQtPdf: sin el módulo la vista sigue igual):
+// arrastrar selecciona texto (Ctrl+C lo copia, Ctrl+A toma la página, Esc la suelta; clic derecho, el menú), los
+// enlaces del PDF se siguen (internos: la página; externos: `visor.abrirEnlace`, solo http, https y mailto) y la
+// búsqueda (`buscarEnPdf()`, que el studio ata a su atajo: Ctrl+Alt+F en LaTeX) resalta cada resultado y salta de uno
+// a otro con Intro y Mayús+Intro. El doble clic sigue siendo `dobleClic` (la capa no lo toma). Viene de LaTeX Studio.
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls as QQC2
@@ -19,6 +24,8 @@ QQC2.Control {
     property string explicacionVacia: ""
     property alias barraExtra: extra.data            // botones propios del studio: barraExtra: [ QQC2.ToolButton { … } ]
     signal dobleClic(int pagina, real x, real y)
+    property string textoPunto: ""                  // el menú del clic derecho ofrece «textoPunto» → dobleClic (SyncTeX)
+    property bool puntoHabilitado: true
     property bool miniaturas: false
     readonly property int paginaActual: Math.max(1, paginas.indexAt(10, paginas.contentY + paginas.height / 3) + 1)
     property real separacion: Kirigami.Units.largeSpacing
@@ -26,6 +33,58 @@ QQC2.Control {
     property real guardadaDesplazamiento: 0
 
     readonly property bool conQtPdf: v.motor === "qtpdf"
+    property var capaActiva: null          // la página con la selección de texto (una sola a la vez)
+    readonly property string textoSeleccionado: capaActiva ? capaActiva.texto : ""
+    readonly property var busqueda: busquedaPdf.item
+    property bool buscando: false
+    property point puntoMenu: Qt.point(0, 0)
+    property int paginaMenu: 0
+
+    function buscarEnPdf() {
+        if (!raiz.conQtPdf || raiz.v.total === 0) return
+        raiz.buscando = true
+        campoBusqueda.forceActiveFocus(); campoBusqueda.selectAll()
+    }
+    function cerrarBusqueda() {
+        raiz.buscando = false
+        if (raiz.busqueda) raiz.busqueda.searchString = ""
+    }
+    property bool sinSaltar: true             // aún no se fue a ningún resultado de esta búsqueda
+    function resultado(paso) {
+        const b = raiz.busqueda
+        if (!b || b.count === 0) return
+        const n = raiz.sinSaltar ? (paso > 0 ? 0 : b.count - 1) : (Math.max(0, b.currentResult) + paso + b.count) % b.count
+        raiz.sinSaltar = false
+        if (n === b.currentResult) raiz.irA(b.currentResultLink.page + 1, b.currentResultLink.location.y)
+        else b.currentResult = n
+    }
+    function copiarSeleccion() { if (raiz.capaActiva) raiz.capaActiva.copiar() }
+
+    focusPolicy: Qt.ClickFocus
+    Keys.onPressed: (evento) => {
+        if (evento.matches(StandardKey.Copy) && raiz.textoSeleccionado !== "") { raiz.copiarSeleccion(); evento.accepted = true }
+        else if (evento.matches(StandardKey.SelectAll) && raiz.capaActiva) { raiz.capaActiva.seleccionarTodo(); evento.accepted = true }
+        else if (evento.key === Qt.Key_Escape && raiz.capaActiva) { raiz.capaActiva.limpiar(); raiz.capaActiva = null; evento.accepted = true }
+    }
+
+    // la búsqueda (solo con el módulo): un PdfSearchModel sobre el mismo documento
+    Loader {
+        id: busquedaPdf
+        active: raiz.conQtPdf && documentoPdf.item !== null
+        source: "BusquedaQtPdf.qml"
+        onLoaded: item.document = Qt.binding(() => documentoPdf.item)
+    }
+    Connections {
+        target: raiz.busqueda
+        ignoreUnknownSignals: true
+        // una búsqueda nueva empieza antes del primer resultado: el primer Intro lleva al primero (PdfSearchModel se
+        // queda en 0, no admite −1, y el primer Intro saltaba al segundo)
+        function onSearchStringChanged() { raiz.sinSaltar = true }
+        function onCurrentResultChanged() {
+            const b = raiz.busqueda
+            if (b.count > 0 && b.currentResult >= 0) raiz.irA(b.currentResultLink.page + 1, b.currentResultLink.location.y)
+        }
+    }
 
     // el documento de QtQuick.Pdf (solo con el módulo): se vuelve a abrir con cada PDF nuevo o recompilado
     Loader {
@@ -40,6 +99,7 @@ QQC2.Control {
         function onCambiado() {
             if (!raiz.conQtPdf || !documentoPdf.item || documentoPdf.revision === raiz.v.revision) return
             documentoPdf.item.source = ""
+            raiz.capaActiva = null
             documentoPdf.item.source = raiz.v.pdfUrl
             documentoPdf.revision = raiz.v.revision
         }
@@ -50,6 +110,13 @@ QQC2.Control {
     Kirigami.Theme.inherit: false
     Accessible.name: "Visor PDF"
 
+    // un punto de la página (en puntos) en coordenadas de la ventana; null si la página no está creada (3.2)
+    function aVentana(pagina, xPuntos, yPuntos) {
+        const hoja = paginas.itemAtIndex(pagina - 1)
+        if (!hoja) return null
+        const papel = hoja.children[0]
+        return hoja.mapToItem(null, papel.x + 1 + xPuntos * raiz.v.zoom, papel.y + 1 + yPuntos * raiz.v.zoom)
+    }
     function irA(pagina, yPuntos) {
         if (pagina < 1 || pagina > paginas.count) return
         paginas.positionViewAtIndex(pagina - 1, ListView.Beginning)
@@ -104,7 +171,50 @@ QQC2.Control {
                     onClicked: studio.escritorio.abrirConAplicacion(raiz.v.pdf)
                     QQC2.ToolTip.text: text; QQC2.ToolTip.visible: hovered
                 }
+                QQC2.ToolButton {
+                    visible: raiz.conQtPdf
+                    icon.name: "edit-find"
+                    checkable: true
+                    checked: raiz.buscando
+                    enabled: raiz.v.total > 0
+                    onToggled: if (checked) raiz.buscarEnPdf(); else raiz.cerrarBusqueda()
+                    display: QQC2.AbstractButton.IconOnly
+                    text: "Buscar en el PDF"
+                    Accessible.name: text
+                    QQC2.ToolTip.text: text
+                    QQC2.ToolTip.visible: hovered
+                }
                 RowLayout { id: extra; spacing: Kirigami.Units.smallSpacing }
+            }
+        }
+        // la barra de búsqueda en el PDF: Intro, el siguiente; Mayús+Intro, el anterior; Esc la cierra
+        QQC2.ToolBar {
+            Layout.fillWidth: true
+            visible: raiz.buscando
+            position: QQC2.ToolBar.Header
+            RowLayout {
+                anchors.fill: parent
+                spacing: Kirigami.Units.smallSpacing
+                Kirigami.SearchField {
+                    id: campoBusqueda
+                    Layout.fillWidth: true
+                    placeholderText: "Buscar en el PDF…"
+                    Accessible.name: "Buscar en el PDF"
+                    autoAccept: false
+                    onTextChanged: buscarLuego.restart()
+                    Keys.onReturnPressed: (evento) => { raiz.resultado((evento.modifiers & Qt.ShiftModifier) ? -1 : 1) }
+                    Keys.onEnterPressed: (evento) => { raiz.resultado((evento.modifiers & Qt.ShiftModifier) ? -1 : 1) }
+                    Keys.onEscapePressed: raiz.cerrarBusqueda()
+                }
+                Timer { id: buscarLuego; interval: 250; onTriggered: if (raiz.busqueda) raiz.busqueda.searchString = campoBusqueda.text }
+                QQC2.Label {
+                    readonly property var b: raiz.busqueda
+                    text: !b || campoBusqueda.text === "" ? "" : (b.count === 0 ? "Sin resultados" : (b.currentResult >= 0 ? (b.currentResult + 1) + " de " + b.count : b.count + (b.count === 1 ? " resultado" : " resultados")))
+                    color: b && campoBusqueda.text !== "" && b.count === 0 ? Kirigami.Theme.negativeTextColor : Kirigami.Theme.textColor
+                }
+                QQC2.ToolButton { icon.name: "go-up"; display: QQC2.AbstractButton.IconOnly; text: "Resultado anterior"; Accessible.name: text; enabled: raiz.busqueda !== null && raiz.busqueda.count > 0; onClicked: raiz.resultado(-1); QQC2.ToolTip.text: text + " (Mayús+Intro)"; QQC2.ToolTip.visible: hovered }
+                QQC2.ToolButton { icon.name: "go-down"; display: QQC2.AbstractButton.IconOnly; text: "Resultado siguiente"; Accessible.name: text; enabled: raiz.busqueda !== null && raiz.busqueda.count > 0; onClicked: raiz.resultado(1); QQC2.ToolTip.text: text + " (Intro)"; QQC2.ToolTip.visible: hovered }
+                QQC2.ToolButton { icon.name: "dialog-close"; display: QQC2.AbstractButton.IconOnly; text: "Cerrar la búsqueda"; Accessible.name: text; onClicked: raiz.cerrarBusqueda() }
             }
         }
         RowLayout {
@@ -251,15 +361,63 @@ QQC2.Control {
                         TapHandler {
                             onDoubleTapped: (punto) => raiz.dobleClic(hoja.model.pagina, punto.position.x / raiz.v.zoom, punto.position.y / raiz.v.zoom)
                         }
+                        // con QtPdf: selección, enlaces y resultados de la búsqueda de esta página (encima de la imagen)
+                        Loader {
+                            id: capa
+                            anchors.fill: parent
+                            anchors.margins: 1
+                            active: raiz.conQtPdf && documentoPdf.item !== null
+                            source: "CapaQtPdf.qml"
+                            onLoaded: {
+                                item.document = Qt.binding(() => documentoPdf.item)
+                                item.pagina = Qt.binding(() => hoja.model.pagina)
+                                item.zoom = Qt.binding(() => raiz.v.zoom)
+                                item.busqueda = Qt.binding(() => raiz.busqueda)
+                            }
+                            Connections {
+                                target: capa.item
+                                function onSeleccionEmpezada() {
+                                    raiz.forceActiveFocus()
+                                    if (raiz.capaActiva && raiz.capaActiva !== capa.item) raiz.capaActiva.limpiar()
+                                    raiz.capaActiva = capa.item
+                                }
+                                function onIrA(pagina, y) { raiz.irA(pagina, y) }
+                                function onEnlaceExterno(url) { raiz.v.abrirEnlace(url) }
+                                function onMenuPedido(x, y) {
+                                    raiz.forceActiveFocus()
+                                    if (raiz.capaActiva !== capa.item && capa.item.texto !== "") raiz.capaActiva = capa.item
+                                    raiz.paginaMenu = hoja.model.pagina
+                                    raiz.puntoMenu = Qt.point(x / raiz.v.zoom, y / raiz.v.zoom)
+                                    menuPagina.capa = capa.item
+                                    menuPagina.popup()
+                                }
+                            }
+                        }
                     }
                 }
             }
         }
     }
 
+    // clic derecho en una página (con QtPdf)
+    QQC2.Menu {
+        id: menuPagina
+        property var capa: null
+        QQC2.MenuItem { text: "Copiar"; icon.name: "edit-copy"; enabled: raiz.textoSeleccionado !== ""; onTriggered: raiz.copiarSeleccion() }
+        QQC2.MenuItem {
+            text: "Seleccionar toda la página"
+            icon.name: "edit-select-all"
+            onTriggered: { if (raiz.capaActiva && raiz.capaActiva !== menuPagina.capa) raiz.capaActiva.limpiar(); raiz.capaActiva = menuPagina.capa; menuPagina.capa.seleccionarTodo() }
+        }
+        QQC2.MenuSeparator {}
+        QQC2.MenuItem { visible: raiz.textoPunto !== ""; height: visible ? implicitHeight : 0; text: raiz.textoPunto; icon.name: "go-previous-view"; enabled: raiz.puntoHabilitado; onTriggered: raiz.dobleClic(raiz.paginaMenu, raiz.puntoMenu.x, raiz.puntoMenu.y) }
+        QQC2.MenuItem { text: "Buscar en el PDF…"; icon.name: "edit-find"; onTriggered: raiz.buscarEnPdf() }
+    }
+
     // la marca de SyncTeX: visible unos segundos
     Item {
         id: marca
+        objectName: "marca"
         property int pagina: 0
         property rect rect: Qt.rect(0, 0, 0, 0)
         visible: false
