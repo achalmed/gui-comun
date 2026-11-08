@@ -21,7 +21,7 @@ from pathlib import Path
 from typing import Callable
 
 from gui_comun.modelos import ModeloLista
-from gui_comun.qt import QFileSystemWatcher, QObject, Property, Signal, Slot
+from gui_comun.qt import QFileSystemWatcher, QObject, Property, QTimer, Signal, Slot
 
 ROLES = ("ruta", "nombre", "carpeta", "modificado", "definicion", "solo_lectura")
 _ASTRAL = re.compile("[\U00010000-\U0010FFFF]")
@@ -103,6 +103,10 @@ def reemplazos(texto: str, patron: str, reemplazo: str, regex: bool = False, may
     return [[planos[2 * i], planos[2 * i + 1], nuevos[i][2]] for i in range(len(nuevos))][::-1]
 
 
+
+ESPERA_DISCO_MS = 400            # un cambio de fuera se mira cuando el archivo lleva este tiempo sin cambiar
+VUELTAS_DISCO = 10               # como mucho, unas 4 s esperando a que un archivo vacío de pronto se llene
+
 class ControladorEditor(QObject):
     """Los archivos abiertos (`abiertos`, un `ModeloLista` con ROLES) y las operaciones del editor.
 
@@ -126,6 +130,13 @@ class ControladorEditor(QObject):
         self._crlf: dict[str, bool] = {}
         self._actual = ""
         self._vigia: QFileSystemWatcher | None = None
+        # 4.1 (2026-11-08): un cambio de fuera se avisa cuando el archivo deja de cambiar, nunca a mitad de una escritura
+        # (quien escribe trunca y luego escribe: leerlo en ese instante daba un archivo vacío, y la ventana lo recargaba)
+        self._en_espera: dict[str, tuple[tuple, int]] = {}
+        self._t_disco = QTimer(self)
+        self._t_disco.setSingleShot(True)
+        self._t_disco.setInterval(ESPERA_DISCO_MS)
+        self._t_disco.timeout.connect(self._revisar_disco)
 
     abiertos = Property(QObject, lambda self: self._abiertos, constant=True)
 
@@ -302,8 +313,24 @@ class ControladorEditor(QObject):
     def _cambio_en_disco(self, ruta: str) -> None:
         if self._vigia is not None and os.path.exists(ruta) and ruta not in self._vigia.files():
             self._vigia.addPath(ruta)                 # los editores guardan reemplazando: se vuelve a vigilar
-        if ruta in self._firmas and self._firma(ruta) != self._firmas[ruta] and self._indice(ruta) >= 0:
-            self.cambioExterno.emit(ruta)
+        if ruta in self._firmas and self._indice(ruta) >= 0:
+            self._en_espera[ruta] = (self._firma(ruta), 0)
+            self._t_disco.start()
+
+    def _revisar_disco(self) -> None:
+        """Avisa de un cambio de fuera solo con el archivo quieto (misma firma que en la vuelta anterior) y no vacío de
+        repente; un archivo que sigue cambiando o que quedó en 0 bytes espera otra vuelta (hasta VUELTAS_DISCO)."""
+        for ruta, (antes, vueltas) in list(self._en_espera.items()):
+            ahora = self._firma(ruta)
+            vacio_de_pronto = ahora[1] == 0 and self._firmas.get(ruta, (0, 0))[1] > 0
+            if (ahora != antes or vacio_de_pronto) and vueltas < VUELTAS_DISCO:
+                self._en_espera[ruta] = (ahora, vueltas + 1)
+                continue
+            del self._en_espera[ruta]
+            if ruta in self._firmas and ahora != self._firmas[ruta] and self._indice(ruta) >= 0:
+                self.cambioExterno.emit(ruta)
+        if self._en_espera:
+            self._t_disco.start()
 
     @Slot(str, result=bool)
     def cambioEnDisco(self, ruta: str) -> bool:
@@ -312,6 +339,8 @@ class ControladorEditor(QObject):
     def soltar(self) -> None:
         """Retira el vigía dentro del bucle de eventos (su notificador de inotify no sobrevive a que lo recoja Python).
         Llámese al cerrar la ventana, antes de `Aplicacion.cerrar()`."""
+        self._t_disco.stop()
+        self._en_espera.clear()
         if self._vigia is not None:
             self._vigia.fileChanged.disconnect(self._cambio_en_disco)
             self._vigia.deleteLater()

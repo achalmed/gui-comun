@@ -21,6 +21,11 @@ La versión vive en `gui_comun/__init__.py` y en `pyproject.toml`. Las secciones
 - `VistaPdf`: las páginas de QtPdf se dibujan al doble de la resolución de pantalla y se reducen (`sobremuestreo: 2`,
   con tope de 4096 px): Pdfium a la resolución exacta empastaba el texto; así sale nítido, como Poppler.
 
+### Fixed
+- `ControladorEditor`: un cambio hecho fuera se avisa (`cambioExterno`) cuando el archivo lleva 400 ms quieto y no
+  vacío de pronto (hasta ~4 s de espera). Quien escribe truncando y luego escribiendo dejaba un instante el archivo en
+  0 bytes; el editor lo leía entonces y la ventana recargaba la pestaña vacía (un Ctrl+S lo habría borrado).
+
 ### Added
 - `gui_comun.notificaciones` (`Notificador`, expuesto a todo el QML como `notificador`): `notificar(texto, tipo)` por
   `notify-send` en un `QProcess` (PySide6 no pasa a D-Bus los tipos que pide `Notify`).
