@@ -11,6 +11,10 @@ La versión vive en `gui_comun/__init__.py` y en `pyproject.toml`. Las secciones
 ## [Unreleased]
 
 ### Changed
+- `Mensajes`: un aviso sin acciones va a las notificaciones del escritorio (las de KDE Plasma, con el nombre y el
+  icono del studio) en lugar de apilarse en la ventana; información y éxito son transitorios y cada uno reemplaza al
+  anterior, un error queda en el historial de Plasma. Solo los avisos con acciones (una decisión) siguen en línea, y
+  todos cuando no hay escritorio (offscreen, `GUI_COMUN_SIN_NOTIFICACIONES=1`). Ningún studio cambia su código.
 - `EditorTexto`: la revisión ortográfica de KDE (Sonnet), que el estilo de KDE enciende sola en todo `TextArea`
   editable, queda apagada por omisión (`revisarOrtografia: false`): en código LaTeX subrayaba en rojo las órdenes y
   todo lo que no fuera del idioma predeterminado de Sonnet. El studio la enciende si el usuario lo pide.
@@ -18,6 +22,8 @@ La versión vive en `gui_comun/__init__.py` y en `pyproject.toml`. Las secciones
   con tope de 4096 px): Pdfium a la resolución exacta empastaba el texto; así sale nítido, como Poppler.
 
 ### Added
+- `gui_comun.notificaciones` (`Notificador`, expuesto a todo el QML como `notificador`): `notificar(texto, tipo)` por
+  `notify-send` en un `QProcess` (PySide6 no pasa a D-Bus los tipos que pide `Notify`).
 - `ControladorEditor.rutasAbiertas`: las rutas abiertas, para quien vigila cambios hechos fuera de la ventana.
 
 ## [4.0.0] - 2026-11-03

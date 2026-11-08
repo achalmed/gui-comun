@@ -34,6 +34,7 @@ from gui_comun import __version__ as _VERSION_GUI_COMUN
 from gui_comun import errores as _errores
 from gui_comun import i18n
 from gui_comun.escritorio import Escritorio
+from gui_comun.notificaciones import Notificador
 from gui_comun.qt import (BINDING, Property, QApplication, QCoreApplication, QEvent, QGuiApplication, QIcon, QObject,
                           QQmlApplicationEngine, QQmlPropertyMap, QQuickWindow, Qt, QTimer, QTranslator, QUrl, cast,
                           version_qt)
@@ -115,6 +116,8 @@ class Aplicacion:
         self.escritorio = Escritorio(self.errores)                # 3.0: abrir, mostrar en Dolphin, abrir carpeta
         self.exponer("errores", self.errores)
         self.exponer("escritorio", self.escritorio)
+        self.notificador = Notificador(app_id, nombre)           # 4.1: los avisos van a las notificaciones de KDE
+        self.exponer("notificador", self.notificador)
         self.datos = DatosStudio(self)
         self.exponer("aplicacionStudio", self.datos)
 

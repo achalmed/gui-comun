@@ -134,7 +134,10 @@ señal `progresoPulsado()` (la ventana abre el panel inferior).
 ### Mensajes
 
 `mostrar(texto, tipo, acciones)` con `tipo` ∈ `informacion` · `positivo` · `aviso` · `error` y `acciones:
-[{texto, icono, ejecutar}]`; `limpiar()`; `cuantos`. Solo para lo que exige atención.
+[{texto, icono, ejecutar}]`; `limpiar()`; `cuantos`. Solo para lo que exige atención. Desde 4.1, un aviso **sin
+acciones** va a las notificaciones del escritorio (`notificador`, `gui_comun.notificaciones`: KDE Plasma, con el nombre
+y el icono del studio; información y éxito transitorios, cada uno reemplaza al anterior; el error queda en el
+historial). Con acciones, o sin escritorio (offscreen, `GUI_COMUN_SIN_NOTIFICACIONES=1`), se muestra en línea.
 
 ### PaletaOrdenes
 

@@ -1,5 +1,8 @@
-// Mensajes — mensajes en línea (Kirigami.InlineMessage) solo para lo que exige atención: conflicto, remoto caído,
-// error de una operación. Se apilan arriba del centro y se cierran. Un resumen no va aquí (va a la barra de estado).
+// Mensajes — los avisos de la ventana. Desde 4.1 (2026-11-08) un aviso SIN acciones va a las notificaciones del
+// escritorio (las de KDE Plasma, `notificador` de gui_comun.notificaciones): no ocupa la ventana ni se apila. Solo lo que
+// pide una decisión (un aviso con acciones: «¿guardar?», «¿recargar?») queda aquí, en línea (Kirigami.InlineMessage),
+// arriba del centro; también todo aviso cuando no hay escritorio que lo muestre (pruebas, offscreen). Un resumen no va
+// aquí (va a la barra de estado).
 // mostrar(texto, tipo, acciones): tipo = "informacion" | "positivo" | "aviso" | "error"; acciones = [{texto, icono, ejecutar}]
 import QtQuick
 import QtQuick.Layouts
@@ -14,6 +17,10 @@ ColumnLayout {
     readonly property alias cuantos: modelo.count
 
     function mostrar(texto, tipo, acciones) {
+        const conAcciones = !!acciones && acciones.length > 0
+        if (!conAcciones && typeof notificador !== "undefined" && notificador && notificador.disponible
+                && notificador.notificar(texto, tipo || "informacion"))
+            return
         modelo.append({ texto: texto, tipo: tipo || "informacion", acciones: acciones || [] })
     }
     function limpiar() { modelo.clear() }
