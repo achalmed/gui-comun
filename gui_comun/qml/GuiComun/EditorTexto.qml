@@ -17,6 +17,10 @@ Item {
     property string ruta: ""
     property string definicion: ""                   // «LaTeX», «Markdown», «YAML»…; vacía, sin resaltar
     property bool soloLectura: false
+    // La revisión ortográfica de KDE (Sonnet), apagada por omisión: el estilo de KDE la enciende sola en todo TextArea
+    // editable y, en código fuente (LaTeX, Markdown), subraya en rojo las órdenes y cualquier palabra que no sea del
+    // idioma predeterminado de Sonnet (en_US en muchas instalaciones). La enciende el studio si el usuario lo pide.
+    property bool revisarOrtografia: false
     property bool ajustarLineas: false
     property real tamanoLetra: 0                     // 0: el de la fuente monoespaciada del tema
     property bool conNumeros: true
@@ -217,6 +221,7 @@ Item {
             QQC2.TextArea {
                 id: area
                 readOnly: raiz.soloLectura
+                Kirigami.SpellCheck.enabled: raiz.revisarOrtografia && !raiz.soloLectura
                 textFormat: TextEdit.PlainText
                 wrapMode: raiz.ajustarLineas ? TextEdit.Wrap : TextEdit.NoWrap
                 font.family: Kirigami.Theme.fixedWidthFont.family

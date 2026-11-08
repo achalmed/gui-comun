@@ -10,6 +10,16 @@ La versión vive en `gui_comun/__init__.py` y en `pyproject.toml`. Las secciones
 
 ## [Unreleased]
 
+### Changed
+- `EditorTexto`: la revisión ortográfica de KDE (Sonnet), que el estilo de KDE enciende sola en todo `TextArea`
+  editable, queda apagada por omisión (`revisarOrtografia: false`): en código LaTeX subrayaba en rojo las órdenes y
+  todo lo que no fuera del idioma predeterminado de Sonnet. El studio la enciende si el usuario lo pide.
+- `VistaPdf`: las páginas de QtPdf se dibujan al doble de la resolución de pantalla y se reducen (`sobremuestreo: 2`,
+  con tope de 4096 px): Pdfium a la resolución exacta empastaba el texto; así sale nítido, como Poppler.
+
+### Added
+- `ControladorEditor.rutasAbiertas`: las rutas abiertas, para quien vigila cambios hechos fuera de la ventana.
+
 ## [4.0.0] - 2026-11-03
 
 Retira la capa 1.x de Qt Widgets, congelada desde 2.0.0. Sube la mayor porque desaparecen módulos públicos; lo de

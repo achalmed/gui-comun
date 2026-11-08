@@ -27,6 +27,10 @@ QQC2.Control {
     property string textoPunto: ""                  // el menú del clic derecho ofrece «textoPunto» → dobleClic (SyncTeX)
     property bool puntoHabilitado: true
     property bool miniaturas: false
+    // QtPdf (Pdfium) pinta el texto empastado a la resolución exacta de la pantalla; dibujado al doble y reducido sale
+    // nítido, como Poppler en Okular o TeXstudio (prueba del 2026-11-08). El tope evita páginas enormes con mucho zoom.
+    property real sobremuestreo: 2
+    property int topeResolucion: 4096
     readonly property int paginaActual: Math.max(1, paginas.indexAt(10, paginas.contentY + paginas.height / 3) + 1)
     property real separacion: Kirigami.Units.largeSpacing
     property int guardadaPagina: -1
@@ -339,7 +343,12 @@ QQC2.Control {
                             onLoaded: {
                                 item.document = Qt.binding(() => documentoPdf.item)
                                 item.pagina = Qt.binding(() => hoja.model.pagina)
-                                item.sourceSize = Qt.binding(() => Qt.size(Math.round(papel.width * raiz.v.escala), Math.round(papel.height * raiz.v.escala)))
+                                item.sourceSize = Qt.binding(() => {
+                                    const f = Math.min(raiz.v.escala * raiz.sobremuestreo,
+                                                       raiz.topeResolucion / Math.max(1, papel.width, papel.height))
+                                    return Qt.size(Math.round(papel.width * Math.max(raiz.v.escala, f)),
+                                                   Math.round(papel.height * Math.max(raiz.v.escala, f)))
+                                })
                             }
                         }
                         QQC2.BusyIndicator {

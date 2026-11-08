@@ -214,6 +214,11 @@ class ControladorEditor(QObject):
     def modificados(self) -> list:
         return [f["ruta"] for f in self._abiertos.todas() if f.get("modificado")]
 
+    @Property("QVariantList", notify=cambiado)
+    def rutasAbiertas(self) -> list:
+        """Las rutas de los archivos abiertos (para quien vigila cambios hechos fuera de la ventana)."""
+        return [f["ruta"] for f in self._abiertos.todas()]
+
     # ------------------------------------------------------------- leer y guardar
     @Slot(str, result=str)
     def leer(self, ruta: str) -> str:
