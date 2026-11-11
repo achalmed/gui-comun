@@ -22,11 +22,24 @@ La versión vive en `gui_comun/__init__.py` y en `pyproject.toml`. Las secciones
   con tope de 4096 px): Pdfium a la resolución exacta empastaba el texto; así sale nítido, como Poppler.
 
 ### Fixed
+- `TablaDatos`: las columnas no se podían ensanchar ni estrechar desde la cabecera (el `HorizontalHeaderView`
+  sincronizado no redimensiona; solo el cuerpo, donde nadie lo busca). Cada cabecera tiene ahora un asa en su borde
+  derecho (cursor de separación, realce al pasar): arrastrar cambia el ancho sin ordenar y se recuerda con
+  `claveAjustes`; doble clic lo devuelve al de la definición.
+- `PanelNavegacion`: la barra de desplazamiento vertical tapaba los contadores; el contenido toma el ancho disponible
+  del `ScrollView`, que ya descuenta la barra cuando se ve.
 - `ControladorEditor`: un cambio hecho fuera se avisa (`cambioExterno`) cuando el archivo lleva 400 ms quieto y no
   vacío de pronto (hasta ~4 s de espera). Quien escribe truncando y luego escribiendo dejaba un instante el archivo en
   0 bytes; el editor lo leía entonces y la ventana recargaba la pestaña vacía (un Ctrl+S lo habría borrado).
 
 ### Added
+- `PanelNavegacion` en árbol: una fila puede llevar `nivel` (sangría), `ancestros` (los `nombre` de las de arriba) y
+  `plegable` (su flecha); las hijas se ven con su rama desplegada, elegir una rama la despliega y una fila escondida
+  que pasa a `actual` despliega sus ancestros (`abiertos`, `alternar(nombre)`, `fijarAbierta(nombre, abrir)`). Las
+  secciones sin esos campos se ven como antes.
+- `TablaDatos`: una columna con `lineas: n` parte el texto largo en hasta n líneas (y elide la última) y su fila crece
+  lo justo; `cortarTras: "/"` prefiere partir tras esos caracteres (una ruta, por carpetas). Clic derecho en la
+  cabecera: restablecer los anchos y mostrar u ocultar columnas (`restablecerAnchos()`, `fijarAncho(c, ancho)`).
 - `gui_comun.notificaciones` (`Notificador`, expuesto a todo el QML como `notificador`): `notificar(texto, tipo)` por
   `notify-send` en un `QProcess` (PySide6 no pasa a D-Bus los tipos que pide `Notify`).
 - `ControladorEditor.rutasAbiertas`: las rutas abiertas, para quien vigila cambios hechos fuera de la ventana.

@@ -1,7 +1,7 @@
 ---
 tipo: estado
 estado: activo
-actualizado: 2026-11-03
+actualizado: 2026-11-10
 ---
 # estado.md — gui-comun
 
@@ -9,6 +9,7 @@ actualizado: 2026-11-03
 
 | fecha | qué | dónde se ve |
 |---|---|---|
+| 2026-11-10 | **Para LaTeX Studio (sin versión: `[Unreleased]`)**: `TablaDatos` redimensiona desde la cabecera (un asa en el borde derecho; antes solo el cuerpo), parte el texto en varias líneas (`lineas`, `cortarTras`) y su cabecera tiene menú (restablecer anchos, columnas visibles); `PanelNavegacion` en árbol (`nivel`, `ancestros`, `plegable`) y sin la barra encima de los contadores; prueba con el ratón de verdad | `CHANGELOG.md` [Unreleased]; `tests/test_navegacion_tabla_41.py` |
 | 2026-11-03 | **4.0.0: retirada la capa 1.x** (`widgets/`, `diseno`, `theming`, `ui_loader`, `icons`) tras `rg` en todo `~/Documents` y `~/.dotfiles` (sin lo sensible): ningún código la importa; solo las pruebas de los studios que lo prohíben y los worktrees viejos `lliphi/.claude/worktrees/*` (de antes de Lliphi Studio 2.0); quedan `workers`, `lanzador`, `acentos`, `rutas`, `ajustes`, `format`, `history_service`; los diez studios arrancan | `CHANGELOG.md` 4.0.0 (quién, migración); `git tag v4.0.0` (local) |
 | 2026-11-03 | **3.2.0, el visor completo**: lo que LaTeX Studio ganó hoy en su visor (07d19b6) pasa a `VistaPdf` con QtPdf: selección de texto (Ctrl+C, Ctrl+A, Esc, menú del clic derecho), enlaces internos y externos (`VisorPdf.abrirEnlace`, solo http, https y mailto) y búsqueda (`buscarEnPdf()`), en `CapaQtPdf` y `BusquedaQtPdf` cargados aparte (sin el módulo, igual que antes); el doble clic y la marca siguen; la primera búsqueda ya no salta al segundo resultado; `EditorTexto` deja el cursor antes del cierre de una sugerencia (`\frac{|}{}`); las pruebas de ratón de LaTeX sobre la capa y una de la vista entera; 90 pruebas | `CHANGELOG.md` 3.2.0; `tests/test_visor_qtpdf.py`; `python3 -m gui_comun.galeria --pagina pdf` |
 | 2026-11-03 | **3.1.0, lo que los studios repetían, en la base** (pendientes del 2026-11-03, carril A): `VistaComparacion` + `diferencias` (con preparar líneas sueltas), `EditorTexto` + `BarraBuscarReemplazar` + `editor.ControladorEditor`, `VistaPdf` + `visor_pdf.VisorPdf` (QtPdf o `pdftoppm`), `ListaErrores`, `PasosEscritura` + `LineaPasos` + `pasos`, `GraficoXY` + `PaletaCategorica` + `paleta`, `EtiquetaNivel`, `miniaturas.ProveedorMiniaturas`, `ArbolDatos.ordenable` + `ModeloArbol.ordenar`, `ModeloLista.todas()` como `Slot`, Kvantum a juego en `entorno_con_esquema`, `AA_ShareOpenGLContexts`; **nombres propios** porque un tipo de la base con el nombre de una copia la tapa en `componentes/` (se vio con `EtiquetaEstado` en Dotfiles y Lliphi); seis páginas en la galería; 86 pruebas; los diez studios arrancan (`--smoke` con su `Exec`); rama `wip/2026-11-03-pendientes` (worktree `~/.cache/pendientes/gui-comun`), sin fusionar ni empujar | `CHANGELOG.md` 3.1.0 (tabla copia → base); `docs/componentes.md`; `python3 -m gui_comun.galeria --pagina diferencias` |

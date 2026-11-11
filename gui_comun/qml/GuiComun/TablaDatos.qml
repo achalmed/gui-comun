@@ -1,11 +1,15 @@
 // TablaDatos — la vista principal densa de un studio: TableView con cabecera, columnas ordenables (clic en la
-// cabecera), redimensionables (arrastre), opcionales (`visible`) y que se ocultan al estrecharse (`estrecho`);
-// filas alternas, selección múltiple por filas (Ctrl y Mayús), menú contextual, doble clic e Intro.
+// cabecera), redimensionables (arrastre del borde derecho de su cabecera; doble clic en él la devuelve a su ancho),
+// opcionales (`visible`; el clic derecho en la cabecera las muestra u oculta y restablece los anchos) y que se ocultan
+// al estrechar la tabla (`estrecho`); filas alternas, selección múltiple por filas (Ctrl y Mayús), menú contextual,
+// doble clic e Intro.
 // El modelo es un QAbstractTableModel (o un ModeloFiltrado sobre él) con el rol `display` y, si quiere color
 // semántico en una columna `semantica`, el rol `nivel` (positivo · neutro · activo · negativo · inactivo); el rol
 // `habilitado` (falso) atenúa la fila y `icono` pone un icono delante del texto de las columnas `conIcono`.
 // columnas: [{ancho (unidades de rejilla; 0 = toma el resto), minimo, alinear ("izquierda"|"centro"|"derecha"),
-//            mono, semantica, conIcono, visible, estrecho, secundaria (texto tenue)}]
+//            mono, semantica, conIcono, visible, estrecho, secundaria (texto tenue),
+//            lineas (4.1: el texto se parte en hasta tantas líneas y la fila crece lo justo; 1 por omisión),
+//            cortarTras (4.1: caracteres tras los que se prefiere partir, p. ej. "/" en una ruta)}]
 // Con `claveAjustes`, los anchos que el usuario arrastró se recuerdan en QSettings entre sesiones (2.1).
 import QtQuick
 import QtQuick.Layouts
@@ -66,6 +70,60 @@ QQC2.Control {
             fijas += e >= 0 ? e : (o.ancho > 0 ? o.ancho * Kirigami.Units.gridUnit : (o.minimo || 10) * Kirigami.Units.gridUnit)
         }
         return Math.max((col.minimo || 10) * Kirigami.Units.gridUnit, tabla.width - fijas)
+    }
+
+    // un ancho fijado a mano (arrastre de la cabecera); negativo lo devuelve al de la definición
+    function fijarAncho(c, ancho) {
+        if (ancho < 0) tabla.setColumnWidth(c, -1)
+        else tabla.setColumnWidth(c, Math.max(Kirigami.Units.gridUnit * 3, Math.round(ancho)))
+        tabla.forceLayout()
+    }
+    function restablecerAnchos() {
+        tabla.clearColumnWidths()
+        tabla.forceLayout()
+        guardarAnchos()
+    }
+
+    // el texto de una celda, con un espacio de ancho cero tras los caracteres de `cortarTras` (donde partir la línea)
+    function textoCelda(c, valor) {
+        if (valor === undefined || valor === null) return ""
+        const cortes = columna(c).cortarTras
+        let texto = String(valor)
+        if (cortes && (columna(c).lineas || 1) > 1)
+            for (const ch of cortes) texto = texto.split(ch).join(ch + "\u200B")
+        return texto
+    }
+
+    // las columnas de varias líneas y el alto de una fila: el del texto partido más largo, nunca menos que `altoFila`
+    readonly property var columnasMultilinea: {
+        const l = []
+        for (let i = 0; i < raiz.columnas.length; i++)
+            if ((raiz.columnas[i].lineas || 1) > 1 && raiz.columnas[i].visible !== false) l.push(i)
+        return l
+    }
+    function altoDeFila(r) {
+        if (raiz.columnasMultilinea.length === 0 || !raiz.modelo) return raiz.altoFila
+        let alto = raiz.altoFila
+        for (const c of raiz.columnasMultilinea) {
+            const ancho = raiz.anchoDe(c)
+            if (ancho <= 0) continue
+            const col = columna(c)
+            const margenes = (c === 0 ? Kirigami.Units.largeSpacing : Kirigami.Units.smallSpacing)
+                           + (c === tabla.columns - 1 ? Kirigami.Units.largeSpacing * 2 : Kirigami.Units.smallSpacing)
+                           + (col.conIcono ? Kirigami.Units.iconSizes.small + Kirigami.Units.smallSpacing : 0)
+            medidor.width = Math.max(1, ancho - margenes)
+            medidor.maximumLineCount = col.lineas
+            medidor.text = textoCelda(c, raiz.modelo.data(raiz.modelo.index(r, c)))
+            alto = Math.max(alto, Math.ceil(medidor.contentHeight) + Kirigami.Units.smallSpacing * 2)
+        }
+        return alto
+    }
+    Text {   // mide el texto partido de las columnas de varias líneas (no se ve)
+        id: medidor
+        visible: false
+        wrapMode: Text.Wrap
+        elide: Text.ElideRight
+        font: Kirigami.Theme.defaultFont
     }
 
     function mostrarColumna(c, visible) {
@@ -189,6 +247,7 @@ QQC2.Control {
                     }
                 }
                 TapHandler {
+                    acceptedButtons: Qt.LeftButton
                     onTapped: {
                         const desc = raiz.columnaOrden === celdaCabecera.index ? !raiz.descendente : false
                         raiz.columnaOrden = celdaCabecera.index
@@ -196,6 +255,64 @@ QQC2.Control {
                         raiz.ordenar(celdaCabecera.index, desc)
                     }
                 }
+                TapHandler {
+                    acceptedButtons: Qt.RightButton
+                    onTapped: menuCabecera.popup()
+                }
+                // el asa del borde derecho: arrastrar cambia el ancho; doble clic lo devuelve al de la definición
+                MouseArea {
+                    id: asa
+                    anchors.top: parent.top
+                    anchors.bottom: parent.bottom
+                    anchors.right: parent.right
+                    width: Kirigami.Units.smallSpacing * 2
+                    cursorShape: Qt.SplitHCursor
+                    hoverEnabled: true
+                    preventStealing: true
+                    property real xInicio: 0
+                    property real anchoInicio: 0
+                    Accessible.role: Accessible.Separator
+                    Accessible.name: "Cambiar el ancho de la columna"
+                    onPressed: m => {
+                        asa.xInicio = asa.mapToItem(null, m.x, m.y).x
+                        asa.anchoInicio = tabla.columnWidth(celdaCabecera.index)
+                    }
+                    onPositionChanged: m => {
+                        if (asa.pressed) raiz.fijarAncho(celdaCabecera.index, asa.anchoInicio + asa.mapToItem(null, m.x, m.y).x - asa.xInicio)
+                    }
+                    onReleased: raiz.guardarAnchos()
+                    onDoubleClicked: { raiz.fijarAncho(celdaCabecera.index, -1); raiz.guardarAnchos() }
+                    Rectangle {
+                        anchors.right: parent.right
+                        width: 2
+                        height: parent.height
+                        visible: asa.containsMouse || asa.pressed
+                        color: Kirigami.Theme.highlightColor
+                    }
+                }
+            }
+        }
+
+        QQC2.Menu {
+            id: menuCabecera
+            QQC2.MenuItem {
+                text: "Restablecer los anchos de columna"
+                icon.name: "edit-reset"
+                onTriggered: raiz.restablecerAnchos()
+            }
+            QQC2.MenuSeparator {}
+            Instantiator {
+                model: raiz.modelo ? tabla.columns : 0
+                delegate: QQC2.MenuItem {
+                    required property int index
+                    text: raiz.modelo ? String(raiz.modelo.headerData(index, Qt.Horizontal)) : ""
+                    checkable: true
+                    checked: raiz.columna(index).visible !== false
+                    enabled: index !== 0
+                    onTriggered: raiz.mostrarColumna(index, checked)
+                }
+                onObjectAdded: (i, objeto) => menuCabecera.insertItem(i + 2, objeto)
+                onObjectRemoved: (i, objeto) => menuCabecera.removeItem(objeto)
             }
         }
 
@@ -217,7 +334,7 @@ QQC2.Control {
             pointerNavigationEnabled: true
             selectionModel: ItemSelectionModel { id: seleccionModelo; model: raiz.modelo }
             columnWidthProvider: function (c) { return raiz.anchoDe(c) }
-            rowHeightProvider: function () { return raiz.altoFila }
+            rowHeightProvider: function (r) { return raiz.altoDeFila(r) }
             onWidthChanged: forceLayout()
             onCurrentRowChanged: raiz.filaActualCambiada(currentRow)
             Connections { target: seleccionModelo; function onSelectionChanged() { raiz.seleccionCambiada() } }
@@ -271,8 +388,10 @@ QQC2.Control {
                     }
                     QQC2.Label {
                         Layout.fillWidth: true
-                        text: celda.model.display !== undefined && celda.model.display !== null ? celda.model.display : ""
+                        text: raiz.textoCelda(celda.column, celda.model.display)
                         elide: Text.ElideRight
+                        wrapMode: (celda.col.lineas || 1) > 1 ? Text.Wrap : Text.NoWrap
+                        maximumLineCount: celda.col.lineas || 1
                         horizontalAlignment: raiz.alineacion(celda.column)
                         font.family: celda.col.mono ? Kirigami.Theme.fixedWidthFont.family : Kirigami.Theme.defaultFont.family
                         color: celda.selected ? Kirigami.Theme.highlightedTextColor

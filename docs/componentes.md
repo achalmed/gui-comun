@@ -77,8 +77,13 @@ La ventana atiende `ventana.navegacion`, `ventana.detalles` y `ventana.inferior`
 
 ### PanelNavegacion
 
-`secciones: [{titulo, filas: [{nombre, texto, icono, contador}]}]`, `actual` (nombre), `plegado` (solo iconos),
-`anchoPreferido` (13 unidades) · `anchoMinimo` (9). Señal `elegida(nombre)`.
+`secciones: [{titulo, filas: [{nombre, texto, icono, contador, nivel, ancestros, plegable}]}]`, `actual` (nombre),
+`plegado` (solo iconos), `anchoPreferido` (13 unidades) · `anchoMinimo` (9). Señal `elegida(nombre)`.
+Árbol (4.1): `nivel` sangra la fila; `ancestros` (los `nombre` de las filas de arriba, del más alto al más cercano)
+la esconde mientras alguno esté plegado; `plegable` le pone la flecha (clic en ella: desplegar o plegar; elegir la fila
+también la despliega; → y ← con el foco en ella). Una fila escondida que pasa a `actual` despliega sus ancestros.
+`abiertos` (nombre → true), `alternar(nombre)`, `fijarAbierta(nombre, abrir)`. Sin esos campos, la lista de siempre.
+El contenido deja sitio a la barra de desplazamiento (los contadores no quedan debajo).
 
 ### TablaDatos
 
@@ -86,14 +91,18 @@ La ventana atiende `ventana.navegacion`, `ventana.detalles` y `ventana.inferior`
 `display` (texto), `nivel` (`positivo` · `neutro` · `activo` · `negativo` · `inactivo`; color solo en las columnas
 `semantica`), `habilitado` (falso atenúa la fila), `icono` (en las columnas `conIcono`).
 
-`columnas: [{ancho (unidades; 0 = estira), minimo, alinear, mono, semantica, conIcono, visible, estrecho, secundaria}]`;
+`columnas: [{ancho (unidades; 0 = estira), minimo, alinear, mono, semantica, conIcono, visible, estrecho, secundaria,
+lineas (4.1: hasta tantas líneas; la fila crece lo justo), cortarTras (4.1: dónde se prefiere partir, p. ej. "/")}]`;
 `altoFila` (1,7 unidades); `umbralEstrecho` (50 unidades: bajo él se ocultan las `estrecho`); `columnaOrden` ·
 `descendente`; `menuContextual` (un `Menu`, p. ej. `MenuAcciones` sin atajos); `mensajeVacio` · `iconoVacio`;
 `seleccion` (`ItemSelectionModel`), `filaActual`, `filas`; `claveAjustes` (2.1: con ella, los anchos de columna que
 el usuario arrastró se recuerdan en QSettings, grupo `tablas/<clave>`). Señales: `ordenar(columna, descendente)`,
 `activada(fila)` (doble clic o Intro), `suprimir()` (Supr), `filaActualCambiada(fila)`, `seleccionCambiada()`.
 Funciones: `filasSeleccionadas()`, `seleccionarTodo()`, `invertirSeleccion()`, `seleccionarFila(fila, limpiar)`,
-`mostrarColumna(c, visible)`. Selección múltiple con Ctrl y Mayús; columnas redimensionables arrastrando la cabecera.
+`mostrarColumna(c, visible)`, `fijarAncho(c, ancho)` (negativo: el de la definición), `restablecerAnchos()`.
+Selección múltiple con Ctrl y Mayús; columnas redimensionables arrastrando el asa del borde derecho de su cabecera
+(4.1; doble clic en el asa la devuelve a su ancho); clic derecho en la cabecera: restablecer los anchos y mostrar u
+ocultar columnas (la primera no se oculta).
 
 ### ArbolDatos (2.1)
 
