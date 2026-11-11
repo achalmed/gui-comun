@@ -1,7 +1,7 @@
 """test_navegacion_tabla_41.py — lo que 4.1 añadió a la tabla y al panel de navegación, con el ratón de verdad (eventos
 `QMouseEvent` en una ventana sin pantalla del Python del sistema, que no trae QtTest):
 
-- `TablaDatos`: arrastrar el borde derecho de una cabecera cambia el ancho de su columna (antes solo se podía en el
+- `TablaDatos`: un clic elige la fila entera (Ctrl añade, Mayús el tramo); arrastrar el borde derecho de una cabecera cambia el ancho de su columna (antes solo se podía en el
   cuerpo, donde nadie lo busca), sin ordenar; doble clic en el borde lo devuelve; una columna con `lineas` parte el
   texto largo y su fila crece lo justo, las cortas no;
 - `PanelNavegacion`: las filas hijas se ven solo con su rama desplegada; elegir una escondida despliega sus ancestros;
@@ -19,7 +19,7 @@ import os, sys, json
 os.environ["QT_QPA_PLATFORM"] = "offscreen"
 sys.path.insert(0, sys.argv[1])
 from gui_comun.qt import QGuiApplication, QQmlApplicationEngine, QUrl, QTimer
-from PySide6.QtCore import QEvent, QPointF, Qt, QMetaObject, Q_RETURN_ARG
+from PySide6.QtCore import QEvent, QPointF, Qt, QMetaObject, Q_RETURN_ARG, Q_ARG
 from PySide6.QtGui import QMouseEvent
 from gui_comun.nucleo import RUTA_QML
 from gui_comun.modelos import ModeloTabla
@@ -41,7 +41,13 @@ Window {
     function medir() {
         tabla.vista.forceLayout()
         return JSON.stringify({anchos: [0, 1, 2].map(c => tabla.vista.columnWidth(c)), orden: tabla.columnaOrden,
-                               altos: [tabla.vista.rowHeight(0), tabla.vista.rowHeight(1)], altoFila: tabla.altoFila})
+                               altos: [tabla.vista.rowHeight(0), tabla.vista.rowHeight(1)], altoFila: tabla.altoFila,
+                               elegidas: tabla.filasSeleccionadas(), actual: tabla.filaActual})
+    }
+    function centroFila(r) {     // la y de la mitad de una fila, en la ventana
+        let y = tabla.vista.mapToItem(null, 0, 0).y
+        for (let i = 0; i < r; i++) y += tabla.vista.rowHeight(i)
+        return JSON.stringify(y + tabla.vista.rowHeight(r) / 2)
     }
     function panelEstado() {
         const vistos = []
@@ -82,10 +88,10 @@ Window {
 """.encode())
 ventana = motor.rootObjects()[0]
 reloj = [1000]
-def raton(tipo, x, y, apretado=True, paso=40):
+def raton(tipo, x, y, apretado=True, paso=40, mod=Qt.NoModifier):
     p = QPointF(x, y)
     boton = Qt.LeftButton if tipo != QEvent.MouseMove else Qt.NoButton
-    ev = QMouseEvent(tipo, p, ventana.mapToGlobal(p), boton, Qt.LeftButton if apretado else Qt.NoButton, Qt.NoModifier)
+    ev = QMouseEvent(tipo, p, ventana.mapToGlobal(p), boton, Qt.LeftButton if apretado else Qt.NoButton, mod)
     reloj[0] += paso
     ev.setTimestamp(reloj[0])
     QGuiApplication.sendEvent(ventana, ev)
@@ -115,6 +121,16 @@ def correr():
         raton(QEvent.MouseButtonPress, x, 10, paso=1000); raton(QEvent.MouseButtonRelease, x, 10, False)
         raton(QEvent.MouseButtonPress, x, 10); raton(QEvent.MouseButtonDblClick, x, 10, paso=0); raton(QEvent.MouseButtonRelease, x, 10, False)
         salida["doble"] = llamar("medir")
+        def clic_fila(r, mod=Qt.NoModifier):
+            y = llamar("centroFila", Q_ARG("QVariant", r))
+            raton(QEvent.MouseMove, X + 300, y, False)
+            raton(QEvent.MouseButtonPress, X + 300, y, paso=1000, mod=mod); raton(QEvent.MouseButtonRelease, X + 300, y, False, mod=mod)
+        clic_fila(2)
+        salida["clic"] = llamar("medir")
+        clic_fila(4, Qt.ControlModifier)
+        salida["ctrl"] = llamar("medir")
+        clic_fila(6, Qt.ShiftModifier)
+        salida["mayus"] = llamar("medir")
         salida["panel_inicio"] = llamar("panelEstado")
         ventana.setProperty("elegida", "A › x › 2026")
         app.processEvents()
@@ -144,6 +160,10 @@ def test_tabla_redimensiona_desde_la_cabecera_y_panel_en_arbol(tmp_path):
     assert abs(doble["anchos"][0] - (600 - doble["anchos"][1] - doble["anchos"][2])) <= 1, s   # vuelve a tomar el resto
     # el nombre largo se parte en varias líneas cuando no cabe; el corto no
     assert estrecha["altos"][0] > estrecha["altoFila"] and estrecha["altos"][1] == estrecha["altoFila"], s
+    # un clic elige la fila entera (antes solo movía la celda actual); Ctrl añade; Mayús, el tramo
+    assert (s["clic"]["elegidas"], s["clic"]["actual"]) == ([2], 2), s
+    assert s["ctrl"]["elegidas"] == [2, 4], s
+    assert s["mayus"]["elegidas"] == [4, 5, 6], s           # desde la última elegida, como en Dolphin
     # el panel: plegado al inicio; elegir una fila escondida despliega sus ancestros
     assert "A › x" not in s["panel_inicio"]["vistos"] and "A" in s["panel_inicio"]["vistos"], s
     assert s["panel_elegida"]["abiertos"] == ["A", "A › x"], s

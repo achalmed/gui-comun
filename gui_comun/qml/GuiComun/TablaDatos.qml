@@ -160,6 +160,31 @@ QQC2.Control {
         const idx = seleccionModelo.model.index(fila, 0)
         seleccionModelo.setCurrentIndex(idx, ItemSelectionModel.NoUpdate)
         seleccionModelo.select(idx, (limpiar ? ItemSelectionModel.ClearAndSelect : ItemSelectionModel.Select) | ItemSelectionModel.Rows)
+        raiz.ancla = fila
+    }
+
+    // el clic en una fila (4.1): la TableView de Qt 6 solo mueve la celda actual; aquí se selecciona la fila entera,
+    // como en una lista: sin modificador, solo ella; Ctrl la añade o la quita; Mayús, el tramo desde la última elegida
+    property int ancla: -1
+    property int filaSobre: -1           // la fila bajo el ratón (su resalte)
+    property var celdaSobre: null
+    function clicEnFila(fila, modificadores) {
+        if (fila < 0 || !raiz.modelo) return
+        tabla.forceActiveFocus()
+        const idx = seleccionModelo.model.index(fila, 0)
+        if ((modificadores & Qt.ShiftModifier) && raiz.ancla >= 0) {
+            const desde = Math.min(raiz.ancla, fila), hasta = Math.max(raiz.ancla, fila)
+            if (!(modificadores & Qt.ControlModifier)) seleccionModelo.clearSelection()
+            for (let r = desde; r <= hasta; r++)
+                seleccionModelo.select(seleccionModelo.model.index(r, 0), ItemSelectionModel.Select | ItemSelectionModel.Rows)
+        } else if (modificadores & Qt.ControlModifier) {
+            seleccionModelo.select(idx, ItemSelectionModel.Toggle | ItemSelectionModel.Rows)
+            raiz.ancla = fila
+        } else {
+            seleccionModelo.select(idx, ItemSelectionModel.ClearAndSelect | ItemSelectionModel.Rows)
+            raiz.ancla = fila
+        }
+        seleccionModelo.setCurrentIndex(seleccionModelo.model.index(fila, Math.max(0, tabla.currentColumn)), ItemSelectionModel.NoUpdate)
     }
 
     function nivelColor(nivel, habilitado) {
@@ -331,18 +356,36 @@ QQC2.Control {
             selectionBehavior: TableView.SelectRows
             selectionMode: TableView.ExtendedSelection
             keyNavigationEnabled: true
-            pointerNavigationEnabled: true
+            pointerNavigationEnabled: false      // el clic lo atiende `clicEnFila` (Qt borraría la selección tras él)
             selectionModel: ItemSelectionModel { id: seleccionModelo; model: raiz.modelo }
             columnWidthProvider: function (c) { return raiz.anchoDe(c) }
             rowHeightProvider: function (r) { return raiz.altoDeFila(r) }
             onWidthChanged: forceLayout()
-            onCurrentRowChanged: raiz.filaActualCambiada(currentRow)
+            onCurrentRowChanged: {
+                // con el teclado (flechas, Inicio, RePág), la fila actual pasa a ser la elegida, como en una lista
+                if (currentRow >= 0 && !seleccionModelo.isRowSelected(currentRow, seleccionModelo.currentIndex.parent)
+                        && seleccionModelo.selectedIndexes.length <= tabla.columns) {
+                    seleccionModelo.select(seleccionModelo.model.index(currentRow, 0), ItemSelectionModel.ClearAndSelect | ItemSelectionModel.Rows)
+                    raiz.ancla = currentRow
+                }
+                raiz.filaActualCambiada(currentRow)
+            }
             Connections { target: seleccionModelo; function onSelectionChanged() { raiz.seleccionCambiada() } }
             QQC2.ScrollBar.vertical: QQC2.ScrollBar {}
             QQC2.ScrollBar.horizontal: QQC2.ScrollBar {}
 
             Keys.onPressed: event => {
                 if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) { if (currentRow >= 0) raiz.activada(currentRow); event.accepted = true }
+                else if ((event.key === Qt.Key_Up || event.key === Qt.Key_Down) && (event.modifiers & Qt.ShiftModifier)) {
+                    // Mayús+flecha alarga el tramo desde la fila de partida, como en una lista
+                    const nueva = Math.max(0, Math.min(rows - 1, currentRow + (event.key === Qt.Key_Down ? 1 : -1)))
+                    if (raiz.ancla < 0) raiz.ancla = Math.max(0, currentRow)
+                    const ancla = raiz.ancla
+                    raiz.clicEnFila(nueva, Qt.ShiftModifier)
+                    raiz.ancla = ancla
+                    positionViewAtRow(nueva, TableView.Contain)
+                    event.accepted = true
+                }
                 else if (event.key === Qt.Key_Delete) { raiz.suprimir(); event.accepted = true }
                 else if (event.key === Qt.Key_A && (event.modifiers & Qt.ControlModifier)) { raiz.seleccionarTodo(); event.accepted = true }
                 else if (event.key === Qt.Key_Menu && raiz.menuContextual) { raiz.menuContextual.popup(); event.accepted = true }
@@ -358,18 +401,36 @@ QQC2.Control {
                 readonly property var col: raiz.columna(column)
                 readonly property bool habilitado: model.habilitado === undefined ? true : model.habilitado
                 readonly property string nivel: model.nivel !== undefined ? model.nivel : ""
+                readonly property bool sobre: raiz.filaSobre === row
+                readonly property bool primera: column === 0
+                readonly property bool ultima: column === tabla.columns - 1
                 implicitHeight: raiz.altoFila
                 color: selected ? Kirigami.Theme.highlightColor
                      : (row % 2 === 1 ? Kirigami.Theme.alternateBackgroundColor : Kirigami.Theme.backgroundColor)
                 Accessible.role: Accessible.Cell
                 Accessible.name: model.display !== undefined ? String(model.display) : ""
 
-                Rectangle {   // la fila actual (teclado) sin selección: un marco fino con el color de realce
+                Rectangle {   // la fila bajo el ratón: el tinte de «pasar por encima» del tema, en toda la fila
                     anchors.fill: parent
-                    visible: celda.current && !celda.selected && tabla.activeFocus
-                    color: "transparent"
-                    border.color: Kirigami.Theme.highlightColor
-                    border.width: 1
+                    visible: celda.sobre && !celda.selected
+                    color: Qt.alpha(Kirigami.Theme.hoverColor, 0.25)
+                }
+                // la fila actual sin selección (Ctrl+clic la quitó): un marco fino alrededor de la fila entera, no de
+                // la celda (cada celda pone sus bordes de arriba y abajo, y la primera y la última los de los lados)
+                Item {
+                    anchors.fill: parent
+                    visible: tabla.currentRow === celda.row && !celda.selected && tabla.activeFocus
+                    Rectangle { anchors { left: parent.left; right: parent.right; top: parent.top } height: 1; color: Kirigami.Theme.highlightColor }
+                    Rectangle { anchors { left: parent.left; right: parent.right; bottom: parent.bottom } height: 1; color: Kirigami.Theme.highlightColor }
+                    Rectangle { visible: celda.primera; anchors { left: parent.left; top: parent.top; bottom: parent.bottom } width: 1; color: Kirigami.Theme.highlightColor }
+                    Rectangle { visible: celda.ultima; anchors { right: parent.right; top: parent.top; bottom: parent.bottom } width: 1; color: Kirigami.Theme.highlightColor }
+                }
+                HoverHandler {
+                    // la celda bajo el ratón manda: salir de una solo apaga el resalte si nadie entró en otra
+                    onHoveredChanged: {
+                        if (hovered) { raiz.celdaSobre = celda; raiz.filaSobre = celda.row }
+                        else if (raiz.celdaSobre === celda) { raiz.celdaSobre = null; raiz.filaSobre = -1 }
+                    }
                 }
 
                 RowLayout {
@@ -380,8 +441,9 @@ QQC2.Control {
                     Kirigami.Icon {
                         visible: celda.col.conIcono === true && celda.model.icono !== undefined && celda.model.icono !== ""
                         source: visible ? celda.model.icono : ""
-                        color: celda.col.semantica ? raiz.nivelColor(celda.nivel, celda.habilitado)
-                             : (celda.selected ? Kirigami.Theme.highlightedTextColor : Kirigami.Theme.textColor)
+                        color: celda.selected ? Kirigami.Theme.highlightedTextColor
+                             : celda.col.semantica ? raiz.nivelColor(celda.nivel, celda.habilitado)
+                             : Kirigami.Theme.textColor
                         implicitWidth: Kirigami.Units.iconSizes.small
                         implicitHeight: implicitWidth
                         opacity: celda.habilitado ? 1 : 0.5
@@ -402,7 +464,9 @@ QQC2.Control {
                 }
 
                 TapHandler {
+                    id: toque
                     acceptedButtons: Qt.LeftButton
+                    onTapped: raiz.clicEnFila(celda.row, toque.point.modifiers)
                     onDoubleTapped: raiz.activada(celda.row)
                 }
                 TapHandler {

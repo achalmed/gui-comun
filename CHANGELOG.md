@@ -22,6 +22,12 @@ La versión vive en `gui_comun/__init__.py` y en `pyproject.toml`. Las secciones
   con tope de 4096 px): Pdfium a la resolución exacta empastaba el texto; así sale nítido, como Poppler.
 
 ### Fixed
+- `TablaDatos`: un clic no elegía la fila: la `TableView` de Qt 6 solo movía la celda actual (y la pintaba con un
+  marco en esa celda sola). Ahora el clic elige la fila entera con el color de selección del tema, como una lista de
+  KDE; Ctrl+clic añade o quita, Mayús+clic y Mayús+↑/↓ eligen el tramo desde la última elegida, las flechas mueven la
+  elegida; la fila bajo el ratón lleva el tinte de «pasar por encima»; el marco de la fila actual sin selección rodea
+  la fila entera; el icono de una columna `semantica` toma el color del texto elegido. `pointerNavigationEnabled` pasa
+  a `false` (el clic lo atiende `clicEnFila(fila, modificadores)`).
 - `TablaDatos`: las columnas no se podían ensanchar ni estrechar desde la cabecera (el `HorizontalHeaderView`
   sincronizado no redimensiona; solo el cuerpo, donde nadie lo busca). Cada cabecera tiene ahora un asa en su borde
   derecho (cursor de separación, realce al pasar): arrastrar cambia el ancho sin ordenar y se recuerda con

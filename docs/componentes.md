@@ -100,7 +100,7 @@ el usuario arrastró se recuerdan en QSettings, grupo `tablas/<clave>`). Señale
 `activada(fila)` (doble clic o Intro), `suprimir()` (Supr), `filaActualCambiada(fila)`, `seleccionCambiada()`.
 Funciones: `filasSeleccionadas()`, `seleccionarTodo()`, `invertirSeleccion()`, `seleccionarFila(fila, limpiar)`,
 `mostrarColumna(c, visible)`, `fijarAncho(c, ancho)` (negativo: el de la definición), `restablecerAnchos()`.
-Selección múltiple con Ctrl y Mayús; columnas redimensionables arrastrando el asa del borde derecho de su cabecera
+Selección por filas como en una lista (4.1: el clic elige la fila entera; Ctrl añade o quita; Mayús y Mayús+↑/↓, el tramo; `clicEnFila(fila, modificadores)`; la fila bajo el ratón, con el tinte del tema); columnas redimensionables arrastrando el asa del borde derecho de su cabecera
 (4.1; doble clic en el asa la devuelve a su ancho); clic derecho en la cabecera: restablecer los anchos y mostrar u
 ocultar columnas (la primera no se oculta).
 
