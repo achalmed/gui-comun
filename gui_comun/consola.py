@@ -6,6 +6,13 @@
 la propiedad `texto` con las últimas líneas. La ventana abre el panel inferior cuando llega algo nuevo
 (`escrita`), como hace la consola de Kate.
 
+`textoCambiado` se agrupa (4.1): avisa al instante de la primera escritura y, mientras sigan llegando, a lo sumo una
+vez cada `INTERVALO_MS` (o cuatro veces lo que tardó el aviso anterior en pintarse, si es más: la ventana atiende al
+usuario al menos cuatro quintas partes del tiempo), con una última al final de la ráfaga. El `TextArea` del panel
+rehace y resalta el texto entero en cada aviso: con un aviso por línea, miles de líneas seguidas congelaban la
+ventana durante minutos.
+`texto` y `textoConHora` se calculan una vez por cambio; `lineas`, `ultimas` y el modelo de lista están siempre al día.
+
     consola = Consola()
     consola.escribir("$ git status", "cmd"); consola.registrar("ok", "Preferencias guardadas")
     app.exponer("consola", consola)
@@ -13,9 +20,10 @@ la propiedad `texto` con las últimas líneas. La ventana abre el panel inferior
 
 from __future__ import annotations
 
+import time
 from datetime import datetime
 
-from gui_comun.qt import QAbstractListModel, QByteArray, QModelIndex, QObject, Qt, Property, Signal, Slot, rol
+from gui_comun.qt import QAbstractListModel, QByteArray, QModelIndex, QObject, Qt, QTimer, Property, Signal, Slot, rol
 
 NIVELES = ("cmd", "out", "err", "info", "ok", "warn", "error")
 _PREFIJOS = {"info": "•", "ok": "✓", "warn": "!", "error": "✗", "cmd": "", "out": "", "err": ""}
@@ -23,6 +31,8 @@ _PREFIJOS = {"info": "•", "ok": "✓", "warn": "!", "error": "✗", "cmd": "",
 
 class ModeloConsola(QAbstractListModel):
     R_TEXTO, R_NIVEL, R_HORA = rol(1), rol(2), rol(3)
+    INTERVALO_MS = 100              # entre dos avisos de `textoCambiado` durante una ráfaga, como mínimo
+    INTERVALO_MAXIMO_MS = 2000      # y como máximo, aunque pintar cueste mucho
 
     textoCambiado = Signal()
     escrita = Signal(str, str)      # texto, nivel: algo nuevo
@@ -31,6 +41,33 @@ class ModeloConsola(QAbstractListModel):
         super().__init__(parent)
         self._lineas: list[tuple[str, str, str]] = []
         self._maximo = maximo
+        self._cache: dict[str, str] = {}            # texto y textoConHora, hasta el próximo cambio
+        self._pendiente = False                     # hubo cambios desde el último aviso
+        self._pausa = QTimer(self)                  # mientras corre, los avisos esperan
+        self._pausa.setSingleShot(True)
+        self._pausa.setInterval(self.INTERVALO_MS)
+        self._pausa.timeout.connect(self._fin_pausa)
+
+    def _cambio(self) -> None:
+        """Un cambio en las líneas: el texto se recalcula al leerlo y el aviso sale ahora o al final de la pausa."""
+        self._cache.clear()
+        if self._pausa.isActive():
+            self._pendiente = True
+            return
+        self._avisar()
+
+    def _fin_pausa(self) -> None:
+        if self._pendiente:
+            self._avisar()                          # la ráfaga sigue: otra pausa antes del próximo aviso
+
+    def _avisar(self) -> None:
+        """Emite `textoCambiado` (lo que tarda es lo que tardan en pintarlo las vistas enlazadas) y abre la pausa."""
+        self._pendiente = False
+        inicio = time.monotonic()
+        self.textoCambiado.emit()
+        costo_ms = (time.monotonic() - inicio) * 1000
+        self._pausa.setInterval(int(min(self.INTERVALO_MAXIMO_MS, max(self.INTERVALO_MS, 4 * costo_ms))))
+        self._pausa.start()
 
     @Slot(str, str)
     def escribir(self, texto: str, nivel: str = "out") -> None:
@@ -47,7 +84,7 @@ class ModeloConsola(QAbstractListModel):
             self.beginRemoveRows(QModelIndex(), 0, sobran - 1)
             del self._lineas[:sobran]
             self.endRemoveRows()
-        self.textoCambiado.emit()
+        self._cambio()
         self.escrita.emit(texto, nivel)
 
     @Slot()
@@ -55,15 +92,22 @@ class ModeloConsola(QAbstractListModel):
         self.beginResetModel()
         self._lineas.clear()
         self.endResetModel()
+        self._cache.clear()
+        self._pausa.stop()                          # limpiar se ve enseguida, aunque hubiera una ráfaga
+        self._pendiente = False
         self.textoCambiado.emit()
 
     @Property(str, notify=textoCambiado)
     def texto(self) -> str:
-        return "\n".join(self._formato(t, n) for t, n, _ in self._lineas)
+        if "texto" not in self._cache:
+            self._cache["texto"] = "\n".join(self._formato(t, n) for t, n, _ in self._lineas)
+        return self._cache["texto"]
 
     @Property(str, notify=textoCambiado)
     def textoConHora(self) -> str:
-        return "\n".join(f"{h}  {self._formato(t, n)}" for t, n, h in self._lineas)
+        if "hora" not in self._cache:
+            self._cache["hora"] = "\n".join(f"{h}  {self._formato(t, n)}" for t, n, h in self._lineas)
+        return self._cache["hora"]
 
     @Property(int, notify=textoCambiado)
     def lineas(self) -> int:

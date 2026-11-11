@@ -45,6 +45,35 @@ def test_consola_recorta(app):
 
 
 @requiere_binding
+def test_consola_agrupa_los_avisos_de_una_rafaga(app):
+    """10 000 líneas seguidas: pocos `textoCambiado` (el panel rehace y resalta el texto entero en cada uno), el
+    primero al instante, uno al final de la ráfaga, y el texto, las líneas y el modelo, al día en todo momento."""
+    import time
+    from gui_comun.consola import ModeloConsola
+    m = ModeloConsola(maximo=5000)
+    avisos, escritas = [], []
+    m.textoCambiado.connect(lambda: avisos.append(m.lineas))
+    m.escrita.connect(lambda texto, nivel: escritas.append(texto))
+    m.escribir("primera")
+    assert avisos == [1], "la primera escritura se avisa al instante"
+    for i in range(10_000):
+        m.escribir(f"línea {i}")
+    assert len(escritas) == 10_001, "`escrita` sigue avisando de cada escritura"
+    assert m.lineas == 5000 and m.rowCount() == 5000
+    assert m.texto.splitlines()[0] == "línea 5000" and m.texto.splitlines()[-1] == "línea 9999"
+    assert m.ultimas(1)[0][0] == "línea 9999"
+    fin = time.monotonic() + 5
+    while len(avisos) < 2 and time.monotonic() < fin:
+        app.processEvents()
+        time.sleep(0.01)
+    assert avisos == [1, 5000], f"un aviso al empezar y otro al final de la ráfaga, no {len(avisos)}"
+    m.limpiar()                                   # limpiar se avisa enseguida, aunque haya una pausa abierta
+    assert avisos[-1] == 0 and m.texto == ""
+    m.escribir("después")
+    assert m.texto == "después"
+
+
+@requiere_binding
 def test_tarea_funcion(app):
     from gui_comun.consola import Consola
     from gui_comun.tareas import Tareas

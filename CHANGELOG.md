@@ -11,6 +11,14 @@ La versión vive en `gui_comun/__init__.py` y en `pyproject.toml`. Las secciones
 ## [Unreleased]
 
 ### Changed
+- `ModeloConsola` (`consola.salida`, `consola.registro`): `textoCambiado` ya no sale en cada escritura. Sale al
+  instante la primera vez y, mientras siga llegando texto, como mucho una vez cada 100 ms (o cuatro veces lo que tardó
+  en pintarse el aviso anterior, hasta 2 s), con un último aviso al acabar. `texto` y `textoConHora` se calculan una
+  vez por cambio. El `TextArea` del `PanelInferior` rehacía y resaltaba el texto entero en cada línea: 2 000 líneas
+  seguidas tardaban 112 s con el panel cargado y ahora 0,1 s; 10 000 líneas llegadas de una en una (la salida de un
+  proceso) pasan de minutos a 1,5 s. `escrita`, `lineas`, `ultimas` y el modelo de lista siguen al día en cada
+  escritura; ningún studio cambia su código. Lo destapó Detectar hardlinks de Filesystem Studio sobre una carpeta
+  con `node_modules` de pnpm (12 413 conjuntos, una línea por conjunto).
 - `Mensajes`: un aviso sin acciones va a las notificaciones del escritorio (las de KDE Plasma, con el nombre y el
   icono del studio) en lugar de apilarse en la ventana; información y éxito son transitorios y cada uno reemplaza al
   anterior, un error queda en el historial de Plasma. Solo los avisos con acciones (una decisión) siguen en línea, y
