@@ -86,6 +86,10 @@ class Aplicacion:
         preparar_entorno(idioma)
         self.app_id, self.nombre, self.version, self.idioma = app_id, nombre, version, idioma
         QGuiApplication.setOrganizationName(organizacion)
+        # el Settings de QtCore (QML) se niega a abrir sin dominio («organizationDomain» sin fijar): en Linux no cambia
+        # la ruta de los ajustes, que sale del nombre de la organización y de la aplicación
+        if not QGuiApplication.organizationDomain():
+            QGuiApplication.setOrganizationDomain(f"{organizacion.lower()}.local")
         QGuiApplication.setApplicationName(nombre_ajustes or app_id)
         QGuiApplication.setApplicationDisplayName(nombre)
         if version:

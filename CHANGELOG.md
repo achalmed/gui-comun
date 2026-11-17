@@ -10,6 +10,11 @@ La versión vive en `gui_comun/__init__.py` y en `pyproject.toml`. Las secciones
 
 ## [Unreleased]
 
+### Fixed
+- `Aplicacion` fija un `organizationDomain` si nadie lo fijó (`<organización>.local`): el `Settings` de QtCore se negaba
+  a abrir sin él («Failed to initialize QSettings instance») y `TablaDatos` no recordaba los anchos de columna. En Linux
+  la ruta de los ajustes no cambia (sale del nombre de la organización y de la aplicación). Lo destapó Datafw Studio.
+
 ### Changed
 - `ModeloConsola` (`consola.salida`, `consola.registro`): `textoCambiado` ya no sale en cada escritura. Sale al
   instante la primera vez y, mientras siga llegando texto, como mucho una vez cada 100 ms (o cuatro veces lo que tardó
