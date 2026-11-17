@@ -16,4 +16,5 @@ ACENTOS = {
     "grafito": {"claro": "#475569", "oscuro": "#94a3b8"},  # Huella Studio
     "indigo": {"claro": "#4f46e5", "oscuro": "#818cf8"},   # Dotfiles Studio
     "carmesi": {"claro": "#c53133", "oscuro": "#ef6661"},  # Lliphi Studio (el rojo OKLCH 25° de Lliphi)
+    "ambar": {"claro": "#b45309", "oscuro": "#fbbf24"},    # Datafw Studio
 }
