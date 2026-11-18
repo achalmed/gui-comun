@@ -253,3 +253,23 @@ def test_aplicar_en_vivo_se_niega_fuera_del_bus_propio(tmp_path, monkeypatch):
     monkeypatch.setenv(vivo.BUS_SESION, "unix:path=/real")
     monkeypatch.setenv("DBUS_SESSION_BUS_ADDRESS", "unix:path=/propio")
     assert vivo.aplicar_esquema_en_vivo(colors, Path.home() / ".config") is False
+
+
+def test_aplicar_en_vivo_con_casa_falsa(tmp_path, monkeypatch):
+    """Con `HOME` en una casa falsa (la copia de Lliphi), su `.config` es temporal y se cambia; la real, nunca."""
+    from gui_comun.galeria import vivo
+    casa = tmp_path / "casa"
+    config = casa / ".config"
+    config.mkdir(parents=True)
+    (config / "kdeglobals").write_text("[KDE]\nwidgetStyle=kvantum\n")
+    colors = tmp_path / "Oscuro.colors"
+    colors.write_text(OSCURO)
+    monkeypatch.setenv("HOME", str(casa))
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(config))
+    monkeypatch.setenv(vivo.BUS_SESION, "unix:path=/real")
+    monkeypatch.setenv("DBUS_SESSION_BUS_ADDRESS", "unix:path=/propio")
+    avisos = []
+    monkeypatch.setattr(vivo.subprocess, "run", lambda orden, **k: avisos.append(orden))
+    assert vivo.aplicar_esquema_en_vivo(colors) is True
+    assert "widgetStyle=kvantum-dark" in (config / "kdeglobals").read_text() and avisos == [vivo.AVISO]
+    assert vivo.aplicar_esquema_en_vivo(colors, vivo.config_real()) is False and len(avisos) == 1

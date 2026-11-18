@@ -95,7 +95,9 @@ quita ni se renombra; ningún studio está obligado a cambiar. Fuera queda la pa
   carpeta)` (bajo `dbus-run-session`, con el entorno marcado) detiene al acabar los servicios que el bus activó y
   sobreviven (`xdg-desktop-portal-kde`, `ksecretd`…), por PID y solo los de esa marca (`huerfanos`,
   `detener_huerfanos(simular=)`); `aplicar_esquema_en_vivo(colors)` reescribe el kdeglobals temporal y emite
-  `notifyChange` solo en el bus propio (se niega en el de la sesión o sobre la configuración real).
+  `notifyChange` solo en el bus propio (se niega en el de la sesión o sobre la configuración real, que `config_real()`
+  toma de la cuenta del usuario y no de `$HOME`: con una casa falsa, como la copia de Lliphi, su `.config` es la
+  temporal y la guarda la confundía con la real).
 - `pasos.informe(..., pasos=[...])`: los nombres de los pasos del studio (los de `PasosEscritura.pasos`) titulan las
   secciones del informe; sin ellos, los de siempre (`TITULOS_INFORME`).
 - `galeria.esquema.kvantum_a_juego(colors, config)` y `es_oscuro(colors)`.

@@ -21,6 +21,7 @@ nunca por nombre ni por patrón, que alcanzaría a los de otras sesiones o al pr
 from __future__ import annotations
 
 import os
+import pwd
 import shutil
 import signal
 import subprocess
@@ -60,6 +61,12 @@ def detener_huerfanos(carpeta: str | Path, variable: str = MARCA, simular: bool 
     return pids
 
 
+def config_real() -> Path:
+    """La carpeta de configuración REAL del usuario: la de su cuenta (`pwd`), no la de `$HOME`, que una prueba con una
+    casa falsa cambia (Lliphi: `HOME=<copia>/casa`), y donde `~/.config` sería justo la temporal."""
+    return Path(pwd.getpwuid(os.getuid()).pw_dir) / ".config"
+
+
 def hay_bus_propio() -> bool:
     """Si se puede probar en vivo: está `dbus-run-session`."""
     return shutil.which("dbus-run-session") is not None
@@ -93,8 +100,8 @@ def aplicar_esquema_en_vivo(colors: Path, config: Path | None = None) -> bool:
     if not en_bus_propio():
         return False
     ruta = config or os.environ.get("XDG_CONFIG_HOME")
-    if not ruta or Path(ruta).resolve() == (Path.home() / ".config").resolve():
-        return False                       # nunca la configuración real del usuario
+    if not ruta or Path(ruta).resolve() == config_real().resolve():
+        return False                       # nunca la configuración real del usuario (aunque `$HOME` sea una casa falsa)
     config = Path(ruta)
     kdeglobals_con_esquema(colors, config / "kdeglobals", kdeglobals=config / "kdeglobals")
     kvantum_a_juego(colors, config)
