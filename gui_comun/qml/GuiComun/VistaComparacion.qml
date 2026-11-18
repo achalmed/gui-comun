@@ -20,6 +20,7 @@ ColumnLayout {
     property var filasElegidas: []            // índices de `diferencia.filas`
     property string mensajeVacio: "Elija un archivo para ver su diferencia"
     property string nombreAccesible: "Diferencia"
+    property bool cifrasEnColor: true          // 4.1: «+n −m» de la cabecera en los colores de estado (falso: tenues, como antes)
     signal trozoPedido(string clave, int trozo)
     signal seleccionCambiada()
 
@@ -82,12 +83,29 @@ ColumnLayout {
                 color: Kirigami.Theme.highlightColor
                 font: Kirigami.Theme.smallFont
             }
-            QQC2.Label {
+            // 4.1: «+n» en el color de lo añadido y «−m» en el de lo quitado (como Dolphin y Kompare); los trozos, tenues
+            RowLayout {
                 visible: raiz.hay && !raiz.diferencia.binario && !raiz.diferencia.vacia
-                text: raiz.hay ? "+" + raiz.diferencia.anadidas + "  −" + raiz.diferencia.quitadas
-                                 + (raiz.nTrozos > 0 ? " · " + raiz.nTrozos + (raiz.nTrozos === 1 ? " trozo" : " trozos") : "") : ""
-                color: Kirigami.Theme.disabledTextColor
-                font: Kirigami.Theme.smallFont
+                spacing: Kirigami.Units.smallSpacing
+                Accessible.name: raiz.hay ? raiz.diferencia.anadidas + " añadidas, " + raiz.diferencia.quitadas + " quitadas" : ""
+                QQC2.Label {
+                    objectName: "cifraAnadidas"
+                    text: raiz.hay ? "+" + raiz.diferencia.anadidas : ""
+                    color: raiz.cifrasEnColor ? Kirigami.Theme.positiveTextColor : Kirigami.Theme.disabledTextColor
+                    font: Kirigami.Theme.smallFont
+                }
+                QQC2.Label {
+                    objectName: "cifraQuitadas"
+                    text: raiz.hay ? "−" + raiz.diferencia.quitadas : ""
+                    color: raiz.cifrasEnColor ? Kirigami.Theme.negativeTextColor : Kirigami.Theme.disabledTextColor
+                    font: Kirigami.Theme.smallFont
+                }
+                QQC2.Label {
+                    visible: raiz.nTrozos > 0
+                    text: "· " + raiz.nTrozos + (raiz.nTrozos === 1 ? " trozo" : " trozos")
+                    color: Kirigami.Theme.disabledTextColor
+                    font: Kirigami.Theme.smallFont
+                }
             }
         }
     }

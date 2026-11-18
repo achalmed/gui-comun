@@ -10,12 +10,37 @@ La versión vive en `gui_comun/__init__.py` y en `pyproject.toml`. Las secciones
 
 ## [Unreleased]
 
+## [4.1.0] - 2026-11-18
+
+Junta lo que esperaba sin versión desde el 2026-11-08 (avisos a las notificaciones de Plasma, la tabla y el árbol para
+LaTeX Studio, la consola que no congela) y lo que propusieron los diez studios rediseñados el 2026-11-18
+(`docs/modernizacion-visual-kde.md`, D2 y D3): ocho de sus nueve propuestas, en piezas que un studio elige. Nada se
+quita ni se renombra; ningún studio está obligado a cambiar. Fuera queda la paleta por grupos recorrida con flechas
+(Raphi): es la forma propia de su taller y nadie más la usa; la navegación con flechas se hace en Raphi.
+
+| propuesta (studio) | en la base |
+|---|---|
+| un tipo «pista» de `Mensajes` hacia la barra de estado (Simuladores, Quarto; lo repetían Datafw, Simuladores y Huella) | `Mensajes.mostrar(texto, "pista")`, `pista`, `duracionPista`, `mostrarPista()`; `BarraEstado.mensajes`, `pista`, `textoDerecha` |
+| un ayudante para la prueba en vivo aislada que detenga los portales huérfanos (Simuladores, Lliphi, Huella, Raphi, Muyu) | `gui_comun.galeria.vivo` |
+| el nivel en el borde de la fila de `TablaDatos` (Huella) | `TablaDatos.nivelesBorde`, `anchoBorde` |
+| acciones en las notificaciones (Git) | `Mensajes.notificarConAcciones()`, `Notificador.notificarConAcciones()`, señales `accionElegida` y `notificacionCerrada`; `notificaciones.orden(acciones=)` |
+| «+n −m» en color en `VistaComparacion` (Git) | `VistaComparacion.cifrasEnColor` (verdadero por omisión) |
+| un componente común de salida de terminal (Dotfiles) | `TerminalSalida` |
+| `pasos.informe` con los nombres de los pasos (Filesystem) | `pasos.informe(pasos=)`, `pasos.TITULOS_INFORME` |
+| `entorno_con_esquema` fija `widgetStyle` de Kvantum (Lliphi) | `esquema.kvantum_a_juego()`, `esquema.es_oscuro()` |
+
 ### Fixed
 - `Aplicacion` fija un `organizationDomain` si nadie lo fijó (`<organización>.local`): el `Settings` de QtCore se negaba
   a abrir sin él («Failed to initialize QSettings instance») y `TablaDatos` no recordaba los anchos de columna. En Linux
   la ruta de los ajustes no cambia (sale del nombre de la organización y de la aplicación). Lo destapó Datafw Studio.
 
 ### Changed
+- `VistaComparacion`: «+n» y «−m» de la cabecera en los colores de estado del tema (lo añadido y lo quitado, como
+  Dolphin y Kompare); los trozos siguen tenues. `cifrasEnColor: false` los devuelve al gris de antes.
+- `galeria.esquema.entorno_con_esquema`: si el usuario usa Kvantum, el kdeglobals temporal lleva `widgetStyle` =
+  `kvantum-dark` con un esquema oscuro y `kvantum` con uno claro. Desde Lliphi 4.19 el tema de Kvantum trae sus dos
+  variantes (`Lliphi`, `LliphiDark`) y ya no hay uno por esquema (`LliphiOscuro`): las capturas oscuras salían con
+  campos y pestañas claros. Si existe un tema con el nombre del esquema, se sigue eligiendo (3.1).
 - `ModeloConsola` (`consola.salida`, `consola.registro`): `textoCambiado` ya no sale en cada escritura. Sale al
   instante la primera vez y, mientras siga llegando texto, como mucho una vez cada 100 ms (o cuatro veces lo que tardó
   en pintarse el aviso anterior, hasta 2 s), con un último aviso al acabar. `texto` y `textoConHora` se calculan una
@@ -52,6 +77,28 @@ La versión vive en `gui_comun/__init__.py` y en `pyproject.toml`. Las secciones
   0 bytes; el editor lo leía entonces y la ventana recargaba la pestaña vacía (un Ctrl+S lo habría borrado).
 
 ### Added
+- `Mensajes`: el tipo `"pista"` (`mostrar(texto, "pista")` o `mostrarPista(texto)`): lo efímero («elige primero un
+  modelo») no va a las notificaciones ni en línea, sino a `pista`, que `BarraEstado` muestra en lugar de su contexto
+  durante `duracionPista` (6 s) y luego borra. `BarraEstado` lee la `pista` de los `mensajes` de su ventana
+  (`ApplicationWindow.window.mensajes`) o de los que se le den (`mensajes:`); `textoDerecha` es lo que se ve.
+- `Mensajes.notificarConAcciones(texto, tipo, acciones)`: un aviso con botones en las notificaciones de Plasma
+  («Informe guardado» → «Abrir»); el botón pulsado allí corre su `ejecutar`. Sin escritorio, en línea como `mostrar`.
+  Debajo, `Notificador.notificarConAcciones(texto, tipo, [{clave, texto}])` → id, con `notify-send --action`, y las
+  señales `accionElegida(id, clave)` y `notificacionCerrada(id)`; no es transitoria y dura 15 s (el error, hasta que
+  se cierre).
+- `TablaDatos.nivelesBorde`: los `nivel` que se pintan además en el borde izquierdo de la fila, con su color de estado
+  y también con la fila elegida (Huella: `["negativo", "neutro"]`, alta y media); vacío por omisión, sin borde.
+- `TerminalSalida`: la salida de una orden como una terminal (la orden arriba, el número de líneas, un botón con su
+  `Accion`; cada línea en el color de su nivel, por `reglas` `{contiene, nivel}` o el `nivel` de la línea). Viene de la
+  `TerminalSimulacion` de Dotfiles; el nombre no choca con ningún componente de un studio.
+- `gui_comun.galeria.vivo`: la prueba del cambio de esquema en vivo, aislada. `correr_en_bus_propio(orden, env,
+  carpeta)` (bajo `dbus-run-session`, con el entorno marcado) detiene al acabar los servicios que el bus activó y
+  sobreviven (`xdg-desktop-portal-kde`, `ksecretd`…), por PID y solo los de esa marca (`huerfanos`,
+  `detener_huerfanos(simular=)`); `aplicar_esquema_en_vivo(colors)` reescribe el kdeglobals temporal y emite
+  `notifyChange` solo en el bus propio (se niega en el de la sesión o sobre la configuración real).
+- `pasos.informe(..., pasos=[...])`: los nombres de los pasos del studio (los de `PasosEscritura.pasos`) titulan las
+  secciones del informe; sin ellos, los de siempre (`TITULOS_INFORME`).
+- `galeria.esquema.kvantum_a_juego(colors, config)` y `es_oscuro(colors)`.
 - `PanelNavegacion` en árbol: una fila puede llevar `nivel` (sangría), `ancestros` (los `nombre` de las de arriba) y
   `plegable` (su flecha); las hijas se ven con su rama desplegada, elegir una rama la despliega y una fila escondida
   que pasa a `actual` despliega sus ancestros (`abiertos`, `alternar(nombre)`, `fijarAbierta(nombre, abrir)`). Las

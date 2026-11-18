@@ -102,7 +102,9 @@ Funciones: `filasSeleccionadas()`, `seleccionarTodo()`, `invertirSeleccion()`, `
 `mostrarColumna(c, visible)`, `fijarAncho(c, ancho)` (negativo: el de la definición), `restablecerAnchos()`.
 Selección por filas como en una lista (4.1: el clic elige la fila entera; Ctrl añade o quita; Mayús y Mayús+↑/↓, el tramo; `clicEnFila(fila, modificadores)`; la fila bajo el ratón, con el tinte del tema); columnas redimensionables arrastrando el asa del borde derecho de su cabecera
 (4.1; doble clic en el asa la devuelve a su ancho); clic derecho en la cabecera: restablecer los anchos y mostrar u
-ocultar columnas (la primera no se oculta).
+ocultar columnas (la primera no se oculta). `nivelesBorde` (4.1): los `nivel` que se pintan además en el borde
+izquierdo de la fila con su color de estado, también con la fila elegida (Huella: `["negativo", "neutro"]`); vacío por
+omisión, sin borde; `anchoBorde`.
 
 ### ArbolDatos (2.1)
 
@@ -138,7 +140,9 @@ funciones `mostrarSalida()`, `mostrarRegistro()`, `mostrarExtra(i)`.
 ### BarraEstado
 
 `resumen`, `contexto`, `tareas` (muestra nombre · elemento, barra de progreso y cancelar mientras hay tarea);
-señal `progresoPulsado()` (la ventana abre el panel inferior).
+señal `progresoPulsado()` (la ventana abre el panel inferior). 4.1: `mensajes` (por omisión, los de su ventana,
+`ApplicationWindow.window.mensajes`) y `pista` (la de esos mensajes), que ocupa el lugar del contexto mientras dura;
+`textoDerecha`, lo que se ve a la derecha.
 
 ### Mensajes
 
@@ -147,6 +151,12 @@ señal `progresoPulsado()` (la ventana abre el panel inferior).
 acciones** va a las notificaciones del escritorio (`notificador`, `gui_comun.notificaciones`: KDE Plasma, con el nombre
 y el icono del studio; información y éxito transitorios, cada uno reemplaza al anterior; el error queda en el
 historial). Con acciones, o sin escritorio (offscreen, `GUI_COMUN_SIN_NOTIFICACIONES=1`), se muestra en línea.
+
+4.1: `tipo` `"pista"` (o `mostrarPista(texto)`): lo efímero («elige primero un modelo», «ruta copiada») va a la
+propiedad `pista`, que `BarraEstado` muestra durante `duracionPista` (6000 ms) y luego se borra; ni notificación ni
+mensaje en línea. Un studio no arma su propio `Timer`; desde Python basta emitir su `aviso(texto, "pista")` hacia
+`mostrar`. `notificarConAcciones(texto, tipo, acciones)`: un aviso **con** botones en las notificaciones de Plasma
+(«Informe guardado» → «Abrir»); el que se pulse allí corre su `ejecutar`; sin escritorio, en línea como `mostrar`.
 
 ### PaletaOrdenes
 
@@ -251,7 +261,8 @@ claves: `ruta`, `filas`, `trozos` (lista o número), `anadidas`, `quitadas`, `bi
 hay, `nuevo`, `izquierda` · `derecha` (qué es cada lado) y `notas`); `accionesTrozo` (`[{clave, texto, icono,
 accesible, noEnNuevo}]`: los botones de la cabecera de cada trozo) → señal `trozoPedido(clave, trozo)`;
 `seleccionable` (un clic elige una línea cambiada; Ctrl suma, Mayús un rango) con `filasElegidas` (índices de
-`filas`), `limpiarSeleccion()` y señal `seleccionCambiada()`; `mensajeVacio`, `nombreAccesible`. Lo quitado y lo
+`filas`), `limpiarSeleccion()` y señal `seleccionCambiada()`; `mensajeVacio`, `nombreAccesible`; `cifrasEnColor`
+(4.1, verdadero: «+n −m» de la cabecera en los colores de estado; falso, tenues como antes). Lo quitado y lo
 añadido con los fondos semánticos del tema. Git la usa para preparar trozos y líneas sueltas
 (`diferencias.parche_de_lineas`), Dotfiles y Lliphi para comparar.
 
@@ -319,6 +330,17 @@ derivados si el tema no los trae), e `indice(i)` da categorías sin significado 
 Una etiqueta redondeada con el color semántico de `nivel` (`positivo`, `neutro`, `negativo`, `activo`, `inactivo`) y un
 `icono` opcional: «instalado», «conflicto», «local».
 
+### TerminalSalida (4.1)
+
+La salida de una orden como una terminal (de la `TerminalSimulacion` de Dotfiles): `lineas` (textos o `{texto,
+nivel}`), `orden` (arriba, en monoespaciada, con su ayuda emergente si no cabe), `titulo`, `icono`, `accion` (una
+`Accion`: un botón con texto a la derecha), `mensajeVacio` · `explicacionVacia`, `nombreAccesible`, `seguirAlFinal`
+(cada línea nueva lleva al final), `ajustarLineas` (falso: sin partir, con desplazamiento horizontal). El nivel de una
+línea es el suyo o el de la primera de `reglas` (`[{contiene, nivel}]`) que aparezca en ella; si ninguna,
+`nivelPorOmision` (""). Por omisión `reglas` = `reglasComunes` («[ERROR», «✗» → negativo; «[WARN», «Saltado» → neutro;
+«✓», «[SUCCESS», «[OK]» → positivo); se amplían delante: `reglas: [{contiene: "Archivo real existe", nivel:
+"negativo"}].concat(reglasComunes)`. `nivelDe(linea)`, `colorDe(nivel)`, `cuantas`, `vista` (la `ListView`).
+
 ### MenuAcciones · BotonAccion
 
 `MenuAcciones { acciones; elementos; titulo; conAtajos }`: un `Menu` construido desde `[{tipo: "accion", nombre} |
@@ -330,6 +352,7 @@ Una etiqueta redondeada con el color semántico de `nivel` (`positivo`, `neutro`
 | módulo | API |
 |---|---|
 | `nucleo.Aplicacion(app_id, nombre, version=, organizacion=, idioma="es", nombre_ajustes=)` | 3.0: una `QApplication` (el diálogo de archivos de KDE). `.exponer(nombre, objeto)` (también `studio.<nombre>`), `.cargar(qml)`, `.ejecutar(qml, humo=False)`, `.ventana()`, `.capturar(png, espera_ms)`, `.cerrar()`, `.traducciones`, `.mensaje_de_fallo()`; 3.0: `.errores`, `.escritorio` (expuestos con esos nombres), `.error(descripcion, causa, recurso, accion, detalle, nivel)`; `aplicacionStudio` en QML (appId, nombre, version, binding, versionGuiComun, versionQt; 3.0: errores, escritorio) |
+| `notificaciones.Notificador(app_id, nombre, icono=)` (4.1) | expuesto como `notificador`: `disponible`, `notificar(texto, tipo)` → `bool` (por `notify-send`; información y éxito transitorios, cada uno reemplaza al anterior); `notificarConAcciones(texto, tipo, [{clave, texto}])` → id (0 sin escritorio), señales `accionElegida(id, clave)` y `notificacionCerrada(id)`, `enviado(texto, tipo)`; suelta `orden(texto, tipo, nombre, app_id, icono=, reemplazar=, acciones=)` |
 | `escritorio.Escritorio(errores, lanzar=, abrir_url=, buscar=)` (3.0) | `abrirConAplicacion(ruta)` (también una dirección web), `mostrarEnDolphin(ruta)`, `abrirCarpeta(ruta)` → `bool` (falso y error presentado si no existe o no arranca); `rutaDeUrl(url)`, `urlDeRuta(ruta)`, `existe(ruta)`, `hayDolphin`; `ruta_local(texto)` |
 | `errores.Errores(consola)` (3.0) | `.presentar(descripcion, causa=, recurso=, accion=, detalle=, nivel=)` → dict; `presentarTexto(5 textos)` y `presentarMapa({...})` desde QML; `.desde_excepcion(exc, descripcion, recurso=, accion=)`; `.desde_proceso(descripcion, argv, codigo, salida)`; la cola: `actual`, `cuantos`, `omitidos` (más de 20 seguidos), `descartar()`, `limpiar()`, `pendientes()`; señales `presentado(mapa)`, `cambiado`. `explicar(exc)` y `explicar_codigo(codigo, salida)` → (causa, acción); `predeterminado()` (el de la aplicación) |
 | `acciones.Acciones` | `.registrar(nombre, texto, icono, atajo, grupo, habilitada=, marcable=, marcada=, descripcion=, al_disparar=, operacion=, consecuencias=, confirmar=)` → `Accion` (3.0: `operacion` ∈ `OPERACIONES`; instalación, publicación y eliminación exigen `consecuencias` y siempre confirman); `.estandar(nombre_app, paneles=True, atajos=None)`; 3.0: `.fijar_atajo(nombre, atajo)`, `.conflictos()`, `.peticion(nombre)`, `.confirmar(nombre)`, señal `confirmacionPedida(mapa)`; `.definir_menus([...])`; `.definir_barra([...])`; `.anadir_fuente(fn)`; `.accion(nombre)`, `.existe`, `.ejecutar`, `.habilitar`, `.marcar`, `.buscar(texto)`; señal `disparada(nombre, marcada)`; es modelo de lista |
@@ -342,12 +365,13 @@ Una etiqueta redondeada con el color semántico de `nivel` (`positivo`, `neutro`
 | `modelos.ModeloArbol(columnas, raices)` (2.1) | nodos de dict: `valores` (uno por columna), `nivel`, `icono` (texto o {columna: icono}), `habilitado`, `hijos` (lista o función `f(nodo)` que se consulta al expandir) y lo propio; `.poner`, `.recargar(indice)`, `.datos(indice)`, `.ruta(indice)`, `.todas(indice)`, `filas`; 3.1: `.ordenar(columna, descendente)` (cada nivel; `grupo` va primero, p. ej. carpetas antes que archivos; `orden`, una lista por columna, da el valor crudo), `columnaOrden`, `descendente` |
 | `i18n.instalar(motor, idioma)` | el objeto de contexto con `i18n`, `i18nc`, `i18nd`, `i18ndc`, `i18np`, `i18ncp`, `i18ndp`, `i18ndcp` y las `xi18n*` (gettext sobre `/usr/share/locale`) |
 | `qt` | `BINDING`, los nombres de QtCore/QtGui/QtQml con la API de PySide6, `cast`, `rol`, `roles`, `version_qt` |
-| `galeria.esquema.entorno_con_esquema(colors)` | el entorno de un proceso con otro esquema de color de KDE (kdeglobals temporal); 3.1: y el tema de Kvantum del mismo nombre si existe (con `QApplication` los controles los pinta Kvantum) |
+| `galeria.esquema.entorno_con_esquema(colors)` | el entorno de un proceso con otro esquema de color de KDE (kdeglobals temporal); 3.1: y el tema de Kvantum del mismo nombre si existe (con `QApplication` los controles los pinta Kvantum); 4.1: con Kvantum, `widgetStyle` = `kvantum-dark` o `kvantum` según el esquema (`kvantum_a_juego(colors, config)`, `es_oscuro(colors)`) |
+| `galeria.vivo` (4.1) | la prueba del cambio de esquema en vivo, aislada: `correr_en_bus_propio(orden, env, carpeta)` (bajo `dbus-run-session`, entorno marcado con `MARCA`; al acabar detiene los servicios huérfanos del bus, como `xdg-desktop-portal-kde` y `ksecretd`, por PID y solo los de esa marca); `huerfanos(carpeta)`, `detener_huerfanos(carpeta, simular=)`; dentro del hijo, `en_bus_propio()` y `aplicar_esquema_en_vivo(colors)` (kdeglobals temporal, Kvantum a juego y `notifyChange` solo en el bus propio; falso en el de la sesión) |
 | `diferencias` (3.1) | `analizar(texto_diff)` y `comparar(antes, despues, ruta=, izquierda=, derecha=)` → `{cabecera, trozos, filas, anadidas, quitadas, binario, vacia, recortado}` para `VistaComparacion`; `parche_de_trozo(d, i)` y `parche_de_lineas(d, filas, inverso=False)` para `git apply --cached [--recount] [-R]` |
 | `editor.ControladorEditor(consola=None, definiciones=, definicion=)` (3.1) | el de `EditorTexto`: `abiertos` (modelo: ruta, nombre, carpeta, modificado, definicion, solo_lectura), `abrir`, `cerrar`, `cerrarTodos`, `fijarActual`, `actual`, `indiceActual`, `leer`, `guardar(ruta, texto, forzar)`, `guardarComo`, `aceptarDisco`, `cambioEnDisco`, `marcarModificado`, `hayModificados`, `modificados`, `buscar`, `reemplazar`, `definicionDe`, `soltar()` (al cerrar); señales `cambioExterno(ruta)`, `guardadoArchivo`, `aviso`. Sueltas: `definicion_de(ruta, mapa)`, `buscar`, `reemplazos`, `DEFINICIONES`, `COMENTARIOS` |
 | `visor_pdf.VisorPdf(cache, variable_motor=)` (3.1) | el de `VistaPdf`: `abrir(pdf)`, `recargar()`, `cerrar()`, `paginas` (modelo), `motor` (`qtpdf` · `pdftoppm`), `pdf`, `pdfUrl`, `revision`, `total`, `anchoMaximo`, `zoom`, `ajustarAncho`, `escala`, `acercar`, `alejar`, `ajustarA(ancho)`, `pedir`, `pedirMiniatura`, `marcarRecuadro(pagina, x, y, ancho, alto)`, 3.2: `abrirEnlace(url)` (solo http, https, mailto), `apagar()`; señales `irAPagina`, `marcar`, `aviso`. Sueltas: `paginas(pdf)`, `renderizar(pdf, pagina, ppp, cache)`, `podar(cache, limite, conservar)`, `hay_qtpdf()` |
 | `miniaturas.ProveedorMiniaturas(carpeta, anchos=, tope_mb=, claves_son_rutas=)` (3.1) | un `QQuickImageProvider` asíncrono para `image://<nombre>/<clave>[/<tamaño>]` (con `claves_son_rutas`, `image://<nombre>/<ruta>[@<tamaño>]`): lee el origen en solo lectura escalado al leer y cachea en JPEG con poda por tope; `.fijar_rutas({clave: ruta})`; sueltas `miniatura(origen, carpeta, clave, ancho)` y `podar(carpeta, tope)` (de las portadas de Biblioteca) |
-| `pasos` (3.1) | `Plan(tipo, titulo, carpeta, descripcion, afectados, conflictos, interno)` con `bloqueado` y `como_dict()`; `cuentas(plan, resultado, verificado)`, `verificacion(filas)`, `informe(plan, resultado, verificado, herramienta=)` (Markdown), `nombre_informe(plan)`; para `LineaPasos`: `linea([(clave, titulo, explicacion)])`, `fijar(pasos, clave, estado, detalle)`, `ESTADOS`, `NIVEL` |
+| `pasos` (3.1) | `Plan(tipo, titulo, carpeta, descripcion, afectados, conflictos, interno)` con `bloqueado` y `como_dict()`; `cuentas(plan, resultado, verificado)`, `verificacion(filas)`, `informe(plan, resultado, verificado, herramienta=, pasos=)` (Markdown; 4.1: `pasos`, los nombres del studio, titulan las secciones; sin ellos, `TITULOS_INFORME`), `nombre_informe(plan)`; para `LineaPasos`: `linea([(clave, titulo, explicacion)])`, `fijar(pasos, clave, estado, detalle)`, `ESTADOS`, `NIVEL` |
 | `paleta` (3.1) | `rol(color, orden)` y `roles(colores)`: un color de matplotlib (hex, nombre, `C0`, `tab:*`) → `azul` · `rojo` · `verde` · `dorado` · `morado` · `cian` · `gris` · `texto` |
 | `qt` (3.1) | además, `QImage`, `QImageReader`, `QQuickImageProvider`, `QQmlImageProviderBase` |
 

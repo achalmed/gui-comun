@@ -8,6 +8,10 @@ se conserva y nada del escritorio cambia.
 
     env = entorno_con_esquema(Path("LliphiClaro.colors"))
     subprocess.run([...], env=env)
+
+4.1 (2026-11-18, lo halló Lliphi Studio): Kvantum ya no tiene un tema por esquema (`LliphiOscuro`): un tema trae sus
+dos variantes (`Lliphi` y `LliphiDark`) y la elige el estilo de KDE, `widgetStyle` = `kvantum` o `kvantum-dark`. Si el
+usuario usa Kvantum, el kdeglobals temporal lleva el de la variante del esquema (oscuro si el fondo de ventana lo es).
 """
 
 from __future__ import annotations
@@ -65,9 +69,38 @@ def entorno_con_esquema(colors: Path, carpeta: Path | None = None) -> dict[str, 
     # 3.1: con QApplication (3.0) los controles los pinta el QStyle (Kvantum) con la paleta de su tema; el tema de
     # Kvantum ha de ir a juego con el esquema forzado (LliphiOscuro.colors → LliphiOscuro) o salen campos y pestañas
     # claros en una captura oscura. Solo si ese tema de Kvantum existe; si no, el del usuario (copiado arriba)
-    kvantum = carpeta / "Kvantum"
-    if (kvantum / colors.stem).is_dir():
-        (kvantum / "kvantum.kvconfig").write_text(f"[General]\ntheme={colors.stem}\n", encoding="utf-8")
+    kvantum_a_juego(colors, carpeta)
     env = dict(os.environ)
     env["XDG_CONFIG_HOME"] = str(carpeta)
     return env
+
+
+def es_oscuro(colors: Path) -> bool:
+    """Si el esquema es oscuro: la luminancia del fondo de ventana (`[Colors:Window] BackgroundNormal`) bajo 0,5."""
+    valor = _leer(colors).get("Colors:Window", "BackgroundNormal", fallback="")
+    try:
+        r, g, b = (int(x) for x in valor.split(",")[:3])
+    except ValueError:
+        return False
+    return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255 < 0.5
+
+
+def kvantum_a_juego(colors: Path, config: Path) -> None:
+    """Pone Kvantum a juego con `colors` en la carpeta de configuración `config` (temporal, nunca la del usuario).
+
+    - 3.1: si hay un tema de Kvantum con el nombre del esquema (`LliphiOscuro.colors` → `Kvantum/LliphiOscuro`), lo elige.
+    - 4.1: si `widgetStyle` del kdeglobals de `config` es de Kvantum, lo fija a la variante del esquema: `kvantum-dark`
+      si es oscuro, `kvantum` si no (Lliphi 4.19: `Lliphi` y `LliphiDark` en un solo tema)."""
+    kvantum = config / "Kvantum"
+    if (kvantum / colors.stem).is_dir():
+        (kvantum / "kvantum.kvconfig").write_text(f"[General]\ntheme={colors.stem}\n", encoding="utf-8")
+    kdeglobals = config / "kdeglobals"
+    cfg = _leer(kdeglobals)
+    estilo = cfg.get("KDE", "widgetStyle", fallback="")
+    if not estilo.lower().startswith("kvantum"):
+        return
+    nuevo = "kvantum-dark" if es_oscuro(colors) else "kvantum"
+    if nuevo != estilo:
+        cfg.set("KDE", "widgetStyle", nuevo)
+        with kdeglobals.open("w", encoding="utf-8") as f:
+            cfg.write(f, space_around_delimiters=False)

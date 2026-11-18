@@ -18,6 +18,7 @@ propio servicio; lo común es la forma, la verificación y el informe.
     if not plan.bloqueado: resultado = ejecutar(plan)
     v = verificacion([{"ruta": r, "ok": os.path.isdir(r), "detalle": "existe"} for r in …])
     texto = informe(plan, resultado, v, herramienta="Filesystem Studio")
+    texto = informe(plan, resultado, v, pasos=("Planear", "Simular", "Respaldar", "Aplicar", "Verificar", "Deshacer"))   # 4.1
 """
 
 from __future__ import annotations
@@ -72,25 +73,37 @@ def verificacion(filas: list[dict]) -> tuple[bool, str, list[dict]]:
     return not malos, texto, filas
 
 
+# los títulos de las secciones del informe cuando el studio no da los suyos (los de siempre)
+TITULOS_INFORME = ("Plan", "Afectados", "Conflictos (no se ejecutaron)", "Ejecución", "Verificación", "Informe")
+
+
 def informe(plan: Plan, resultado: dict, verificado: tuple[bool, str, list[dict]], herramienta: str = "",
-            fecha: str | None = None) -> str:
-    """El informe en Markdown de los seis pasos (`resultado`: {hechos, errores, detalle})."""
+            fecha: str | None = None, pasos: list[str] | tuple[str, ...] | None = None) -> str:
+    """El informe en Markdown de los seis pasos (`resultado`: {hechos, errores, detalle}).
+
+    4.1: `pasos` son los nombres de los seis pasos del studio, los mismos de `PasosEscritura.pasos` (Filesystem: Planear ·
+    Simular · Respaldar · Aplicar · Verificar · Deshacer): titulan las secciones en ese orden. Sin ellos, los de siempre
+    (`TITULOS_INFORME`). Con menos de seis, los que faltan son los de siempre."""
     ok, texto, filas = verificado
+    titulos = list(TITULOS_INFORME)
+    for i, nombre in enumerate(list(pasos or [])[:6]):
+        if nombre:
+            titulos[i] = str(nombre)
     lineas = [f"# {plan.titulo}", "", f"- **Fecha:** {fecha or time.strftime('%Y-%m-%d %H:%M:%S')}"]
     if plan.carpeta:
         lineas.append(f"- **Carpeta:** `{plan.carpeta}`")
     if herramienta:
         lineas.append(f"- **Herramienta:** {herramienta} — operación en seis pasos")
-    lineas += ["", "## 1. Plan", "", plan.descripcion, "", "## 2. Afectados", ""]
+    lineas += ["", f"## 1. {titulos[0]}", "", plan.descripcion, "", f"## 2. {titulos[1]}", ""]
     lineas += [f"- {a['accion']}: `{a['ruta']}`" + (f" — {a['detalle']}" if a.get("detalle") else "") for a in plan.afectados] or ["(ninguno)"]
-    lineas += ["", "## 3. Conflictos (no se ejecutaron)", ""]
+    lineas += ["", f"## 3. {titulos[2]}", ""]
     lineas += [f"- `{c['ruta']}` — {c['motivo']}" + (" (bloquea)" if c.get("bloquea") else "") for c in plan.conflictos] or ["(ninguno)"]
-    lineas += ["", "## 4. Ejecución", "", f"- Hechos: {resultado.get('hechos', 0)}", f"- Errores: {resultado.get('errores', 0)}"]
+    lineas += ["", f"## 4. {titulos[3]}", "", f"- Hechos: {resultado.get('hechos', 0)}", f"- Errores: {resultado.get('errores', 0)}"]
     if resultado.get("detalle"):
         lineas.append(f"- {resultado['detalle']}")
-    lineas += ["", "## 5. Verificación", "", f"**{'Superada' if ok else 'NO superada'}**: {texto}.", ""]
+    lineas += ["", f"## 5. {titulos[4]}", "", f"**{'Superada' if ok else 'NO superada'}**: {texto}.", ""]
     lineas += [f"- ✗ `{f['ruta']}` — {f['detalle']}" for f in filas if not f["ok"]][:200]
-    lineas += ["", "## 6. Informe", "", "Este documento."]
+    lineas += ["", f"## 6. {titulos[5]}", "", "Este documento."]
     return "\n".join(lineas) + "\n"
 
 

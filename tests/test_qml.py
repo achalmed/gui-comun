@@ -51,6 +51,7 @@ PROPIEDADES = {
     "GraficoXY": 'width: 500; height: 300; datos: ({lineas: [{nombre: "IS", rol: "azul", x: [0, 1, 2], y: [2, 1, 0]}, {nombre: "LM", rol: "rojo", x: [0, 2], y: [0, 2]}], equilibrio: {x: 1, y: 1}, verticales: [{x: 1.5, nombre: "Y*", rol: "verde"}], limites: {xMin: 0, xMax: 2, yMin: 0, yMax: 2}, etiquetaX: "Y", etiquetaY: "r"}); base: ({lineas: [{nombre: "IS0", rol: "morado", x: [0, 2], y: [1.5, 0]}], limites: {xMin: 0, xMax: 2, yMin: 0, yMax: 2}}); invalido: "SIN VERIFICAR"',
     "PaletaCategorica": 'property color c0: indice(0); property color c1: indice(1); property color azul: rol("azul"); property color cian: rol("cian")',
     "EtiquetaNivel": 'text: "conflicto"; nivel: "negativo"; icono: "data-warning"',
+    "TerminalSalida": 'width: 500; height: 200; orden: "main.sh --dry-run"; accion: studio.acciones.accion("a.uno"); lineas: ["[ERROR] uno", {texto: "dos", nivel: "positivo"}]',
     "Grafico": 'series: [{nombre: "a", y: [1, 2, 3]}, {nombre: "b", y: [3, 2, 1]}]; etiquetasX: ["0", "1", "2"]; xMaximo: 2; yMaximo: 3; equilibrio: ({x: 1, y: 2, etiqueta: "E"}); marcas: [{x: 1, etiqueta: "x"}]; anotacion: "nota"',
 }
 

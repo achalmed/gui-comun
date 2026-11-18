@@ -10,6 +10,9 @@
 //            mono, semantica, conIcono, visible, estrecho, secundaria (texto tenue),
 //            lineas (4.1: el texto se parte en hasta tantas líneas y la fila crece lo justo; 1 por omisión),
 //            cortarTras (4.1: caracteres tras los que se prefiere partir, p. ej. "/" en una ruta)}]
+// `nivelesBorde` (4.1): los `nivel` que se pintan además en el borde izquierdo de la fila (p. ej. ["negativo", "neutro"]
+// para los hallazgos de Huella: alta y media; los demás sin color), con su color de estado, también si la fila está
+// elegida; vacío (por omisión), sin borde.
 // Con `claveAjustes`, los anchos que el usuario arrastró se recuerdan en QSettings entre sesiones (2.1).
 import QtQuick
 import QtQuick.Layouts
@@ -32,6 +35,8 @@ QQC2.Control {
     property string mensajeVacio: ""
     property string iconoVacio: "edit-none"
     property string claveAjustes: ""
+    property var nivelesBorde: []
+    readonly property int anchoBorde: Math.max(3, Math.round(Kirigami.Units.smallSpacing * 0.75))
     readonly property alias seleccion: seleccionModelo
     readonly property alias vista: tabla
     readonly property int filaActual: tabla.currentRow
@@ -424,6 +429,15 @@ QQC2.Control {
                     Rectangle { anchors { left: parent.left; right: parent.right; bottom: parent.bottom } height: 1; color: Kirigami.Theme.highlightColor }
                     Rectangle { visible: celda.primera; anchors { left: parent.left; top: parent.top; bottom: parent.bottom } width: 1; color: Kirigami.Theme.highlightColor }
                     Rectangle { visible: celda.ultima; anchors { right: parent.right; top: parent.top; bottom: parent.bottom } width: 1; color: Kirigami.Theme.highlightColor }
+                }
+                Rectangle {   // 4.1: el nivel de la fila en su borde izquierdo (`nivelesBorde`)
+                    objectName: "bordeNivel"
+                    visible: celda.primera && celda.nivel !== "" && raiz.nivelesBorde.indexOf(celda.nivel) >= 0
+                    anchors { left: parent.left; top: parent.top; bottom: parent.bottom }
+                    width: raiz.anchoBorde
+                    z: 1
+                    color: raiz.nivelColor(celda.nivel, true)
+                    opacity: celda.habilitado ? 1 : 0.4
                 }
                 HoverHandler {
                     // la celda bajo el ratón manda: salir de una solo apaga el resalte si nadie entró en otra

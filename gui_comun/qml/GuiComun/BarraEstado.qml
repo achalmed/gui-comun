@@ -1,6 +1,8 @@
 // BarraEstado — el pie de la ventana: el resumen de la colección a la izquierda, la tarea en curso con su progreso y
 // «n de m» en medio (solo mientras hay tarea; un clic abre el panel inferior; cancelar al lado), el contexto de la
 // selección a la derecha. Es donde van las cifras que antes eran tarjetas.
+// 4.1: la pista de `mensajes` (por omisión, los de su ventana: `mostrar(texto, "pista")`) ocupa el lugar del contexto
+// mientras dura; el studio no arma su propio `Timer`.
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls as QQC2
@@ -12,6 +14,10 @@ QQC2.ToolBar {
     property string resumen: ""
     property string contexto: ""
     property var tareas
+    property var mensajes: QQC2.ApplicationWindow.window && QQC2.ApplicationWindow.window.mensajes !== undefined
+                           ? QQC2.ApplicationWindow.window.mensajes : null
+    readonly property string pista: mensajes && mensajes.pista !== undefined ? mensajes.pista : ""
+    readonly property string textoDerecha: pista !== "" ? pista : contexto
     signal progresoPulsado()
 
     position: QQC2.ToolBar.Footer
@@ -64,13 +70,14 @@ QQC2.ToolBar {
                 onClicked: if (barra.tareas) barra.tareas.cancelar()
             }
         }
-        QQC2.ToolSeparator { visible: barra.contexto !== "" }
+        QQC2.ToolSeparator { visible: barra.textoDerecha !== "" }
         QQC2.Label {
-            visible: barra.contexto !== ""
-            text: barra.contexto
+            objectName: "contextoBarra"
+            visible: barra.textoDerecha !== ""
+            text: barra.textoDerecha
             elide: Text.ElideMiddle
             Layout.maximumWidth: Kirigami.Units.gridUnit * 24
-            Accessible.name: "Selección: " + text
+            Accessible.name: (barra.pista !== "" ? "Pista: " : "Selección: ") + text
         }
     }
 }
