@@ -1,7 +1,7 @@
 ---
 tipo: estado
 estado: activo
-actualizado: 2026-11-11
+actualizado: 2026-11-18
 ---
 # estado.md — gui-comun
 
@@ -9,6 +9,7 @@ actualizado: 2026-11-11
 
 | fecha | qué | dónde se ve |
 |---|---|---|
+| 2026-11-18 | **4.1.0, las propuestas de los diez studios rediseñados** (junto con lo que esperaba sin versión desde el 2026-11-08): `Mensajes` con el tipo «pista» que `BarraEstado` muestra 6 s en lugar del contexto; `Mensajes.notificarConAcciones` (botones en las notificaciones de Plasma, `notify-send --action`); `TablaDatos.nivelesBorde`; «+n −m» en color en `VistaComparacion`; `TerminalSalida` (de la `TerminalSimulacion` de Dotfiles); `pasos.informe(pasos=)`; `entorno_con_esquema` fija `widgetStyle` de Kvantum; `galeria.vivo` (prueba en vivo aislada que detiene por PID los `xdg-desktop-portal-kde` y `ksecretd` huérfanos de su bus). No entró la paleta por grupos con flechas (es la forma propia de Raphi y solo la usa él). Datafw (`384f053`), Quarto (`874d7e7`), Simuladores (`cbe4bf6`) y Huella (`df21d60`) pasan a la pista común y Huella al borde común, con sus pruebas; 108 pruebas aquí; sin etiqueta ni empuje | `CHANGELOG.md` 4.1.0 (tabla propuesta → base); `docs/componentes.md`; `tests/test_propuestas_41.py` |
 | 2026-11-11 | **La consola no congela la ventana con miles de líneas (sin versión: `[Unreleased]`)**: `ModeloConsola` agrupa `textoCambiado` (al instante, luego a lo sumo uno cada 100 ms o cuatro veces lo que costó pintar el anterior, y uno al final) y guarda `texto`/`textoConHora` hasta el próximo cambio; con el `PanelInferior` cargado, 2 000 líneas seguidas pasan de 112 s a 0,1 s; 97 pruebas; Filesystem (49), LaTeX (115), Quarto (`tests/studio`, 44) y Raphi (4) pasan; Git Studio tiene una prueba intermitente (`test_espacio.py::test_guardar_aplicar_y_borrar_guardados`, hilos vivos) que también falla sin el cambio | `CHANGELOG.md` [Unreleased]; `tests/test_consola_tareas.py::test_consola_agrupa_los_avisos_de_una_rafaga` |
 | 2026-11-10 | **Para LaTeX Studio (sin versión: `[Unreleased]`)**: `TablaDatos` redimensiona desde la cabecera (un asa en el borde derecho; antes solo el cuerpo), parte el texto en varias líneas (`lineas`, `cortarTras`) y su cabecera tiene menú (restablecer anchos, columnas visibles); `PanelNavegacion` en árbol (`nivel`, `ancestros`, `plegable`) y sin la barra encima de los contadores; el clic elige la fila entera (antes solo un marco en la celda) y la fila bajo el ratón se tiñe; prueba con el ratón de verdad | `CHANGELOG.md` [Unreleased]; `tests/test_navegacion_tabla_41.py` |
 | 2026-11-03 | **4.0.0: retirada la capa 1.x** (`widgets/`, `diseno`, `theming`, `ui_loader`, `icons`) tras `rg` en todo `~/Documents` y `~/.dotfiles` (sin lo sensible): ningún código la importa; solo las pruebas de los studios que lo prohíben y los worktrees viejos `lliphi/.claude/worktrees/*` (de antes de Lliphi Studio 2.0); quedan `workers`, `lanzador`, `acentos`, `rutas`, `ajustes`, `format`, `history_service`; los diez studios arrancan | `CHANGELOG.md` 4.0.0 (quién, migración); `git tag v4.0.0` (local) |
@@ -41,6 +42,13 @@ nada en curso
 
 ## Por hacer
 
+- 2026-11-18 · dueño: director (studios) · adoptar lo de 4.1 donde aún hay copia: Dotfiles, `TerminalSimulacion` →
+  `TerminalSalida` (sus reglas delante de `reglasComunes`, `nivelPorOmision: "inactivo"`); Lliphi, su `pista` y su `Timer`
+  propios → `mensajes.mostrar(texto, "pista")`; Simuladores y Lliphi (y quien lo tenga en `capturar.py`), su
+  `_detener_servicios_del_bus`/`terminar_huerfanos` → `gui_comun.galeria.vivo`; Git, «Informe guardado» con
+  `notificarConAcciones`; Filesystem, `pasos.informe(pasos=…)`; Raphi, las flechas en su paleta por grupos (no subió).
+- 2026-11-18 · dueño: **el autor** · ver en la sesión real una notificación con botones (`notificarConAcciones`) y una
+  pista en la barra de estado: las pruebas solo simulan `notify-send`.
 - 2026-11-02 · dueño: **el autor** · usar los diez studios en la sesión real (cada `estado.md` tiene su guion de prueba) y decir
   qué no convence; lo que salga se corrige en `main` o vuelve a `gui-comun`. (4.0, que retira 1.x, salió el 2026-11-03.)
 - 2026-11-02 · dueño: director (reingeniería) · fusionar `wip/2026-11-02-reingenieria-base` en `main` (local) para el
