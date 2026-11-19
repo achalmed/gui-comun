@@ -10,6 +10,12 @@ La versión vive en `gui_comun/__init__.py` y en `pyproject.toml`. Las secciones
 
 ## [Unreleased]
 
+### Changed
+- `Mensajes`: ningún aviso en una franja de la ventana (pedido del autor, 2026-11-19, para toda la familia de los
+  studios). Un aviso con botones también va a las notificaciones de KDE (`notificarConAcciones`); sin escritorio que lo
+  muestre (pruebas, capturas sin pantalla, sin `notify-send`), un aviso sin botones va a la barra de estado como pista.
+  Solo una decisión sin escritorio queda en línea, para no perderla.
+
 ### Added
 - `PestanasArchivos`: las pestañas de los archivos abiertos de un `ControladorEditor`, con la × de cerrar (al pasar el
   ratón y siempre en la activa) y el clic central; emiten `cerrarPedido(ruta)` y el studio decide. Lo pidió LaTeX Studio

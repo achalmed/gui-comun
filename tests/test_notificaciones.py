@@ -1,5 +1,5 @@
 """tests/test_notificaciones.py — los avisos como notificaciones del escritorio (4.1): la orden de notify-send por tipo
-y que sin pantalla no se envía nada (Mensajes los muestra en la ventana). Nunca se envía un aviso real."""
+y que sin pantalla no se envía nada (4.2: Mensajes los pasa a la barra de estado, nunca a una franja). Nunca se envía un aviso real."""
 
 from __future__ import annotations
 

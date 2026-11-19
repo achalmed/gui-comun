@@ -1,4 +1,5 @@
-// Mensajes — los avisos de la ventana. Desde 4.1 (2026-11-08) un aviso SIN acciones va a las notificaciones del
+// Mensajes — los avisos de la ventana. 4.2 (2026-11-19): ninguno en una franja de la ventana: con botones también van a
+// KDE y, sin escritorio, a la barra de estado (ver `mostrar`). Desde 4.1 (2026-11-08) un aviso SIN acciones va a las notificaciones del
 // escritorio (las de KDE Plasma, `notificador` de gui_comun.notificaciones): no ocupa la ventana ni se apila. Solo lo que
 // pide una decisión (un aviso con acciones: «¿guardar?», «¿recargar?») queda aquí, en línea (Kirigami.InlineMessage),
 // arriba del centro; también todo aviso cuando no hay escritorio que lo muestre (pruebas, offscreen). Un resumen no va
@@ -26,12 +27,17 @@ ColumnLayout {
 
     function mostrar(texto, tipo, acciones) {
         if (tipo === "pista") { mostrarPista(texto); return }
-        const conAcciones = !!acciones && acciones.length > 0
-        if (!conAcciones && typeof notificador !== "undefined" && notificador && notificador.disponible
+        // 4.2 (2026-11-19, pedido del autor: «ningún aviso dentro de la ventana en la familia de programas»): un aviso con
+        // botones también va a las notificaciones de KDE (notificarConAcciones), y uno sin botones, si no hay escritorio
+        // que lo muestre (pruebas, capturas sin pantalla, sin notify-send), va a la barra de estado como pista, nunca a una
+        // franja. Solo una decisión sin escritorio queda en línea: una pregunta no se puede perder.
+        if (!!acciones && acciones.length > 0) { notificarConAcciones(texto, tipo, acciones); return }
+        if (typeof notificador !== "undefined" && notificador && notificador.disponible
                 && notificador.notificar(texto, tipo || "informacion"))
             return
-        modelo.append({ texto: texto, tipo: tipo || "informacion", acciones: acciones || [] })
+        mostrarPista(texto)
     }
+    function _enLinea(texto, tipo, acciones) { modelo.append({ texto: texto, tipo: tipo || "informacion", acciones: acciones || [] }) }
     function limpiar() { modelo.clear() }
     function mostrarPista(texto) {
         raiz.pista = texto || ""
@@ -50,7 +56,8 @@ ColumnLayout {
                 return
             }
         }
-        mostrar(texto, tipo, lista)
+        if (lista.length > 0) _enLinea(texto, tipo, lista)   // una decisión sin escritorio: en línea, para no perderla
+        else mostrar(texto, tipo, [])
     }
 
     Timer { id: relojPista; interval: raiz.duracionPista; onTriggered: raiz.pista = "" }

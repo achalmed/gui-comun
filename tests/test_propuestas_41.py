@@ -82,6 +82,15 @@ QQC2.ApplicationWindow {
             avisos.mostrar("Elige primero un modelo", "pista")
             r.contextoConPista = barra.textoDerecha
             r.mensajesEnLinea = avisos.cuantos
+            // 4.2: sin escritorio, un aviso sin botones va a la barra de estado y nunca a una franja; una decision
+            // (con botones), en linea para no perderla
+            avisos.mostrar("Compilado en 3 s.", "positivo")
+            r.avisoEnLinea = avisos.cuantos
+            r.avisoEnBarra = barra.textoDerecha
+            avisos.mostrar("Recargar?", "aviso", [{texto: "Recargar", icono: "view-refresh", ejecutar: () => {}}])
+            r.decisionEnLinea = avisos.cuantos
+            avisos.limpiar()
+            avisos.mostrar("Elige primero un modelo", "pista")
             const bordes = ventana.buscar(tabla.vista.contentItem, "bordeNivel", [])
             r.bordesVisibles = bordes.filter(b => b.visible).length
             r.bordesColores = bordes.filter(b => b.visible).map(b => String(b.color))
@@ -122,6 +131,9 @@ def test_pista_borde_cifras_y_terminal(tmp_path):
     assert res["contextoAntes"] == "uno · main"
     assert res["contextoConPista"] == "Elige primero un modelo"
     assert res["mensajesEnLinea"] == 0
+    # 4.2: ningún aviso en franja; sin escritorio, a la barra; solo la decisión queda en línea
+    assert res["avisoEnLinea"] == 0 and res["avisoEnBarra"] == "Compilado en 3 s."
+    assert res["decisionEnLinea"] == 1
     assert res["contextoTrasPista"] == "uno · main"
     # el borde: alta y media, no baja ni la que no tiene nivel; colores distintos
     assert res["bordesVisibles"] == 2 and len(set(res["bordesColores"])) == 2
