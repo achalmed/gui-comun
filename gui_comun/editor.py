@@ -189,6 +189,8 @@ class ControladorEditor(QObject):
         if self._actual == ruta:
             resto = self._abiertos.todas()
             self.fijarActual(resto[min(i, len(resto) - 1)]["ruta"] if resto else "")
+        else:
+            self.actualCambiado.emit()       # el actual no cambió, pero su índice sí si se cerró uno anterior
         self.cambiado.emit()
 
     @Slot()

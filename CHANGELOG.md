@@ -10,6 +10,19 @@ La versión vive en `gui_comun/__init__.py` y en `pyproject.toml`. Las secciones
 
 ## [Unreleased]
 
+### Added
+- `PestanasArchivos`: las pestañas de los archivos abiertos de un `ControladorEditor`, con la × de cerrar (al pasar el
+  ratón y siempre en la activa) y el clic central; emiten `cerrarPedido(ruta)` y el studio decide. Lo pidió LaTeX Studio
+  («no hay para cerrar una ventana»); Quarto Studio tiene la misma copia sin ×.
+- `DialogoCambiosSinGuardar`: «Guardar · Descartar · Cancelar» antes de cerrar algo modificado, con
+  `pedir(nombres, alGuardar, alDescartar)`.
+
+### Fixed
+- `ControladorEditor.cerrar` avisa `actualCambiado` también cuando el archivo activo no cambia: al cerrar una pestaña
+  anterior su índice baja, y sin el aviso la pila de editores seguía mostrando el índice viejo (fuera de rango).
+- `EditorTexto.comentar()` descomentaba con `trimStart`/`trimEnd`, que el JavaScript de QML no tiene: quitar el
+  comentario de una línea comentada (Ctrl+/ en LaTeX Studio y Quarto Studio) fallaba con un TypeError.
+
 ## [4.1.0] - 2026-11-18
 
 Junta lo que esperaba sin versión desde el 2026-11-08 (avisos a las notificaciones de Plasma, la tabla y el árbol para

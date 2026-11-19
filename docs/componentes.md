@@ -280,6 +280,18 @@ columna)` (SyncTeX en LaTeX), `guardado()`. `BarraBuscarReemplazar { editor }` b
 regulares de Python (`controlador.buscar`, `controlador.reemplazar`, posiciones UTF-16): `abrir(reemplazar)`,
 `cerrar()`, `siguiente()`, `anterior()`; señal `reemplazados(n)`. Cada reemplazo se deshace con Ctrl+Z.
 
+### PestanasArchivos · DialogoCambiosSinGuardar (4.2)
+
+`PestanasArchivos { controlador }` son las pestañas de los archivos abiertos de un `ControladorEditor` (las de LaTeX
+Studio; Quarto tenía la misma copia): «● » delante de un archivo modificado, el candado en uno de solo lectura, la ruta
+en la ayuda y la × de cerrar, visible al pasar el ratón y siempre en la activa (ocupa su sitio, la pestaña no cambia de
+ancho); el clic central también cierra. No cierra nada por su cuenta: señal `cerrarPedido(ruta)` (y `elegido(ruta)` al
+elegir una); Ctrl+W es la acción del studio, `atajoCerrar` solo lo nombra en la ayuda. La TabBar vive en un `Loader`
+(el estilo de KDE falla con una vacía): sin archivos, `hayAbiertos` es falso y no ocupa nada.
+`DialogoCambiosSinGuardar` pregunta «Guardar», «Descartar» o «Cancelar» antes de cerrar algo modificado:
+`pedir(nombres, alGuardar, alDescartar)` (un nombre o una lista), señales `guardar()` y `descartar()`; `explicacion`,
+`textoGuardar`, `textoDescartar`. No guarda ni cierra: quien guarda decide qué pasa si guardar falla.
+
 ### VistaPdf (3.1)
 
 Un PDF integrado (de LaTeX Studio; Raphi y Quarto lo necesitaban): `visor` (`gui_comun.visor_pdf.VisorPdf`, obligatorio),

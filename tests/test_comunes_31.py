@@ -117,6 +117,28 @@ def test_controlador_editor_guarda_sin_pisar_un_cambio_externo(app, tmp_path):
     ed.soltar()
 
 
+def test_controlador_editor_cerrar_una_pestana_anterior_avisa_el_indice(app, tmp_path):
+    """Cerrar con la × una pestaña que no es la activa (4.2): el actual sigue, pero su índice baja y se avisa."""
+    from gui_comun.editor import ControladorEditor
+    rutas = []
+    for n in ("a", "b", "c"):
+        (tmp_path / f"{n}.tex").write_text(n)
+        rutas.append(str(tmp_path / f"{n}.tex"))
+    ed = ControladorEditor()
+    for r in rutas:
+        ed.abrir(r)
+    assert ed.actual == rutas[2] and ed.indiceActual == 2
+    avisos = []
+    ed.actualCambiado.connect(lambda: avisos.append(ed.indiceActual))
+    ed.cerrar(rutas[0])
+    assert ed.actual == rutas[2] and ed.indiceActual == 1 and avisos == [1]
+    ed.cerrar(rutas[2])                                          # la activa: pasa a la vecina
+    assert ed.actual == rutas[1] and ed.indiceActual == 0
+    ed.cerrar(rutas[1])                                          # la última: nada abierto
+    assert ed.actual == "" and ed.indiceActual == -1 and ed.abiertos.filas == 0
+    ed.soltar()
+
+
 # ------------------------------------------------------------------------------------------------ visor PDF
 @pytest.mark.skipif(not shutil.which("pdftoppm"), reason="sin poppler")
 def test_visor_pdf_tamanos_render_y_poda(tmp_path):

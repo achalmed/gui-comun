@@ -136,9 +136,11 @@ Item {
             const linea = area.getText(ini, fin)
             if (linea.trim() === "") continue
             if (todas) {
-                const sangria = linea.length - linea.trimStart().length
-                let resto = linea.trimStart().slice(ab.trim().length).replace(/^ /, "")
-                if (ci && resto.trimEnd().endsWith(ci.trim())) resto = resto.trimEnd().slice(0, -ci.trim().length).replace(/ $/, "")
+                // el JavaScript de QML no tiene trimStart ni trimEnd (sin ellos, descomentar fallaba con un TypeError)
+                const sinSangria = linea.replace(/^\s+/, "")
+                const sangria = linea.length - sinSangria.length
+                let resto = sinSangria.slice(ab.trim().length).replace(/^ /, "")
+                if (ci && resto.replace(/\s+$/, "").endsWith(ci.trim())) resto = resto.replace(/\s+$/, "").slice(0, -ci.trim().length).replace(/ $/, "")
                 area.remove(ini, fin)
                 area.insert(ini, linea.slice(0, sangria) + resto)
             } else {

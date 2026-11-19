@@ -34,3 +34,5 @@ GraficoXY 3.1 GraficoXY.qml
 PaletaCategorica 3.1 PaletaCategorica.qml
 EtiquetaNivel 3.1 EtiquetaNivel.qml
 TerminalSalida 4.1 TerminalSalida.qml
+PestanasArchivos 4.2 PestanasArchivos.qml
+DialogoCambiosSinGuardar 4.2 DialogoCambiosSinGuardar.qml
