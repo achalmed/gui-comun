@@ -65,21 +65,27 @@ def _celdas(linea: str) -> list[str]:
 
 
 def _tabla(filas: list[str], tema: dict) -> str:
-    """4.2: una tabla moderna: sin rejilla, la cabecera tenue sobre un fondo suave y aire en cada celda; la alineación
-    de la fila de guiones (las cifras a la derecha)."""
+    """4.2: una tabla moderna: sin rejilla ni bloques de fondo; la cabecera en letra pequeña, tenue y en negrita con una
+    raya fina debajo, cada fila separada por una raya más tenue y aire en cada celda; la alineación de la fila de guiones
+    (las cifras a la derecha)."""
     cabecera, alineacion, cuerpo = _celdas(filas[0]), _celdas(filas[1]), [_celdas(f) for f in filas[2:]]
     lados = ["right" if a.endswith(":") and not a.startswith(":") else "center" if a.startswith(":") and a.endswith(":") else "left"
              for a in alineacion]
-    fondo_cabecera, tenue = _color(tema, "fondoCabecera"), _color(tema, "tenue")
-    partes = ['<table border="0" cellspacing="0" cellpadding="8" width="100%" style="margin-top: 6px; margin-bottom: 12px;">']
-    bg = f' bgcolor="{fondo_cabecera}"' if fondo_cabecera else ""
-    color_cabecera = f' style="color: {tenue}; font-size: small;"' if tenue else ' style="font-size: small;"'
-    partes.append("<tr>" + "".join(f'<th align="{lados[i] if i < len(lados) else "left"}"{bg}><span{color_cabecera}>{_en_linea(c, tema)}</span></th>'
-                                   for i, c in enumerate(cabecera)) + "</tr>")
-    for fila in cuerpo:
-        bg = ""          # sin cebra: el texto enriquecido de Qt pinta el fondo de cada celda por separado (bloques sueltos)
-        partes.append("<tr>" + "".join(f'<td valign="top" align="{lados[i] if i < len(lados) else "left"}"{bg}>{_en_linea(c, tema)}</td>'
+    borde, tenue = _color(tema, "borde"), _color(tema, "tenue")
+    fondo_cabecera = _color(tema, "fondoCabecera") or borde
+    n = max(len(cabecera), 1)
+    raya = lambda color: (f'<tr><td colspan="{n}" style="padding: 0px;"><hr style="margin: 0px;'
+                          + (f' background-color: {color};' if color else "") + '" /></td></tr>')
+    partes = ['<table border="0" cellspacing="0" cellpadding="7" width="100%" style="margin-top: 8px; margin-bottom: 14px;">']
+    color_cabecera = f"color: {tenue}; " if tenue else ""
+    partes.append("<tr>" + "".join(f'<td align="{lados[i] if i < len(lados) else "left"}"><span style="{color_cabecera}font-size: small; '
+                                   f'font-weight: 600;">{_en_linea(c, tema)}</span></td>' for i, c in enumerate(cabecera)) + "</tr>")
+    partes.append(raya(borde))
+    for k, fila in enumerate(cuerpo):
+        partes.append("<tr>" + "".join(f'<td valign="top" align="{lados[i] if i < len(lados) else "left"}">{_en_linea(c, tema)}</td>'
                                        for i, c in enumerate(fila)) + "</tr>")
+        if k < len(cuerpo) - 1:
+            partes.append(raya(fondo_cabecera))
     partes.append("</table>")
     return "".join(partes)
 
