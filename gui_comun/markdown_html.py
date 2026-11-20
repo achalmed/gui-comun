@@ -37,6 +37,13 @@ def _en_linea(texto: str, tema: dict) -> str:
             continue
         t = html.escape(parte, quote=False)
         enlace = _color(tema, "enlace")
+        # 4.2: lo citado entre comillas, en cursiva (antes de insertar etiquetas, que llevan comillas en sus atributos)
+        t = re.sub(r"«([^«»]{1,400})»", r"«<i>\1</i>»", t)
+        t = re.sub(r'"([^"]{2,400})"', r"“<i>\1</i>”", t)
+        # las referencias a un lugar del texto («[hoja 1 ¶1]», «[p. 45]»): marcas pequeñas del color de los enlaces
+        t = re.sub(r"\[((?:hoja|hojas|p\.|pp\.|pág\.|párr\.|¶)[^\[\]]{0,40})\](?!\()",
+                   lambda m: f'<span style="{("color: " + enlace + "; ") if enlace else ""}font-size: small;">[{m.group(1)}]</span>', t)
+        enlace = _color(tema, "enlace")
         t = re.sub(r"\[([^\]]+)\]\(([^)\s]+)\)",
                    lambda m: f'<a href="{html.escape(m.group(2))}"' + (f' style="color: {enlace};"' if enlace else "") + f">{m.group(1)}</a>", t)
         t = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", t)
@@ -86,6 +93,15 @@ def html_de_markdown(texto: str, tema: dict | None = None) -> str:
     primero = True
 
     def cerrar_parrafo():
+        # 4.2: un párrafo que es solo negrita («**Su versión**») es un título de hecho: se pinta como tal
+        solo = re.fullmatch(r"\*\*([^*]{1,120})\*\*\s*(\([^)]{0,80}\))?:?", " ".join(parrafo).strip()) if parrafo else None
+        if solo:
+            color = f" color: {color_texto};" if color_texto else ""
+            nota = f' <span style="font-weight: normal; font-size: small;">{html.escape(solo.group(2))}</span>' if solo.group(2) else ""
+            bloques.append(f'<h4 style="margin-top: 16px; margin-bottom: 4px; font-size: medium; font-weight: 600;{color}">'
+                           f'{html.escape(solo.group(1))}{nota}</h4>')
+            parrafo.clear()
+            return
         if parrafo:
             bloques.append(f'<p style="margin-top: 4px; margin-bottom: 8px; line-height: 135%;">{_en_linea(" ".join(parrafo), tema)}</p>')
             parrafo.clear()
