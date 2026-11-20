@@ -27,7 +27,9 @@ QQC2.Label {
         default: return Qt.alpha(Kirigami.Theme.textColor, 0.08)
         }
     }
-    color: colorTexto(nivel)
+    // 4.2: en oscuro, el texto se aclara hacia el del tema (rojo sobre granate apenas se leía)
+    readonly property bool oscuro: Kirigami.ColorUtils.brightnessForColor(Kirigami.Theme.backgroundColor) === Kirigami.ColorUtils.Dark
+    color: oscuro ? Kirigami.ColorUtils.linearInterpolation(colorTexto(nivel), Kirigami.Theme.textColor, 0.35) : colorTexto(nivel)
     font: Kirigami.Theme.smallFont
     leftPadding: Kirigami.Units.smallSpacing * 2 + (icono !== "" ? Kirigami.Units.iconSizes.small + Kirigami.Units.smallSpacing : 0)
     rightPadding: Kirigami.Units.smallSpacing * 2

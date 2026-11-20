@@ -4,7 +4,9 @@
 // en lugar de un TabBar de cabecera o de una fila de botones sueltos. Cada opción puede traer icono, contador y color
 // (un dato; sin él, el acento del tema).
 //     SelectorSegmentado { opciones: [{clave: "resumen", texto: "Resumen"}, {clave: "cambios", texto: "Cambios",
-//                          contador: 3}]; actual: "resumen"; onElegida: clave => … }
+//                          contador: 3}]; actual: vista; onElegida: clave => vista = clave }
+// `actual` lo fija quien lo usa (enlazado a su estado) y `elegida` le avisa: el selector no se lo asigna, para no
+// romper ese enlace (un cambio por atajo o por menú lo sigue moviendo).
 import QtQuick
 import QtQuick.Controls as QQC2
 import org.kde.kirigami as Kirigami
@@ -22,7 +24,7 @@ GrupoOpciones {
     function mover(paso) {
         const i = visibles.findIndex(o => o.clave === actual)
         const j = Math.max(0, Math.min(visibles.length - 1, (i < 0 ? 0 : i) + paso))
-        if (visibles.length > 0 && visibles[j].clave !== actual) { actual = visibles[j].clave; elegida(actual) }
+        if (visibles.length > 0 && visibles[j].clave !== actual) elegida(visibles[j].clave)
     }
 
     Repeater {
@@ -37,7 +39,7 @@ GrupoOpciones {
             compacta: raiz.compacto
             elegida: raiz.actual === modelData.clave
             Accessible.role: Accessible.PageTab
-            onClicked: { raiz.actual = modelData.clave; raiz.elegida(modelData.clave) }
+            onClicked: raiz.elegida(modelData.clave)
             Keys.onRightPressed: raiz.mover(mirrored ? -1 : 1)
             Keys.onLeftPressed: raiz.mover(mirrored ? 1 : -1)
         }

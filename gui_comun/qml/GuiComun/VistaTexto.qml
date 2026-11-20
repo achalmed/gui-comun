@@ -18,6 +18,20 @@ QQC2.Control {
     property string nombreAccesible: markdown ? "Documento" : "Texto"
     property bool ajustarLineas: markdown                // sin markdown, por omisión no se parten las líneas
     readonly property alias area: area
+    // 4.2: en Markdown, el documento con el aspecto del tema (títulos con aire, tablas tenues, código sobre fondo
+    // alterno; `gui_comun.markdown_html` por `aplicacionStudio.markdownHtml`) y en una columna de lectura; sin
+    // `aplicacionStudio` (fuera de una Aplicacion), el Markdown de Qt
+    readonly property bool conTema: markdown && typeof aplicacionStudio !== "undefined" && aplicacionStudio !== null
+                                    && aplicacionStudio.markdownHtml !== undefined
+    property real anchoLectura: Kirigami.Units.gridUnit * 46
+    readonly property var colores: ({
+        texto: Kirigami.Theme.textColor,
+        tenue: Kirigami.Theme.disabledTextColor,
+        borde: Kirigami.ColorUtils.linearInterpolation(Kirigami.Theme.backgroundColor, Kirigami.Theme.textColor, oscuro ? 0.18 : 0.14),
+        fondoCabecera: Kirigami.ColorUtils.linearInterpolation(Kirigami.Theme.backgroundColor, Kirigami.Theme.textColor, oscuro ? 0.07 : 0.05),
+        fondoCodigo: Kirigami.ColorUtils.linearInterpolation(Kirigami.Theme.backgroundColor, Kirigami.Theme.textColor, oscuro ? 0.09 : 0.06),
+        enlace: Kirigami.Theme.linkColor
+    })
     readonly property bool oscuro: Kirigami.Theme.backgroundColor.hslLightness < 0.5
     // 4.2: en Markdown, un «<nombre>» que no es una etiqueta HTML (un marcador de posición: «carpeta/<proyecto>») se
     // escapa para que se vea en lugar de desaparecer; los enlaces automáticos (<https://…>) y el código no se tocan
@@ -43,17 +57,22 @@ QQC2.Control {
     background: Rectangle { color: Kirigami.Theme.backgroundColor }
 
     contentItem: QQC2.ScrollView {
+        id: desplazable
         QQC2.ScrollBar.horizontal.policy: raiz.ajustarLineas ? QQC2.ScrollBar.AlwaysOff : QQC2.ScrollBar.AsNeeded
         QQC2.TextArea {
             id: area
             readOnly: true
-            text: raiz.markdown ? raiz.escaparMarcadores(raiz.texto) : raiz.texto
-            textFormat: raiz.markdown ? TextEdit.MarkdownText : TextEdit.PlainText
+            text: raiz.conTema ? (raiz.texto !== "" ? aplicacionStudio.markdownHtml(raiz.texto, raiz.colores) : "")
+                  : raiz.markdown ? raiz.escaparMarcadores(raiz.texto) : raiz.texto
+            textFormat: raiz.conTema ? TextEdit.RichText : raiz.markdown ? TextEdit.MarkdownText : TextEdit.PlainText
             font: raiz.markdown ? Kirigami.Theme.defaultFont : Kirigami.Theme.fixedWidthFont
             wrapMode: raiz.ajustarLineas ? TextEdit.Wrap : TextEdit.NoWrap
             selectByMouse: true
             background: null
-            leftPadding: Kirigami.Units.largeSpacing * (raiz.markdown ? 3 : 1)
+            // en Markdown, una columna de lectura centrada: en un panel ancho la prosa no va de borde a borde
+            leftPadding: raiz.markdown ? Math.max(Kirigami.Units.largeSpacing * (desplazable.availableWidth < Kirigami.Units.gridUnit * 24 ? 1 : 3),
+                                                  (desplazable.availableWidth - raiz.anchoLectura) / 2)
+                                       : Kirigami.Units.largeSpacing
             rightPadding: leftPadding
             topPadding: Kirigami.Units.largeSpacing
             bottomPadding: Kirigami.Units.largeSpacing

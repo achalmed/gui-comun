@@ -364,9 +364,10 @@ separados por rayas; superficies flotantes con sombra del tema; lo elegido teñi
 | `BarraFlotante` | `Pane` que flota sobre el contenido: fondo de la vista, `cornerRadius × 2`, borde tenue y sombra (más honda en oscuro) | `contentItem`; `elevada` (sin sombra: false); `oscuro` |
 | `GrupoOpciones` | el «pozo»: píldora apenas más oscura (o clara) que su fondo, con las opciones en fila | hijos; `titulo` (lectores de pantalla) |
 | `OpcionColor` | opción en píldora: punto de color (un dato; sin él, el acento), tinte al pasar, rellena y con borde si es la elegida, borde doble con el foco | `text`, `icon.name`, `color`, `elegida`, `atajo`, `descripcion`, `compacta`, `iconoMonocromo`; `clicked` |
-| `SelectorSegmentado` | una entre pocas opciones en un `GrupoOpciones`; ← → con el teclado | `opciones: [{clave, texto, icono?, contador?, color?, atajo?, descripcion?, visible?}]`, `actual`, `compacto`; `elegida(clave)` |
+| `SelectorSegmentado` | una entre pocas opciones en un `GrupoOpciones`; ← → con el teclado. No se asigna `actual`: quien lo usa lo enlaza a su estado y lo cambia en `onElegida` | `opciones: [{clave, texto, icono?, contador?, color?, atajo?, descripcion?, visible?}]`, `actual`, `compacto`; `elegida(clave)` |
 | `BotonCierre` | la X monocroma (`close-symbolic`, o `window-close-symbolic` de Breeze) que se aviva al pasar | `text` (lo que hace: ayuda y nombre accesible); `clicked` |
 | `BotonPrincipal` | la acción principal: relleno del acento y texto de contraste; anillo con el foco | `text`, `icon.name` o `accion` (una `Accion`) |
+| `FondoSeleccion` | el fondo de una fila de lista propia: tinte del acento y marca a la izquierda si es la elegida, velo al pasar, borde con el foco | `elegida`, `sobre`, `pulsada`, `foco`, `conMarca`, `redondeada` |
 
 Reglas del acabado: los colores salen de `Kirigami.Theme` mezclados con `Kirigami.ColorUtils` (`tintWithAlpha`,
 `linearInterpolation`); el color de una opción es un dato del modelo; lo elegido es un tinte de `highlightColor` al

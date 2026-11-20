@@ -35,7 +35,14 @@ La versión vive en `gui_comun/__init__.py` y en `pyproject.toml`. Las secciones
     pendientes, ✕ si un conflicto lo frena), la elegida teñida con borde y que no se encoge, y la línea entre pasos del
     acento hasta el alcanzado (antes, botones de barra con flechas y rayas).
   - `ListaDiagnosticos`: nivel `correcto` (icono `checkmark`, color positivo); `data-success` parecía una casilla.
-  - `VistaTexto` en Markdown escapa los «<nombre>» que no son etiquetas HTML (se tragaban el resto del documento).
+  - `VistaTexto` en Markdown se lee como documento con el aspecto del tema (títulos con aire y raya, tablas tenues
+    con la cabecera tenue, código sobre fondo alterno, columna de lectura centrada): `gui_comun.markdown_html` (de
+    Filesystem Studio) por `aplicacionStudio.markdownHtml`; fuera de una `Aplicacion`, el Markdown de Qt, que ahora
+    escapa los «<nombre>» que no son etiquetas HTML (se tragaban el resto del documento).
+  - `SelectorSegmentado` no se asigna `actual` al hacer clic ni con ← →: solo emite `elegida(clave)`, y quien lo usa
+    fija su estado (asignarlo rompía el enlace de `actual` con ese estado; lo encontró Filesystem Studio).
+  - `EtiquetaNivel` en oscuro, con el texto aclarado hacia el del tema (rojo sobre granate apenas se leía); el vacío
+    «Sin diferencias» de `VistaComparacion`, sin el documento grande a todo color.
   - `VistaComparacion` parte por palabras; `EtiquetaNivel` con el icono del color del nivel; el vacío de
     `TerminalSalida`, un terminal (no un paisaje).
   - `entorno_con_esquema` copia `fontconfig` y fija `QT_QPA_PLATFORMTHEME=kde`: las capturas salen con la fuente del
@@ -52,8 +59,10 @@ La versión vive en `gui_comun/__init__.py` y en `pyproject.toml`. Las secciones
   `OpcionColor` (opción en píldora con su punto de color, que es un dato: estado al pasar, rellena si es la elegida,
   borde doble con el foco, atajo en la ayuda), `SelectorSegmentado` (una entre pocas vistas, áreas o filtros, con
   ← →; reemplaza un `TabBar` de cabecera o una fila de botones sueltos), `BotonCierre` (la X neutra) y
-  `BotonPrincipal` (la acción principal con el relleno del acento: con Kvantum, `highlighted` no pinta nada). En la
-  galería: «Opciones y barra flotante».
+  `BotonPrincipal` (la acción principal con el relleno del acento: con Kvantum, `highlighted` no pinta nada) y
+  `FondoSeleccion` (el fondo de una fila de lista propia: tinte del acento y marca si es la elegida, velo al pasar; los
+  programas tenían cuatro copias). En la galería: «Opciones y barra flotante».
+- `gui_comun.markdown_html.html_de_markdown(texto, tema)` y `aplicacionStudio.markdownHtml(texto, tema)`.
 - `PestanasArchivos`: las pestañas de los archivos abiertos de un `ControladorEditor`, con la × de cerrar (al pasar el
   ratón y siempre en la activa) y el clic central; emiten `cerrarPedido(ruta)` y el studio decide. Lo pidió LaTeX Studio
   («no hay para cerrar una ventana»); Quarto Studio tiene la misma copia sin ×.

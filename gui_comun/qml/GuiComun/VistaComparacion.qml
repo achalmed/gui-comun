@@ -177,7 +177,8 @@ ColumnLayout {
         Layout.fillHeight: true
         visible: !raiz.hay || raiz.diferencia.vacia || raiz.diferencia.binario
         text: !raiz.hay ? raiz.mensajeVacio : raiz.diferencia.binario ? "Archivo binario: no se compara línea a línea" : "Sin diferencias"
-        icon.name: raiz.hay && raiz.diferencia.binario ? "application-octet-stream" : "document-compare"
+        // 4.2: sin el documento grande a todo color; solo el binario lleva icono
+        icon.name: raiz.hay && raiz.diferencia.binario ? "application-octet-stream" : ""
     }
 
     component Lado: RowLayout {

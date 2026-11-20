@@ -37,7 +37,7 @@ from gui_comun.escritorio import Escritorio
 from gui_comun.notificaciones import Notificador
 from gui_comun.qt import (BINDING, Property, QApplication, QCoreApplication, QEvent, QGuiApplication, QIcon, QObject,
                           QQmlApplicationEngine, QQmlPropertyMap, QQuickWindow, Qt, QTimer, QTranslator, QUrl, cast,
-                          version_qt)
+                          Slot, version_qt)
 
 RUTA_QML = Path(__file__).resolve().parent / "qml"          # el módulo QML GuiComun vive en gui_comun/qml/GuiComun/
 ESTILO = "org.kde.desktop"
@@ -248,3 +248,14 @@ class DatosStudio(QObject):
     def escritorio(self):
         """3.0: la integración con el escritorio (`gui_comun.escritorio.Escritorio`)."""
         return self._a.escritorio
+
+    @Slot(str, "QVariantMap", result=str)
+    def markdownHtml(self, texto: str, tema: dict) -> str:
+        """4.2: un documento Markdown como HTML con los colores del tema que pasa QML (`VistaTexto` en Markdown):
+        {texto, tenue, borde, fondoCabecera, fondoCodigo, enlace}. Véase `gui_comun.markdown_html`."""
+        from gui_comun.markdown_html import html_de_markdown
+        colores = {}
+        for clave, valor in (tema or {}).items():
+            nombre = getattr(valor, "name", None)          # un color de QML llega como QColor
+            colores[clave] = nombre() if callable(nombre) else str(valor)
+        return html_de_markdown(texto, colores)
