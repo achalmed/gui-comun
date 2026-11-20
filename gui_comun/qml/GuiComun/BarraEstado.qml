@@ -31,6 +31,7 @@ QQC2.ToolBar {
         QQC2.Label {
             text: barra.resumen
             elide: Text.ElideRight
+            font: Kirigami.Theme.smallFont        // 4.2: en letra pequeña, como la de Dolphin
             Layout.fillWidth: true
             Accessible.name: "Resumen: " + text
         }
@@ -44,8 +45,9 @@ QQC2.ToolBar {
                     const o = barra.tareas.operacionTexto !== undefined ? barra.tareas.operacionTexto : ""   // 3.0
                     return (o ? o + ": " : "") + barra.tareas.nombre + (e ? " · " + e : "")
                 }
-                elide: Text.ElideMiddle
+                elide: Text.ElideRight
                 Layout.maximumWidth: Kirigami.Units.gridUnit * 22
+                font: Kirigami.Theme.smallFont
                 color: Kirigami.Theme.disabledTextColor
             }
             Loader {                      // la barra de progreso existe solo mientras hay tarea
@@ -75,7 +77,10 @@ QQC2.ToolBar {
             objectName: "contextoBarra"
             visible: barra.textoDerecha !== ""
             text: barra.textoDerecha
-            elide: Text.ElideMiddle
+            elide: Text.ElideRight
+            font: Kirigami.Theme.smallFont
+            // la pista se lee con el color del texto (es lo nuevo); el contexto, tenue como el resumen
+            color: barra.pista !== "" ? Kirigami.Theme.textColor : Kirigami.Theme.disabledTextColor
             Layout.maximumWidth: Kirigami.Units.gridUnit * 24
             Accessible.name: (barra.pista !== "" ? "Pista: " : "Selección: ") + text
         }

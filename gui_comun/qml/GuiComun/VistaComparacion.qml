@@ -273,7 +273,7 @@ ColumnLayout {
             leftPadding: Kirigami.Units.smallSpacing
             text: mitad.tipo === "aviso" ? mitad.texto : mitad.texto.replace(/\t/g, "    ")
             textFormat: Text.PlainText
-            wrapMode: Text.WrapAnywhere
+            wrapMode: Text.WrapAtWordBoundaryOrAnywhere          // 4.2: no parte las palabras por la mitad
             font: Kirigami.Theme.fixedWidthFont
             color: mitad.tipo === "aviso" ? Kirigami.Theme.disabledTextColor : Kirigami.Theme.textColor
         }

@@ -10,11 +10,11 @@ import org.kde.kirigami as Kirigami
 QQC2.Control {
     id: raiz
 
-    // un modelo de lista con los roles `nivel` (error · aviso · informacion · tipografia · otro), `mensaje`, `archivo`,
+    // un modelo de lista con los roles `nivel` (error · aviso · informacion · tipografia · correcto (4.2) · otro), `mensaje`, `archivo`,
     // `linea` (número; 0 o vacío: sin línea) y, opcional, `detalle` (p. ej. gui_comun.modelos.ModeloLista)
     property var modelo
     property string mensajeVacio: ""
-    property string iconoVacio: "data-success"
+    property string iconoVacio: "checkmark"
     property string nombreAccesible: "Diagnósticos"
     property QQC2.Menu menuContextual: null
     readonly property alias vista: lista
@@ -31,6 +31,7 @@ QQC2.Control {
         case "aviso": return "data-warning"
         case "informacion": return "data-information"
         case "tipografia": return "format-justify-fill"
+        case "correcto": return "checkmark"            // 4.2 (data-success parece una casilla en algunos temas)
         default: return "dialog-information"
         }
     }
@@ -39,6 +40,7 @@ QQC2.Control {
         case "error": return Kirigami.Theme.negativeTextColor
         case "aviso": return Kirigami.Theme.neutralTextColor
         case "informacion": return Kirigami.Theme.activeTextColor
+        case "correcto": return Kirigami.Theme.positiveTextColor
         default: return Kirigami.Theme.disabledTextColor
         }
     }
@@ -48,6 +50,7 @@ QQC2.Control {
         case "aviso": return "Aviso"
         case "informacion": return "Información"
         case "tipografia": return "Tipografía"
+        case "correcto": return "Correcto"
         default: return nivel
         }
     }
@@ -87,6 +90,26 @@ QQC2.Control {
                 }
                 width: ListView.view.width
                 highlighted: ListView.isCurrentItem
+                hoverEnabled: true
+                leftInset: Kirigami.Units.smallSpacing / 2
+                rightInset: Kirigami.Units.smallSpacing / 2
+                topInset: 1
+                bottomInset: 1
+                // 4.2: la actual, teñida del acento con su marca (como TablaDatos y PanelNavegacion); el nivel conserva
+                // su color sobre la selección
+                background: Rectangle {
+                    radius: Kirigami.Units.cornerRadius
+                    color: fila.highlighted ? Kirigami.ColorUtils.tintWithAlpha(Kirigami.Theme.backgroundColor, Kirigami.Theme.highlightColor, 0.22)
+                         : fila.hovered ? Kirigami.ColorUtils.tintWithAlpha(Kirigami.Theme.backgroundColor, Kirigami.Theme.textColor, 0.06)
+                         : "transparent"
+                    Rectangle {
+                        visible: fila.highlighted
+                        anchors { left: parent.left; top: parent.top; bottom: parent.bottom; margins: Kirigami.Units.smallSpacing; leftMargin: Kirigami.Units.smallSpacing / 2 }
+                        width: Kirigami.Units.smallSpacing * 0.75
+                        radius: width / 2
+                        color: Kirigami.Theme.highlightColor
+                    }
+                }
                 onClicked: lista.currentIndex = index
                 onDoubleClicked: { lista.currentIndex = index; raiz.activada(index) }
                 Accessible.name: raiz.textoNivel(nivel) + ": " + (model.mensaje || "") + (donde ? ", " + donde : "")
@@ -111,7 +134,7 @@ QQC2.Control {
                             Layout.fillWidth: true
                             text: fila.model.mensaje || ""
                             wrapMode: Text.Wrap
-                            color: fila.highlighted ? Kirigami.Theme.highlightedTextColor : Kirigami.Theme.textColor
+                            color: Kirigami.Theme.textColor
                         }
                         QQC2.Label {
                             Layout.fillWidth: true
@@ -119,13 +142,13 @@ QQC2.Control {
                             text: (fila.donde ? fila.donde : "") + (fila.model.detalle ? (fila.donde ? " · " : "") + fila.model.detalle : "")
                             elide: Text.ElideMiddle
                             font: Kirigami.Theme.smallFont
-                            color: fila.highlighted ? Kirigami.Theme.highlightedTextColor : Kirigami.Theme.disabledTextColor
+                            color: Kirigami.Theme.disabledTextColor
                         }
                     }
                     QQC2.Label {
                         text: raiz.textoNivel(fila.nivel)
                         font: Kirigami.Theme.smallFont
-                        color: fila.highlighted ? Kirigami.Theme.highlightedTextColor : raiz.colorDe(fila.nivel)
+                        color: raiz.colorDe(fila.nivel)
                         Layout.alignment: Qt.AlignTop
                     }
                 }

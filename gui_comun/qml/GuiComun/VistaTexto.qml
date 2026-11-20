@@ -19,6 +19,18 @@ QQC2.Control {
     property bool ajustarLineas: markdown                // sin markdown, por omisión no se parten las líneas
     readonly property alias area: area
     readonly property bool oscuro: Kirigami.Theme.backgroundColor.hslLightness < 0.5
+    // 4.2: en Markdown, un «<nombre>» que no es una etiqueta HTML (un marcador de posición: «carpeta/<proyecto>») se
+    // escapa para que se vea en lugar de desaparecer; los enlaces automáticos (<https://…>) y el código no se tocan
+    readonly property var etiquetasHtml: ["a", "b", "i", "u", "s", "em", "strong", "br", "p", "ul", "ol", "li", "code", "pre",
+        "table", "thead", "tbody", "tr", "td", "th", "img", "span", "div", "sub", "sup", "kbd", "details", "summary", "hr",
+        "h1", "h2", "h3", "h4", "h5", "h6", "blockquote", "font", "small", "big", "center"]
+    function escaparMarcadores(t) {
+        return t.split(/(`+[^`]*`+)/).map((trozo, i) => i % 2 === 1 ? trozo : trozo.replace(/<([^<>\n]+)>/g, (todo, dentro) => {
+            const nombre = dentro.replace(/^\//, "").split(/[\s>]/)[0].toLowerCase()
+            if (raiz.etiquetasHtml.indexOf(nombre) >= 0 || /^(https?|mailto|ftp|file):/i.test(dentro)) return todo
+            return "&lt;" + dentro + "&gt;"
+        })).join("")
+    }
 
     // tamaño implícito propio (no el del texto): dentro de un Layout, el contenido no dicta el ancho ni provoca bucles
     implicitWidth: Kirigami.Units.gridUnit * 20
@@ -35,7 +47,7 @@ QQC2.Control {
         QQC2.TextArea {
             id: area
             readOnly: true
-            text: raiz.texto
+            text: raiz.markdown ? raiz.escaparMarcadores(raiz.texto) : raiz.texto
             textFormat: raiz.markdown ? TextEdit.MarkdownText : TextEdit.PlainText
             font: raiz.markdown ? Kirigami.Theme.defaultFont : Kirigami.Theme.fixedWidthFont
             wrapMode: raiz.ajustarLineas ? TextEdit.Wrap : TextEdit.NoWrap

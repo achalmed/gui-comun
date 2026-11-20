@@ -25,7 +25,7 @@ ColumnLayout {
     function icono(nivel) { return nivel === "error" ? "data-error" : nivel === "aviso" ? "data-warning" : nivel === "tipografia" ? "format-justify-fill" : "data-information" }
     function color(nivel) { return nivel === "error" ? Kirigami.Theme.negativeTextColor : nivel === "aviso" ? Kirigami.Theme.neutralTextColor : Kirigami.Theme.disabledTextColor }
     // en la fila elegida, el texto de la selección (el rojo o el gris sobre el color de selección no se leen)
-    function tinta(fila, normal) { return fila.highlighted ? Kirigami.Theme.highlightedTextColor : normal }
+    function tinta(fila, normal) { return normal }          // 4.2: la selección es un tinte, el texto conserva su color
     function texto(v) { return v === undefined || v === null ? "" : String(v) }
 
     RowLayout {
@@ -57,6 +57,24 @@ ColumnLayout {
             property bool abierto: false
             width: lista.width
             highlighted: ListView.isCurrentItem
+            hoverEnabled: true
+            leftInset: Kirigami.Units.smallSpacing / 2
+            rightInset: Kirigami.Units.smallSpacing / 2
+            topInset: 1
+            bottomInset: 1
+            background: Rectangle {          // 4.2: la actual, teñida del acento con su marca
+                radius: Kirigami.Units.cornerRadius
+                color: fila.highlighted ? Kirigami.ColorUtils.tintWithAlpha(Kirigami.Theme.backgroundColor, Kirigami.Theme.highlightColor, 0.22)
+                     : fila.hovered ? Kirigami.ColorUtils.tintWithAlpha(Kirigami.Theme.backgroundColor, Kirigami.Theme.textColor, 0.06)
+                     : "transparent"
+                Rectangle {
+                    visible: fila.highlighted
+                    anchors { left: parent.left; top: parent.top; bottom: parent.bottom; margins: Kirigami.Units.smallSpacing; leftMargin: Kirigami.Units.smallSpacing / 2 }
+                    width: Kirigami.Units.smallSpacing * 0.75
+                    radius: width / 2
+                    color: Kirigami.Theme.highlightColor
+                }
+            }
             onClicked: { lista.currentIndex = index; raiz.elegido(index) }
             Accessible.name: titulo + (model.linea ? ", línea " + model.linea : "")
             contentItem: RowLayout {

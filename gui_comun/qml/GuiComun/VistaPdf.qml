@@ -218,7 +218,7 @@ QQC2.Control {
                 }
                 QQC2.ToolButton { icon.name: "go-up"; display: QQC2.AbstractButton.IconOnly; text: "Resultado anterior"; Accessible.name: text; enabled: raiz.busqueda !== null && raiz.busqueda.count > 0; onClicked: raiz.resultado(-1); QQC2.ToolTip.text: text + " (Mayús+Intro)"; QQC2.ToolTip.visible: hovered }
                 QQC2.ToolButton { icon.name: "go-down"; display: QQC2.AbstractButton.IconOnly; text: "Resultado siguiente"; Accessible.name: text; enabled: raiz.busqueda !== null && raiz.busqueda.count > 0; onClicked: raiz.resultado(1); QQC2.ToolTip.text: text + " (Intro)"; QQC2.ToolTip.visible: hovered }
-                QQC2.ToolButton { icon.name: "dialog-close"; display: QQC2.AbstractButton.IconOnly; text: "Cerrar la búsqueda"; Accessible.name: text; onClicked: raiz.cerrarBusqueda() }
+                BotonCierre { text: "Cerrar la búsqueda"; onClicked: raiz.cerrarBusqueda() }
             }
         }
         RowLayout {

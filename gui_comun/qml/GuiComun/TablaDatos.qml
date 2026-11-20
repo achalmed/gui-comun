@@ -410,8 +410,11 @@ QQC2.Control {
                 readonly property bool primera: column === 0
                 readonly property bool ultima: column === tabla.columns - 1
                 implicitHeight: raiz.altoFila
-                color: selected ? Kirigami.Theme.highlightColor
-                     : (row % 2 === 1 ? Kirigami.Theme.alternateBackgroundColor : Kirigami.Theme.backgroundColor)
+                // 4.2: la fila elegida, teñida del acento (no el bloque lleno del color de selección): el texto y los
+                // colores semánticos se conservan; su marca de acento va en el borde izquierdo de la primera celda
+                readonly property color fondoFila: row % 2 === 1 ? Kirigami.Theme.alternateBackgroundColor : Kirigami.Theme.backgroundColor
+                color: selected ? Kirigami.ColorUtils.tintWithAlpha(fondoFila, Kirigami.Theme.highlightColor, sobre ? 0.32 : 0.24)
+                     : fondoFila
                 Accessible.role: Accessible.Cell
                 Accessible.name: model.display !== undefined ? String(model.display) : ""
 
@@ -429,6 +432,14 @@ QQC2.Control {
                     Rectangle { anchors { left: parent.left; right: parent.right; bottom: parent.bottom } height: 1; color: Kirigami.Theme.highlightColor }
                     Rectangle { visible: celda.primera; anchors { left: parent.left; top: parent.top; bottom: parent.bottom } width: 1; color: Kirigami.Theme.highlightColor }
                     Rectangle { visible: celda.ultima; anchors { right: parent.right; top: parent.top; bottom: parent.bottom } width: 1; color: Kirigami.Theme.highlightColor }
+                }
+                Rectangle {   // 4.2: la marca de la fila elegida (si el borde de nivel no ocupa ese sitio)
+                    visible: celda.primera && celda.selected && !(celda.nivel !== "" && raiz.nivelesBorde.indexOf(celda.nivel) >= 0)
+                    anchors { left: parent.left; top: parent.top; bottom: parent.bottom; topMargin: 2; bottomMargin: 2 }
+                    width: Kirigami.Units.smallSpacing * 0.75
+                    radius: width / 2
+                    z: 1
+                    color: Kirigami.Theme.highlightColor
                 }
                 Rectangle {   // 4.1: el nivel de la fila en su borde izquierdo (`nivelesBorde`)
                     objectName: "bordeNivel"
@@ -455,8 +466,7 @@ QQC2.Control {
                     Kirigami.Icon {
                         visible: celda.col.conIcono === true && celda.model.icono !== undefined && celda.model.icono !== ""
                         source: visible ? celda.model.icono : ""
-                        color: celda.selected ? Kirigami.Theme.highlightedTextColor
-                             : celda.col.semantica ? raiz.nivelColor(celda.nivel, celda.habilitado)
+                        color: celda.col.semantica ? raiz.nivelColor(celda.nivel, celda.habilitado)
                              : Kirigami.Theme.textColor
                         implicitWidth: Kirigami.Units.iconSizes.small
                         implicitHeight: implicitWidth
@@ -470,8 +480,7 @@ QQC2.Control {
                         maximumLineCount: celda.col.lineas || 1
                         horizontalAlignment: raiz.alineacion(celda.column)
                         font.family: celda.col.mono ? Kirigami.Theme.fixedWidthFont.family : Kirigami.Theme.defaultFont.family
-                        color: celda.selected ? Kirigami.Theme.highlightedTextColor
-                             : celda.col.semantica ? raiz.nivelColor(celda.nivel, celda.habilitado)
+                        color: celda.col.semantica ? raiz.nivelColor(celda.nivel, celda.habilitado)
                              : (!celda.habilitado || celda.col.secundaria) ? Kirigami.Theme.disabledTextColor
                              : Kirigami.Theme.textColor
                     }

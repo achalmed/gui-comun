@@ -10,6 +10,7 @@ import QtQuick.Controls as QQC2
 import org.kde.kirigami as Kirigami
 
 Kirigami.Dialog {
+    showCloseButton: false          // 4.2: tiene sus botones al pie (la × de la cabecera es roja en algunos temas)
     id: dialogo
 
     property var acciones

@@ -39,6 +39,7 @@ QQC2.Label {
         visible: raiz.icono !== ""
         source: raiz.icono
         color: raiz.color
+        isMask: true          // 4.2: del color del nivel, no a todo color
         x: Kirigami.Units.smallSpacing * 2
         anchors.verticalCenter: parent.verticalCenter
         implicitWidth: Kirigami.Units.iconSizes.small

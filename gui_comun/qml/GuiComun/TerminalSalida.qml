@@ -130,7 +130,7 @@ ColumnLayout {
                 anchors.centerIn: parent
                 width: parent.width - Kirigami.Units.gridUnit * 4
                 visible: lista.count === 0
-                icon.name: "view-preview"
+                icon.name: "utilities-terminal"          // 4.2 (view-preview es un paisaje en algunos temas)
                 text: raiz.mensajeVacio
                 explanation: raiz.explicacionVacia
             }

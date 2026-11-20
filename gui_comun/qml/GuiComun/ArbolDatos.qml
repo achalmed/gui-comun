@@ -15,6 +15,7 @@ import org.kde.kirigami as Kirigami
 QQC2.Control {
     id: raiz
 
+    property int filaSobre: -1          // 4.2: la fila bajo el ratón (velo de «pasar por encima»)
     property var modelo
     property var columnas: []
     property var raiz: null
@@ -242,10 +243,31 @@ QQC2.Control {
                 readonly property string nivel: model.nivel !== undefined ? model.nivel : ""
                 readonly property real sangria: Kirigami.Units.iconSizes.small + Kirigami.Units.smallSpacing
                 implicitHeight: raiz.altoFila
-                color: selected ? Kirigami.Theme.highlightColor
-                     : (row % 2 === 1 ? Kirigami.Theme.alternateBackgroundColor : Kirigami.Theme.backgroundColor)
+                // 4.2: la fila elegida, teñida del acento con su marca a la izquierda (como TablaDatos)
+                readonly property color fondoFila: row % 2 === 1 ? Kirigami.Theme.alternateBackgroundColor : Kirigami.Theme.backgroundColor
+                color: selected ? Kirigami.ColorUtils.tintWithAlpha(fondoFila, Kirigami.Theme.highlightColor, 0.24) : fondoFila
                 Accessible.role: Accessible.Cell
                 Accessible.name: model.display !== undefined ? String(model.display) : ""
+
+                Rectangle {   // 4.2: la fila bajo el ratón, con el tinte de «pasar por encima» (como TablaDatos)
+                    anchors.fill: parent
+                    visible: raiz.filaSobre === celda.row && !celda.selected
+                    color: Qt.alpha(Kirigami.Theme.hoverColor, 0.22)
+                }
+                HoverHandler {
+                    onHoveredChanged: {
+                        if (hovered) raiz.filaSobre = celda.row
+                        else if (raiz.filaSobre === celda.row) raiz.filaSobre = -1
+                    }
+                }
+                Rectangle {   // la marca de la fila elegida
+                    visible: celda.column === 0 && celda.selected
+                    anchors { left: parent.left; top: parent.top; bottom: parent.bottom; topMargin: 2; bottomMargin: 2 }
+                    width: Kirigami.Units.smallSpacing * 0.75
+                    radius: width / 2
+                    z: 1
+                    color: Kirigami.Theme.highlightColor
+                }
 
                 Rectangle {
                     anchors.fill: parent
@@ -268,7 +290,7 @@ QQC2.Control {
                             anchors.fill: parent
                             visible: celda.isTreeNode && celda.hasChildren
                             source: celda.expanded ? "arrow-down" : "arrow-right"
-                            color: celda.selected ? Kirigami.Theme.highlightedTextColor : Kirigami.Theme.textColor
+                            color: Kirigami.Theme.textColor
                             Accessible.role: Accessible.Button
                             Accessible.name: celda.expanded ? "Contraer" : "Expandir"
                         }
@@ -278,7 +300,7 @@ QQC2.Control {
                         visible: celda.col.conIcono === true && celda.model.icono !== undefined && celda.model.icono !== ""
                         source: visible ? celda.model.icono : ""
                         color: celda.col.semantica ? raiz.nivelColor(celda.nivel, celda.habilitado)
-                             : (celda.selected ? Kirigami.Theme.highlightedTextColor : Kirigami.Theme.textColor)
+                             : Kirigami.Theme.textColor
                         implicitWidth: Kirigami.Units.iconSizes.small
                         implicitHeight: implicitWidth
                         opacity: celda.habilitado ? 1 : 0.5
@@ -289,8 +311,7 @@ QQC2.Control {
                         elide: celda.column === 0 ? Text.ElideMiddle : Text.ElideRight
                         horizontalAlignment: raiz.alineacion(celda.column)
                         font.family: celda.col.mono ? Kirigami.Theme.fixedWidthFont.family : Kirigami.Theme.defaultFont.family
-                        color: celda.selected ? Kirigami.Theme.highlightedTextColor
-                             : celda.col.semantica ? raiz.nivelColor(celda.nivel, celda.habilitado)
+                        color: celda.col.semantica ? raiz.nivelColor(celda.nivel, celda.habilitado)
                              : (!celda.habilitado || celda.col.secundaria) ? Kirigami.Theme.disabledTextColor
                              : Kirigami.Theme.textColor
                     }

@@ -96,7 +96,7 @@ QQC2.ToolBar {
             QQC2.ToolButton { id: regex; checkable: true; text: ".*"; Accessible.name: "Expresión regular"; QQC2.ToolTip.text: "Expresión regular (Python: \\d, \\b, grupos y \\1 en el reemplazo)"; QQC2.ToolTip.visible: hovered; onToggled: barra.buscar() }
             QQC2.ToolButton { id: mayusculas; checkable: true; text: "Aa"; Accessible.name: "Distinguir mayúsculas"; QQC2.ToolTip.text: Accessible.name; QQC2.ToolTip.visible: hovered; onToggled: barra.buscar() }
             QQC2.ToolButton { id: palabra; checkable: true; text: "\\b"; Accessible.name: "Palabra entera"; QQC2.ToolTip.text: Accessible.name; QQC2.ToolTip.visible: hovered; onToggled: barra.buscar() }
-            QQC2.ToolButton { icon.name: "dialog-close"; display: QQC2.AbstractButton.IconOnly; text: "Cerrar (Esc)"; Accessible.name: text; onClicked: barra.cerrar() }
+            BotonCierre { text: "Cerrar (Esc)"; onClicked: barra.cerrar() }
         }
         QQC2.TextField {
             id: reemplazo

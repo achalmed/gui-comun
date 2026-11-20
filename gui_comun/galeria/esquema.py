@@ -59,7 +59,9 @@ def entorno_con_esquema(colors: Path, carpeta: Path | None = None) -> dict[str, 
     carpeta = carpeta or Path(tempfile.mkdtemp(prefix="gui-comun-esquema-"))
     carpeta.mkdir(parents=True, exist_ok=True)
     config_usuario = Path(os.environ.get("XDG_CONFIG_HOME") or Path.home() / ".config")
-    for nombre in ("kdeglobals", "kcminputrc", "kwinrc", "Kvantum"):      # lo que afecta al aspecto, copiado
+    # lo que afecta al aspecto, copiado; 4.2: también `fontconfig` (sin él, la captura sale con la fuente de reserva
+    # del sistema y no con la del escritorio)
+    for nombre in ("kdeglobals", "kcminputrc", "kwinrc", "Kvantum", "fontconfig"):
         origen = config_usuario / nombre
         if origen.is_dir():
             shutil.copytree(origen, carpeta / nombre, dirs_exist_ok=True)
@@ -72,6 +74,7 @@ def entorno_con_esquema(colors: Path, carpeta: Path | None = None) -> dict[str, 
     kvantum_a_juego(colors, carpeta)
     env = dict(os.environ)
     env["XDG_CONFIG_HOME"] = str(carpeta)
+    env.setdefault("QT_QPA_PLATFORMTHEME", "kde")      # 4.2: las fuentes y los iconos del escritorio, como en la sesión
     return env
 
 

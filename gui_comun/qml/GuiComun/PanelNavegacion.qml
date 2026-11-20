@@ -95,7 +95,10 @@ QQC2.Control {
                             highlighted: panel.actual === modelData.nombre
                             text: modelData.texto
                             icon.name: modelData.icono || ""
-                            leftPadding: Kirigami.Units.smallSpacing + (panel.plegado ? 0 : nivel * Kirigami.Units.gridUnit)
+                            leftPadding: Kirigami.Units.smallSpacing * 2 + (panel.plegado ? 0 : nivel * Kirigami.Units.gridUnit)
+                            rightPadding: Kirigami.Units.smallSpacing * 2
+                            topPadding: Kirigami.Units.smallSpacing + Kirigami.Units.smallSpacing / 2
+                            bottomPadding: Kirigami.Units.smallSpacing + Kirigami.Units.smallSpacing / 2
                             onClicked: {
                                 if (plegable && !desplegada) panel.fijarAbierta(modelData.nombre, true)
                                 panel.actual = modelData.nombre
@@ -103,6 +106,34 @@ QQC2.Control {
                             }
                             Keys.onRightPressed: if (plegable) panel.fijarAbierta(modelData.nombre, true)
                             Keys.onLeftPressed: if (plegable) panel.fijarAbierta(modelData.nombre, false)
+                            hoverEnabled: true
+                            // 4.2: la fila elegida, un fondo redondeado teñido del acento con su marca a la izquierda (como
+                            // la barra lateral de Preferencias del sistema), no el bloque lleno del color de selección: el
+                            // texto conserva su color y gana peso; al pasar el ratón, un velo tenue; el foco, un borde
+                            topInset: 1
+                            bottomInset: 1
+                            leftInset: Kirigami.Units.smallSpacing / 2
+                            rightInset: Kirigami.Units.smallSpacing / 2
+                            background: Rectangle {
+                                radius: Kirigami.Units.cornerRadius
+                                color: fila.highlighted ? Kirigami.ColorUtils.tintWithAlpha(Kirigami.Theme.backgroundColor, Kirigami.Theme.highlightColor, fila.hovered || fila.pressed ? 0.30 : 0.22)
+                                     : fila.pressed ? Kirigami.ColorUtils.tintWithAlpha(Kirigami.Theme.backgroundColor, Kirigami.Theme.textColor, 0.14)
+                                     : fila.hovered ? Kirigami.ColorUtils.tintWithAlpha(Kirigami.Theme.backgroundColor, Kirigami.Theme.textColor, 0.07)
+                                     : "transparent"
+                                border.width: fila.visualFocus ? 1 : 0
+                                border.color: Kirigami.Theme.focusColor
+                                Behavior on color { ColorAnimation { duration: Kirigami.Units.shortDuration } }
+                                Rectangle {          // la marca de la elegida
+                                    visible: fila.highlighted && !panel.plegado
+                                    anchors.left: parent.left
+                                    anchors.leftMargin: Kirigami.Units.smallSpacing / 2
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    width: Kirigami.Units.smallSpacing * 0.75
+                                    height: parent.height - Kirigami.Units.smallSpacing * 2.5
+                                    radius: width / 2
+                                    color: Kirigami.Theme.highlightColor
+                                }
+                            }
                             Accessible.name: modelData.texto + (modelData.contador !== undefined ? ", " + modelData.contador : "")
                                              + (plegable ? (desplegada ? ", desplegada" : ", plegada") : "")
                             QQC2.ToolTip.visible: (panel.plegado || etiqueta.truncated) && hovered
@@ -120,7 +151,7 @@ QQC2.Control {
                                         anchors.fill: parent
                                         visible: fila.plegable
                                         source: fila.desplegada ? "arrow-down" : (fila.mirrored ? "arrow-left" : "arrow-right")
-                                        color: fila.highlighted ? Kirigami.Theme.highlightedTextColor : Kirigami.Theme.disabledTextColor
+                                        color: Kirigami.Theme.disabledTextColor
                                     }
                                     TapHandler {
                                         enabled: fila.plegable
@@ -139,13 +170,14 @@ QQC2.Control {
                                     text: fila.modelData.texto
                                     Layout.fillWidth: true
                                     elide: Text.ElideRight
-                                    color: fila.highlighted ? Kirigami.Theme.highlightedTextColor : Kirigami.Theme.textColor
+                                    color: Kirigami.Theme.textColor
+                                    font.weight: fila.highlighted ? Font.DemiBold : Font.Normal
                                 }
                                 QQC2.Label {
                                     visible: !panel.plegado && fila.modelData.contador !== undefined && fila.modelData.contador !== ""
                                     text: fila.modelData.contador !== undefined ? fila.modelData.contador : ""
                                     font: Kirigami.Theme.smallFont
-                                    color: fila.highlighted ? Kirigami.Theme.highlightedTextColor : Kirigami.Theme.disabledTextColor
+                                    color: Kirigami.Theme.disabledTextColor
                                 }
                             }
                         }

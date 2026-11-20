@@ -61,9 +61,23 @@ Item {
                         padding: Kirigami.Units.smallSpacing / 2
                         flat: true
                         display: QQC2.AbstractButton.IconOnly
-                        icon.name: "tab-close"
-                        icon.width: Kirigami.Units.iconSizes.small
-                        icon.height: Kirigami.Units.iconSizes.small
+                        // 4.2: la X neutra (el tab-close de algunos temas es un círculo rojo en cada pestaña)
+                        contentItem: Item {          // la X dibujada, del color del texto (como BotonCierre)
+                            opacity: botonCerrar.hovered ? 1 : 0.7
+                            Repeater {
+                                model: [45, -45]
+                                delegate: Rectangle {
+                                    required property int modelData
+                                    anchors.centerIn: parent
+                                    width: Kirigami.Units.iconSizes.small * 0.7
+                                    height: 1.5
+                                    radius: height / 2
+                                    rotation: modelData
+                                    antialiasing: true
+                                    color: Kirigami.Theme.textColor
+                                }
+                            }
+                        }
                         // ocupa siempre su sitio (la pestaña no cambia de ancho al pasar el ratón); invisible, no responde
                         opacity: pestana.conCerrar ? 1 : 0
                         enabled: pestana.conCerrar

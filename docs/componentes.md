@@ -353,7 +353,27 @@ línea es el suyo o el de la primera de `reglas` (`[{contiene, nivel}]`) que apa
 «✓», «[SUCCESS», «[OK]» → positivo); se amplían delante: `reglas: [{contiene: "Archivo real existe", nivel:
 "negativo"}].concat(reglasComunes)`. `nivelDe(linea)`, `colorDe(nivel)`, `cuantas`, `vista` (la `ListView`).
 
+### Piezas del acabado (4.2): BarraFlotante · GrupoOpciones · OpcionColor · SelectorSegmentado · BotonCierre · BotonPrincipal
+
+El lenguaje visual común desde la barra de la selección de Ñawinchay (`nawinchay/docs/figuras/nawinchay-barra-anotar*.png`):
+opciones reconocibles como botones, con estado al pasar, al elegir y con el foco; grupos en contenedores, no solo
+separados por rayas; superficies flotantes con sombra del tema; lo elegido teñido del acento, nunca en bloque lleno.
+
+| pieza | qué es | propiedades y señales |
+|---|---|---|
+| `BarraFlotante` | `Pane` que flota sobre el contenido: fondo de la vista, `cornerRadius × 2`, borde tenue y sombra (más honda en oscuro) | `contentItem`; `elevada` (sin sombra: false); `oscuro` |
+| `GrupoOpciones` | el «pozo»: píldora apenas más oscura (o clara) que su fondo, con las opciones en fila | hijos; `titulo` (lectores de pantalla) |
+| `OpcionColor` | opción en píldora: punto de color (un dato; sin él, el acento), tinte al pasar, rellena y con borde si es la elegida, borde doble con el foco | `text`, `icon.name`, `color`, `elegida`, `atajo`, `descripcion`, `compacta`, `iconoMonocromo`; `clicked` |
+| `SelectorSegmentado` | una entre pocas opciones en un `GrupoOpciones`; ← → con el teclado | `opciones: [{clave, texto, icono?, contador?, color?, atajo?, descripcion?, visible?}]`, `actual`, `compacto`; `elegida(clave)` |
+| `BotonCierre` | la X monocroma (`close-symbolic`, o `window-close-symbolic` de Breeze) que se aviva al pasar | `text` (lo que hace: ayuda y nombre accesible); `clicked` |
+| `BotonPrincipal` | la acción principal: relleno del acento y texto de contraste; anillo con el foco | `text`, `icon.name` o `accion` (una `Accion`) |
+
+Reglas del acabado: los colores salen de `Kirigami.Theme` mezclados con `Kirigami.ColorUtils` (`tintWithAlpha`,
+`linearInterpolation`); el color de una opción es un dato del modelo; lo elegido es un tinte de `highlightColor` al
+0,22–0,30 con su marca o su borde; el foco por teclado se ve; ningún icono de cierre rojo.
+
 ### MenuAcciones · BotonAccion
+4.2: `BotonAccion` marcable se ve con un tinte del acento y su borde (con su propio icono y texto); `plano: false`, con borde fuera de una barra.
 
 `MenuAcciones { acciones; elementos; titulo; conAtajos }`: un `Menu` construido desde `[{tipo: "accion", nombre} |
 {tipo: "separador"} | {tipo: "menu", titulo, elementos}]` (lo que produce `Acciones.definir_menus`); con

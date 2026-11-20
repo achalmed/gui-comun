@@ -84,6 +84,8 @@ ColumnLayout {
             function px(x, l) { return mIzq + (x - l.xMin) / (l.xMax - l.xMin) * anchoUtil }
             function py(y, l) { return mSup + (1 - (y - l.yMin) / (l.yMax - l.yMin)) * altoUtil }
             onWidthChanged: requestPaint()
+            onVisibleChanged: if (visible) requestPaint()          // 4.2: en una pestaña oculta salía negro
+            Component.onCompleted: requestPaint()
             onHeightChanged: requestPaint()
 
             onPaint: {
@@ -174,8 +176,14 @@ ColumnLayout {
                         ctx.setLineDash([3, 3])
                         ctx.beginPath(); ctx.moveTo(ex, ey); ctx.lineTo(ex, mSup + altoUtil); ctx.moveTo(ex, ey); ctx.lineTo(mIzq, ey); ctx.stroke()
                         ctx.setLineDash([])
-                        ctx.fillStyle = capa.base ? tenue : Kirigami.Theme.highlightColor
-                        ctx.beginPath(); ctx.arc(ex, ey, capa.base ? 4 : 6, 0, 2 * Math.PI); ctx.fill()
+                        // 4.2: el equilibrio, un punto neutro (el color del texto con un anillo del fondo): con el
+                        // acento se confundía con una serie
+                        ctx.fillStyle = capa.base ? tenue : texto
+                        ctx.beginPath(); ctx.arc(ex, ey, capa.base ? 4 : 5, 0, 2 * Math.PI); ctx.fill()
+                        if (!capa.base) {
+                            ctx.strokeStyle = Kirigami.Theme.backgroundColor; ctx.lineWidth = 2
+                            ctx.beginPath(); ctx.arc(ex, ey, 5, 0, 2 * Math.PI); ctx.stroke()
+                        }
                         ctx.fillStyle = texto
                         if (!capa.base) { ctx.textAlign = "left"; ctx.textBaseline = "bottom"; ctx.fillText("E", ex + 8, ey - 4) }
                     }
@@ -223,21 +231,31 @@ ColumnLayout {
                 y: lienzo.hover ? Math.max(lienzo.hover.py - height - 8, 0) : 0
                 text: lienzo.hover ? (lienzo.hover.nombre + ": (" + raiz.numero(lienzo.hover.x) + "; " + raiz.numero(lienzo.hover.y) + ")") : ""
                 padding: Kirigami.Units.smallSpacing
-                background: Rectangle { color: Kirigami.Theme.backgroundColor; border.color: Kirigami.Theme.disabledTextColor; radius: Kirigami.Units.cornerRadius }
+                background: Kirigami.ShadowedRectangle {
+                    color: Kirigami.Theme.backgroundColor
+                    radius: Kirigami.Units.cornerRadius
+                    border.width: 1
+                    border.color: Kirigami.ColorUtils.linearInterpolation(Kirigami.Theme.backgroundColor, Kirigami.Theme.textColor, 0.2)
+                    shadow.size: Kirigami.Units.smallSpacing * 2
+                    shadow.color: Qt.alpha(Qt.darker(Kirigami.Theme.backgroundColor, 3), 0.4)
+                }
             }
         }
 
-        // la marca de un resultado que no puede presentarse como válido (L8)
-        QQC2.Label {
-            anchors.centerIn: parent
+        // la marca de un resultado que no puede presentarse como válido (L8). 4.2: una etiqueta en la esquina, con su
+        // motivo en la ayuda, en lugar de un sello gigante girado que tapaba los datos
+        EtiquetaNivel {
+            anchors.top: parent.top
+            anchors.right: parent.right
+            anchors.margins: Kirigami.Units.smallSpacing
             visible: raiz.hayDatos && raiz.invalido !== ""
             text: raiz.invalido
-            rotation: -18
-            font.pointSize: Kirigami.Theme.defaultFont.pointSize * 4
-            font.weight: Font.Black
-            color: raiz.nivelInvalido === "negativo" ? Kirigami.Theme.negativeTextColor : Kirigami.Theme.neutralTextColor
-            opacity: 0.28
+            icono: raiz.nivelInvalido === "negativo" ? "dialog-error-symbolic" : "dialog-warning-symbolic"
+            nivel: raiz.nivelInvalido === "negativo" ? "negativo" : "neutro"
             Accessible.name: raiz.invalido + ": " + raiz.motivoInvalido
+            HoverHandler { id: sobreSello }
+            QQC2.ToolTip.visible: sobreSello.hovered && raiz.motivoInvalido !== ""
+            QQC2.ToolTip.text: raiz.motivoInvalido
         }
         Kirigami.PlaceholderMessage {
             anchors.centerIn: parent
@@ -266,7 +284,11 @@ ColumnLayout {
         RowLayout {
             visible: raiz.base !== null && raiz.base !== undefined
             spacing: Kirigami.Units.smallSpacing
-            Rectangle { implicitWidth: Kirigami.Units.gridUnit; implicitHeight: 1; color: Kirigami.Theme.disabledTextColor }
+            Row {          // 4.2: punteada, como en el gráfico
+                spacing: 2
+                Layout.alignment: Qt.AlignVCenter
+                Repeater { model: 4; delegate: Rectangle { width: 3; height: 2; color: Kirigami.Theme.disabledTextColor } }
+            }
             QQC2.Label { text: "punteado: " + raiz.nombreBase; font: Kirigami.Theme.smallFont; color: Kirigami.Theme.disabledTextColor }
         }
         QQC2.Label { visible: (raiz.datos.anotacion || "") !== ""; text: raiz.datos.anotacion || ""; font: Kirigami.Theme.smallFont; color: Kirigami.Theme.disabledTextColor }

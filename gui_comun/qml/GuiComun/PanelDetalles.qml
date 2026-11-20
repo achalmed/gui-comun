@@ -14,7 +14,7 @@ QQC2.Control {
     property string icono: ""
     property list<QtObject> accionesCabecera
     property var pestanas: []
-    property alias pestanaActual: barra.currentIndex
+    property int pestanaActual: 0
     property string mensajeVacio: "Nada seleccionado"
     property string iconoVacio: "view-list-details"
     property int anchoPreferido: Kirigami.Units.gridUnit * 24
@@ -78,30 +78,29 @@ QQC2.Control {
             }
         }
 
-        QQC2.TabBar {
+        // 4.2: las pestañas, un selector segmentado (píldoras en un pozo tenue) en lugar del TabBar
+        SelectorSegmentado {
             id: barra
+            objectName: "pestanasDetalles"
             visible: panel.titulo !== "" && panel.pestanas.length > 1
-            Layout.fillWidth: true
-            // el modelo es el NÚMERO de pestañas: así un cambio de contador o de visibilidad no recrea los botones (el TabBar
-            // de org.kde.desktop lee la altura del botón actual y fallaba con «Cannot read property 'height' of null»)
-            Repeater {
-                model: panel.pestanas.length
-                delegate: QQC2.TabButton {
-                    required property int index
-                    readonly property var pestana: panel.pestanas[index] || {}
-                    visible: pestana.visible === undefined ? true : pestana.visible
-                    width: visible ? implicitWidth : 0
-                    text: (pestana.titulo || "") + (pestana.contador > 0 ? " (" + pestana.contador + ")" : "")
-                }
-            }
+            Layout.leftMargin: Kirigami.Units.largeSpacing
+            Layout.rightMargin: Kirigami.Units.largeSpacing
+            Layout.bottomMargin: Kirigami.Units.smallSpacing
+            Layout.maximumWidth: panel.width - Kirigami.Units.largeSpacing * 2
+            opciones: panel.pestanas.map((p, i) => ({ clave: String(i), texto: (p && p.titulo) || "",
+                                                       contador: p && p.contador > 0 ? p.contador : "",
+                                                       visible: !p || p.visible !== false }))
+            actual: String(panel.pestanaActual)
+            onElegida: clave => panel.pestanaActual = parseInt(clave)
         }
+        Kirigami.Separator { Layout.fillWidth: true; visible: barra.visible }
 
         StackLayout {
             id: pila
             visible: panel.titulo !== ""
             Layout.fillWidth: true
             Layout.fillHeight: true
-            currentIndex: barra.currentIndex
+            currentIndex: panel.pestanaActual
         }
 
         Kirigami.PlaceholderMessage {

@@ -11,12 +11,49 @@ La versión vive en `gui_comun/__init__.py` y en `pyproject.toml`. Las secciones
 ## [Unreleased]
 
 ### Changed
+- **El acabado de la familia** (pedido del autor, 2026-11-19: «que sea así de elegante» como la barra de la selección de
+  Ñawinchay, en los trece programas; auditoría de cada uno en claro y oscuro). Sin quitar ni renombrar nada:
+  - **Lo elegido, teñido y no en bloque lleno**: `PanelNavegacion`, `TablaDatos`, `ArbolDatos`, `PaletaOrdenes`,
+    `ListaDiagnosticos` y `ListaErrores` marcan la fila elegida con un tinte del acento (`tintWithAlpha`), una marca de
+    acento a la izquierda y el texto en su color (en negrita en la navegación); los colores semánticos se conservan
+    sobre la selección. Con el acento rojo de Lliphi Oscuro, el bloque lleno hacía que todo lo elegido pareciera un
+    error. La navegación tiene más aire, esquinas redondeadas y velo al pasar; `ArbolDatos` también responde al ratón.
+  - **Pestañas como selector segmentado**: `PanelDetalles` y `PanelInferior` usan `SelectorSegmentado` en lugar del
+    `TabBar` (misma API: `pestanaActual`, `mostrarSalida()`…).
+  - **Una sola X, neutra**: `PanelInferior`, `BarraBuscarReemplazar`, `VistaPdf` y `PestanasArchivos` cierran con
+    `BotonCierre` (los `window-close`, `dialog-close` y `tab-close` de Colloid y Papirus son círculos rojos);
+    `DialogoError`, `DialogoConfirmacion` y `DialogoCambiosSinGuardar` sin la × de la cabecera (tienen sus botones).
+  - `BotonAccion` marcable: tinte del acento y borde, con su propio icono (con Kvantum el marcado era un bloque azul
+    saturado aun en un esquema de otro acento); `plano: false` le pone borde fuera de una barra.
+  - `PaletaOrdenes`: superficie flotante (opaca, radio, borde y sombra), fondo atenuado y alto ceñido a los resultados.
+  - `BarraEstado` en letra pequeña, cortada por la derecha; el contexto tenue y la pista en el color del texto.
+  - `PanelInferior`: la salida resaltada con el tema claro u oscuro de KSyntaxHighlighting (en oscuro apenas se leía).
+  - `GraficoXY`: el equilibrio, un punto neutro con anillo (con el acento parecía una serie); el resultado inválido,
+    una `EtiquetaNivel` en la esquina con su motivo en la ayuda, no un sello gigante girado sobre los datos; la base,
+    punteada también en la leyenda; repinta al hacerse visible; la ayuda del punto con sombra.
+  - `PasosEscritura`: cada paso, una píldora con su insignia redonda (✓ hecho, el número del siguiente y los
+    pendientes, ✕ si un conflicto lo frena), la elegida teñida con borde y que no se encoge, y la línea entre pasos del
+    acento hasta el alcanzado (antes, botones de barra con flechas y rayas).
+  - `ListaDiagnosticos`: nivel `correcto` (icono `checkmark`, color positivo); `data-success` parecía una casilla.
+  - `VistaTexto` en Markdown escapa los «<nombre>» que no son etiquetas HTML (se tragaban el resto del documento).
+  - `VistaComparacion` parte por palabras; `EtiquetaNivel` con el icono del color del nivel; el vacío de
+    `TerminalSalida`, un terminal (no un paisaje).
+  - `entorno_con_esquema` copia `fontconfig` y fija `QT_QPA_PLATFORMTHEME=kde`: las capturas salen con la fuente del
+    escritorio.
+
 - `Mensajes`: ningún aviso en una franja de la ventana (pedido del autor, 2026-11-19, para toda la familia de los
   studios). Un aviso con botones también va a las notificaciones de KDE (`notificarConAcciones`); sin escritorio que lo
   muestre (pruebas, capturas sin pantalla, sin `notify-send`), un aviso sin botones va a la barra de estado como pista.
   Solo una decisión sin escritorio queda en línea, para no perderla.
 
 ### Added
+- **Piezas del acabado** (nacidas de la barra de la selección de Ñawinchay): `BarraFlotante` (contenedor que flota
+  sobre el contenido, con radio, borde y sombra del tema), `GrupoOpciones` (el «pozo» tenue que agrupa opciones),
+  `OpcionColor` (opción en píldora con su punto de color, que es un dato: estado al pasar, rellena si es la elegida,
+  borde doble con el foco, atajo en la ayuda), `SelectorSegmentado` (una entre pocas vistas, áreas o filtros, con
+  ← →; reemplaza un `TabBar` de cabecera o una fila de botones sueltos), `BotonCierre` (la X neutra) y
+  `BotonPrincipal` (la acción principal con el relleno del acento: con Kvantum, `highlighted` no pinta nada). En la
+  galería: «Opciones y barra flotante».
 - `PestanasArchivos`: las pestañas de los archivos abiertos de un `ControladorEditor`, con la × de cerrar (al pasar el
   ratón y siempre en la activa) y el clic central; emiten `cerrarPedido(ruta)` y el studio decide. Lo pidió LaTeX Studio
   («no hay para cerrar una ventana»); Quarto Studio tiene la misma copia sin ×.

@@ -36,3 +36,9 @@ EtiquetaNivel 3.1 EtiquetaNivel.qml
 TerminalSalida 4.1 TerminalSalida.qml
 PestanasArchivos 4.2 PestanasArchivos.qml
 DialogoCambiosSinGuardar 4.2 DialogoCambiosSinGuardar.qml
+BarraFlotante 4.2 BarraFlotante.qml
+GrupoOpciones 4.2 GrupoOpciones.qml
+OpcionColor 4.2 OpcionColor.qml
+BotonCierre 4.2 BotonCierre.qml
+BotonPrincipal 4.2 BotonPrincipal.qml
+SelectorSegmentado 4.2 SelectorSegmentado.qml

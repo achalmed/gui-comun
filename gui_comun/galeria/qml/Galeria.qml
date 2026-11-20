@@ -43,6 +43,7 @@ VentanaStudio {
         { nombre: "problemas", texto: "ListaErrores (3.1)", icono: "data-error" },
         { nombre: "pasos", texto: "Pasos y estados (3.1)", icono: "run-build" },
         { nombre: "cientifico", texto: "GraficoXY (3.1)", icono: "office-chart-line" },
+        { nombre: "opciones", texto: "Opciones y barra flotante (4.2)", icono: "tag" },
         { nombre: "tema", texto: "Tema y unidades", icono: "preferences-desktop-color" }
     ]
     property string paginaActual: paginaInicial || "espacio"
@@ -634,6 +635,50 @@ VentanaStudio {
         }
 
         // 23. Tema
+        Pagina {
+            id: paginaOpciones
+            titulo: "Opciones y barra flotante"
+            texto: "OpcionColor: una opción en píldora con su punto de color (un dato), que se tiñe al pasar el ratón, va rellena cuando es la elegida y lleva un borde doble con el foco del teclado; la ayuda dice su atajo. GrupoOpciones: el pozo tenue que las agrupa. BarraFlotante: el contenedor con radio, borde y sombra del tema que flota sobre el contenido (la barra de la selección de Ñawinchay). Aquí los colores son los semánticos del tema; en un studio llegan del modelo."
+            property string elegida: "positivo"
+            Item {
+                Layout.fillWidth: true
+                implicitHeight: Kirigami.Units.gridUnit * 7
+                Rectangle {          // una «hoja» de muestra bajo la barra
+                    anchors.fill: parent
+                    color: Kirigami.Theme.alternateBackgroundColor
+                    radius: Kirigami.Units.cornerRadius
+                }
+                BarraFlotante {
+                    anchors.centerIn: parent
+                    contentItem: RowLayout {
+                        spacing: Kirigami.Units.smallSpacing * 2
+                        GrupoOpciones {
+                            titulo: "Marcar como"
+                            Repeater {
+                                model: [
+                                    { clave: "positivo", texto: "Hecho", color: Kirigami.Theme.positiveTextColor },
+                                    { clave: "neutro", texto: "En curso", color: Kirigami.Theme.neutralTextColor },
+                                    { clave: "negativo", texto: "Bloqueado", color: Kirigami.Theme.negativeTextColor },
+                                    { clave: "activo", texto: "Revisar", color: Kirigami.Theme.activeTextColor }
+                                ]
+                                delegate: OpcionColor {
+                                    required property var modelData
+                                    required property int index
+                                    text: modelData.texto
+                                    color: modelData.color
+                                    atajo: "Alt+" + (index + 1)
+                                    descripcion: "Marcar como «" + modelData.texto.toLowerCase() + "»"
+                                    elegida: paginaOpciones.elegida === modelData.clave
+                                    onClicked: paginaOpciones.elegida = modelData.clave
+                                }
+                            }
+                        }
+                        QQC2.ToolButton { text: "Nota…"; icon.name: "document-edit" }
+                        QQC2.ToolButton { text: "Copiar"; icon.name: "edit-copy" }
+                    }
+                }
+            }
+        }
         Pagina {
             titulo: "Tema y unidades"
             texto: "Cero colores propios: todo sale de Kirigami.Theme (el esquema del usuario) y Kirigami.Units."

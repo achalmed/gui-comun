@@ -12,20 +12,21 @@ QQC2.Control {
     property var consola
     property string definicion: "Bash"
     property var extras: []
-    property alias pestanaActual: pestanas.currentIndex
+    property int pestanaActual: 0
     property int altoPreferido: Kirigami.Units.gridUnit * 9
     property int altoMinimo: Kirigami.Units.gridUnit * 5
     signal cerrar()
 
     implicitHeight: altoPreferido
     padding: 0
+    readonly property bool oscuro: Kirigami.Theme.backgroundColor.hslLightness < 0.5
     Kirigami.Theme.colorSet: Kirigami.Theme.View
     Kirigami.Theme.inherit: false
     Accessible.name: "Panel inferior"
 
-    function mostrarSalida() { pestanas.currentIndex = 0 }
-    function mostrarRegistro() { pestanas.currentIndex = 1 }
-    function mostrarExtra(i) { pestanas.currentIndex = 2 + i }
+    function mostrarSalida() { panel.pestanaActual = 0 }
+    function mostrarRegistro() { panel.pestanaActual = 1 }
+    function mostrarExtra(i) { panel.pestanaActual = 2 + i }
 
     background: Rectangle { color: Kirigami.Theme.backgroundColor }
 
@@ -37,18 +38,14 @@ QQC2.Control {
             RowLayout {
                 anchors.fill: parent
                 spacing: Kirigami.Units.smallSpacing
-                QQC2.TabBar {
+                SelectorSegmentado {          // 4.2: en lugar del TabBar
                     id: pestanas
-                    QQC2.TabButton { text: "Salida"; width: implicitWidth }
-                    QQC2.TabButton { text: "Registro"; width: implicitWidth }
-                    Repeater {
-                        model: panel.extras
-                        delegate: QQC2.TabButton {
-                            required property var modelData
-                            text: modelData.titulo
-                            width: implicitWidth
-                        }
-                    }
+                    objectName: "pestanasInferior"
+                    compacto: true
+                    opciones: [{ clave: "0", texto: "Salida", icono: "utilities-terminal" }, { clave: "1", texto: "Registro", icono: "view-history" }]
+                              .concat((panel.extras || []).map((e, i) => ({ clave: String(2 + i), texto: e.titulo })))
+                    actual: String(panel.pestanaActual)
+                    onElegida: clave => panel.pestanaActual = parseInt(clave)
                 }
                 Item { Layout.fillWidth: true }
                 QQC2.ToolButton {
@@ -60,17 +57,12 @@ QQC2.Control {
                     Accessible.name: text
                     onClicked: {
                         if (!panel.consola) return
-                        if (pestanas.currentIndex === 0) panel.consola.salida.limpiar()
-                        else if (pestanas.currentIndex === 1) panel.consola.registro.limpiar()
+                        if (panel.pestanaActual === 0) panel.consola.salida.limpiar()
+                        else if (panel.pestanaActual === 1) panel.consola.registro.limpiar()
                     }
                 }
-                QQC2.ToolButton {
-                    icon.name: "window-close"
-                    text: "Cerrar"
-                    display: QQC2.AbstractButton.IconOnly
-                    QQC2.ToolTip.text: "Cerrar el panel (F4)"
-                    QQC2.ToolTip.visible: hovered
-                    Accessible.name: text
+                BotonCierre {          // 4.2: la X neutra (el window-close de algunos temas es un círculo rojo)
+                    text: "Cerrar el panel (F4)"
                     onClicked: panel.cerrar()
                 }
             }
@@ -79,7 +71,7 @@ QQC2.Control {
         StackLayout {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            currentIndex: pestanas.currentIndex
+            currentIndex: panel.pestanaActual
 
             QQC2.ScrollView {
                 id: vistaSalida
@@ -93,9 +85,9 @@ QQC2.Control {
                     selectByMouse: true
                     Accessible.name: "Salida"
                     onTextChanged: cursorPosition = text.lastIndexOf("\n") + 1     // la última línea, sin desplazar a la derecha
-                    Loader {
-                        source: "ResaltadoSalida.qml"
-                        onLoaded: { item.nombreDefinicion = panel.definicion; item.textEdit = salida }
+                    Loader {          // 4.2: con el tema de KSyntaxHighlighting claro u oscuro (en oscuro se leía apenas)
+                        source: "ResaltadoEditor.qml"
+                        onLoaded: { item.nombreDefinicion = panel.definicion; item.oscuro = Qt.binding(() => panel.oscuro); item.textEdit = salida }
                     }
                 }
             }

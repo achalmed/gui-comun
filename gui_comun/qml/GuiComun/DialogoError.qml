@@ -21,7 +21,7 @@ Kirigami.Dialog {
     maximumHeight: Kirigami.Units.gridUnit * 34
     padding: Kirigami.Units.largeSpacing * 2
     standardButtons: QQC2.Dialog.NoButton
-    showCloseButton: true
+    showCloseButton: false          // 4.2: ya tiene «Cerrar» al pie (la × de la cabecera es roja en algunos temas)
 
     customFooterActions: [
         Kirigami.Action {
@@ -32,7 +32,7 @@ Kirigami.Dialog {
         },
         Kirigami.Action {
             text: dialogo.cuantos > 1 ? "Siguiente" : "Cerrar"
-            icon.name: dialogo.cuantos > 1 ? "go-next" : "dialog-close"
+            icon.name: dialogo.cuantos > 1 ? "go-next" : "checkmark"
             onTriggered: { if (dialogo.cuantos > 1) dialogo.errores.descartar(); else dialogo.close() }
         }
     ]
