@@ -40,6 +40,9 @@ def _en_linea(texto: str, tema: dict) -> str:
         # 4.2: lo citado entre comillas, en cursiva (antes de insertar etiquetas, que llevan comillas en sus atributos)
         t = re.sub(r"«([^«»]{1,400})»", r"«<i>\1</i>»", t)
         t = re.sub(r'"([^"]{2,400})"', r"“<i>\1</i>”", t)
+        # los rótulos en mayúsculas («PROPÓSITO:», «ORDEN DE LECTURA:»): pequeños, en negrita y del color de los enlaces
+        t = re.sub(r"(?<![\w])([A-ZÁÉÍÓÚÑ]{3,}(?: [A-ZÁÉÍÓÚÑ]{2,}){0,4}):",
+                   lambda m: f'<span style="{("color: " + enlace + "; ") if enlace else ""}font-size: small; font-weight: 600;">{m.group(1)}</span>', t)
         # las referencias a un lugar del texto («[hoja 1 ¶1]», «[p. 45]»): marcas pequeñas del color de los enlaces
         t = re.sub(r"\[((?:hoja|hojas|p\.|pp\.|pág\.|párr\.|¶)[^\[\]]{0,40})\](?!\()",
                    lambda m: f'<span style="{("color: " + enlace + "; ") if enlace else ""}font-size: small;">[{m.group(1)}]</span>', t)
@@ -62,20 +65,20 @@ def _celdas(linea: str) -> list[str]:
 
 
 def _tabla(filas: list[str], tema: dict) -> str:
+    """4.2: una tabla moderna: sin rejilla, la cabecera tenue sobre un fondo suave y aire en cada celda; la alineación
+    de la fila de guiones (las cifras a la derecha)."""
     cabecera, alineacion, cuerpo = _celdas(filas[0]), _celdas(filas[1]), [_celdas(f) for f in filas[2:]]
     lados = ["right" if a.endswith(":") and not a.startswith(":") else "center" if a.startswith(":") and a.endswith(":") else "left"
              for a in alineacion]
-    borde, fondo_cabecera, tenue = _color(tema, "borde"), _color(tema, "fondoCabecera"), _color(tema, "tenue")
-    estilo = "border-collapse: collapse;" + (f" border-color: {borde};" if borde else "") + " border-style: solid;"
-    partes = [f'<table border="1" cellspacing="0" cellpadding="6" style="{estilo}" width="100%">']
-    # la cabecera en tenue y negrita, sin fondo: el texto enriquecido de Qt pinta el fondo de una celda solo tras su
-    # párrafo, no de borde a borde, y se ve como una tira dentro de la celda
-    fondo = ""
-    color_cabecera = f' style="color: {tenue};"' if tenue else ""
-    partes.append("<tr>" + "".join(f'<th align="{lados[i] if i < len(lados) else "left"}"{fondo}><span{color_cabecera}>{_en_linea(c, tema)}</span></th>'
+    fondo_cabecera, tenue = _color(tema, "fondoCabecera"), _color(tema, "tenue")
+    partes = ['<table border="0" cellspacing="0" cellpadding="8" width="100%" style="margin-top: 6px; margin-bottom: 12px;">']
+    bg = f' bgcolor="{fondo_cabecera}"' if fondo_cabecera else ""
+    color_cabecera = f' style="color: {tenue}; font-size: small;"' if tenue else ' style="font-size: small;"'
+    partes.append("<tr>" + "".join(f'<th align="{lados[i] if i < len(lados) else "left"}"{bg}><span{color_cabecera}>{_en_linea(c, tema)}</span></th>'
                                    for i, c in enumerate(cabecera)) + "</tr>")
     for fila in cuerpo:
-        partes.append("<tr>" + "".join(f'<td align="{lados[i] if i < len(lados) else "left"}">{_en_linea(c, tema)}</td>'
+        bg = ""          # sin cebra: el texto enriquecido de Qt pinta el fondo de cada celda por separado (bloques sueltos)
+        partes.append("<tr>" + "".join(f'<td valign="top" align="{lados[i] if i < len(lados) else "left"}"{bg}>{_en_linea(c, tema)}</td>'
                                        for i, c in enumerate(fila)) + "</tr>")
     partes.append("</table>")
     return "".join(partes)
