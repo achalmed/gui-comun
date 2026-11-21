@@ -179,6 +179,9 @@ ColumnLayout {
         text: !raiz.hay ? raiz.mensajeVacio : raiz.diferencia.binario ? "Archivo binario: no se compara línea a línea" : "Sin diferencias"
         // 4.2: sin el documento grande a todo color; solo el binario lleva icono
         icon.name: raiz.hay && raiz.diferencia.binario ? "application-octet-stream" : ""
+        // 4.2: en un panel bajo, un icono mediano: el grande tapaba el texto
+        icon.width: parent && parent.height < Kirigami.Units.gridUnit * 16 ? Kirigami.Units.iconSizes.large : Kirigami.Units.iconSizes.huge
+        icon.height: icon.width
     }
 
     component Lado: RowLayout {

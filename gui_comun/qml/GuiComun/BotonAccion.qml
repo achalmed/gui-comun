@@ -29,6 +29,8 @@ QQC2.ToolButton {
     Binding { target: boton; property: "background"; value: fondoTinte; when: boton.fondoPropio }
     // con el estilo de KDE, el fondo del estilo pinta también el icono y el texto: con el fondo propio va su contenido
     Binding { target: boton; property: "contentItem"; value: contenidoPropio; when: boton.fondoPropio }
+    Binding { target: boton; property: "leftPadding"; value: Kirigami.Units.largeSpacing; when: !boton.plano }
+    Binding { target: boton; property: "rightPadding"; value: Kirigami.Units.largeSpacing; when: !boton.plano }
     Row {
         id: contenidoPropio
         visible: boton.fondoPropio

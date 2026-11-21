@@ -17,6 +17,9 @@ Item {
     property var controlador: null
     property string atajoCerrar: "Ctrl+W"            // solo para la ayuda de la ×
     readonly property bool hayAbiertos: !!controlador && controlador.abiertos.filas > 0
+    // 4.2: el nombre de una pestaña: `nombreDe(modelo)` si el studio lo da (Quarto: la carpeta en vez de «index.qmd»)
+    property var nombreDe: null
+    function nombre(m) { return raiz.nombreDe ? raiz.nombreDe(m) : m.nombre }
     signal cerrarPedido(string ruta)
     signal elegido(string ruta)
 
@@ -82,7 +85,7 @@ Item {
                         opacity: pestana.conCerrar ? 1 : 0
                         enabled: pestana.conCerrar
                         focusPolicy: Qt.NoFocus
-                        text: "Cerrar " + pestana.model.nombre
+                        text: "Cerrar " + raiz.nombre(pestana.model)
                         Accessible.name: text
                         onClicked: raiz.cerrarPedido(pestana.model.ruta)
                         QQC2.ToolTip.text: "Cerrar (" + raiz.atajoCerrar + "; clic central en la pestaña)"

@@ -9,7 +9,9 @@
 // columnas: [{ancho (unidades de rejilla; 0 = toma el resto), minimo, alinear ("izquierda"|"centro"|"derecha"),
 //            mono, semantica, conIcono, visible, estrecho, secundaria (texto tenue),
 //            lineas (4.1: el texto se parte en hasta tantas líneas y la fila crece lo justo; 1 por omisión),
-//            cortarTras (4.1: caracteres tras los que se prefiere partir, p. ej. "/" en una ruta)}]
+//            cortarTras (4.1: caracteres tras los que se prefiere partir, p. ej. "/" en una ruta),
+//            etiqueta (4.2: el texto como píldora EtiquetaNivel del color de su `nivel`),
+//            elidir (4.2: "medio" corta por el medio, para rutas; por omisión, por la derecha)}]
 // `nivelesBorde` (4.1): los `nivel` que se pintan además en el borde izquierdo de la fila (p. ej. ["negativo", "neutro"]
 // para los hallazgos de Huella: alta y media; los demás sin color), con su color de estado, también si la fila está
 // elegida; vacío (por omisión), sin borde.
@@ -472,10 +474,20 @@ QQC2.Control {
                         implicitHeight: implicitWidth
                         opacity: celda.habilitado ? 1 : 0.5
                     }
+                    EtiquetaNivel {          // 4.2: la columna `etiqueta`, una píldora del color de su nivel
+                        visible: celda.col.etiqueta === true && String(celda.model.display || "") !== ""
+                        text: visible ? raiz.textoCelda(celda.column, celda.model.display) : ""
+                        nivel: celda.nivel
+                        opacity: celda.habilitado ? 1 : 0.5
+                        Layout.maximumWidth: celda.width - Kirigami.Units.largeSpacing
+                        elide: Text.ElideRight
+                    }
+                    Item { visible: celda.col.etiqueta === true; Layout.fillWidth: true }
                     QQC2.Label {
+                        visible: celda.col.etiqueta !== true
                         Layout.fillWidth: true
                         text: raiz.textoCelda(celda.column, celda.model.display)
-                        elide: Text.ElideRight
+                        elide: celda.col.elidir === "medio" ? Text.ElideMiddle : Text.ElideRight
                         wrapMode: (celda.col.lineas || 1) > 1 ? Text.Wrap : Text.NoWrap
                         maximumLineCount: celda.col.lineas || 1
                         horizontalAlignment: raiz.alineacion(celda.column)

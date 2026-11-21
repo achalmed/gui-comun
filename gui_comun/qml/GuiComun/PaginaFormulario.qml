@@ -153,6 +153,7 @@ ColumnLayout {
             QQC2.SpinBox {
                 id: giro
                 editable: true
+                Layout.minimumWidth: Kirigami.Units.gridUnit * 7          // 4.2: no se aprieta hasta cortar la cifra
                 from: c.minimo !== undefined && c.minimo !== null ? Math.round(c.minimo) : -1000000
                 to: c.maximo !== undefined && c.maximo !== null ? Math.round(c.maximo) : 1000000
                 value: Math.round(Number(raiz.valor(c.clave)) || 0)

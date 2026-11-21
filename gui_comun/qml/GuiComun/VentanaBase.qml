@@ -43,7 +43,31 @@ Kirigami.AbstractApplicationWindow {
 
     width: 1200
     height: 760
-    minimumWidth: 640
+    minimumWidth: Kirigami.Units.gridUnit * 20          // 4.2: cabe en un celular o media pantalla (antes 640)
+    // 4.2: en una ventana angosta, la barra de menú se pliega en un solo «☰ Menú» con todos los menús dentro
+    property bool menuPlegado: width < Kirigami.Units.gridUnit * 34
+    onMenuPlegadoChanged: Qt.callLater(ventana.ponerMenuPlegado)
+    function ponerMenuPlegado() {
+        if (ventana.menuPlegado && barraMenu.menuAt(0) !== menuTodo) barraMenu.insertMenu(0, menuTodo)
+        else if (!ventana.menuPlegado && barraMenu.menuAt(0) === menuTodo) barraMenu.removeMenu(menuTodo)
+    }
+    Component.onCompleted: Qt.callLater(ventana.ponerMenuPlegado)
+    QQC2.Menu {
+        id: menuTodo
+        title: "☰ Menú"
+    }
+    Instantiator {          // los menús dentro de «☰ Menú» (solo mientras está plegada: así ningún atajo se registra dos veces)
+        active: ventana.menuPlegado
+        model: ventana.acciones ? ventana.acciones.menus : []
+        delegate: MenuAcciones {
+            required property var modelData
+            acciones: ventana.acciones
+            titulo: modelData.titulo
+            elementos: modelData.elementos
+        }
+        onObjectAdded: (indice, objeto) => menuTodo.insertMenu(indice, objeto)
+        onObjectRemoved: (indice, objeto) => menuTodo.removeMenu(objeto)
+    }
     minimumHeight: 420
     Kirigami.Theme.colorSet: Kirigami.Theme.Window
 
@@ -109,6 +133,7 @@ Kirigami.AbstractApplicationWindow {
         visible: ventana.conMenu
         height: visible ? implicitHeight : 0
         Instantiator {
+            active: !ventana.menuPlegado
             model: ventana.acciones ? ventana.acciones.menus : []
             delegate: MenuAcciones {
                 required property var modelData

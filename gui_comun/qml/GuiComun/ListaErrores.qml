@@ -120,6 +120,9 @@ ColumnLayout {
             width: parent.width - Kirigami.Units.gridUnit * 4
             visible: lista.count === 0
             icon.name: raiz.iconoVacio
+            // 4.2: en un panel bajo, un icono mediano: el grande tapaba el texto
+            icon.width: parent && parent.height < Kirigami.Units.gridUnit * 16 ? Kirigami.Units.iconSizes.large : Kirigami.Units.iconSizes.huge
+            icon.height: icon.width
             text: raiz.mensajeVacio
             explanation: raiz.explicacionVacia
         }

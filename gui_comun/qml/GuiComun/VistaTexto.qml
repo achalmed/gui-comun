@@ -92,5 +92,8 @@ QQC2.Control {
         visible: raiz.texto === "" && raiz.mensajeVacio !== ""
         text: raiz.mensajeVacio
         icon.name: raiz.iconoVacio
+        // 4.2: en un panel bajo, un icono mediano: el grande tapaba el texto
+        icon.width: parent && parent.height < Kirigami.Units.gridUnit * 16 ? Kirigami.Units.iconSizes.large : Kirigami.Units.iconSizes.huge
+        icon.height: icon.width
     }
 }

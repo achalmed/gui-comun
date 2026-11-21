@@ -20,6 +20,7 @@ QQC2.Control {
 
     property var visor: null                         // gui_comun.visor_pdf.VisorPdf
     readonly property var v: visor
+    property string iconoVacio: "application-pdf"          // 4.2: el icono del vacío (un panel bajo prefiere uno simbólico)
     property string mensajeVacio: "Ningún PDF abierto"
     property string explicacionVacia: ""
     property alias barraExtra: extra.data            // botones propios del studio: barraExtra: [ QQC2.ToolButton { … } ]
@@ -315,14 +316,18 @@ QQC2.Control {
                     height: model.alto * raiz.v.zoom
                     Component.onCompleted: raiz.v.pedir(model.pagina)
 
-                    Rectangle {
+                    // 4.2: la hoja como papel sobre la mesa: con su sombra, sin la raya gris alrededor
+                    Kirigami.ShadowedRectangle {
                         id: papel
                         width: hoja.model.ancho * raiz.v.zoom
                         height: hoja.height
                         x: Math.max(raiz.separacion, (paginas.width - width) / 2)
                         color: Kirigami.Theme.backgroundColor
-                        border.color: Kirigami.Theme.disabledTextColor
-                        border.width: 1
+                        radius: 1
+                        border.width: 0
+                        shadow.size: Kirigami.Units.gridUnit * 0.6
+                        shadow.yOffset: 2
+                        shadow.color: Qt.alpha(Qt.darker(Kirigami.Theme.backgroundColor, 3), 0.35)
                         Image {
                             anchors.fill: parent
                             anchors.margins: 1
@@ -438,7 +443,10 @@ QQC2.Control {
         anchors.centerIn: parent
         width: parent.width - Kirigami.Units.gridUnit * 4
         visible: raiz.v.total === 0
-        icon.name: "application-pdf"
+        icon.name: raiz.iconoVacio
+        // 4.2: en un panel bajo, un icono mediano: el grande tapaba el texto
+        icon.width: parent && parent.height < Kirigami.Units.gridUnit * 16 ? Kirigami.Units.iconSizes.large : Kirigami.Units.iconSizes.huge
+        icon.height: icon.width
         text: raiz.mensajeVacio
         explanation: raiz.explicacionVacia
     }

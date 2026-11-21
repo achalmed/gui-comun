@@ -11,6 +11,18 @@ La versión vive en `gui_comun/__init__.py` y en `pyproject.toml`. Las secciones
 ## [Unreleased]
 
 ### Changed
+- **Lo que pidieron los studios al aplicar el acabado** (2026-11-21):
+  - `VentanaBase`: cabe en un celular o media pantalla (`minimumWidth` de 640 a 20 unidades) y, por debajo de 34
+    unidades (`menuPlegado`), la barra de menú se pliega en un solo «☰ Menú» con todos los menús dentro.
+  - `TablaDatos`: columnas con `etiqueta` (el texto como píldora `EtiquetaNivel` de su nivel) y `elidir: "medio"`
+    (rutas).
+  - `VistaPdf`: cada hoja, papel con sombra sobre la mesa (sin la raya gris); `iconoVacio`.
+  - Los vacíos de `ListaErrores`, `ListaDiagnosticos`, `VistaPdf`, `TerminalSalida`, `VistaTexto` y
+    `VistaComparacion`, con un icono mediano en un panel bajo (el grande tapaba el texto).
+  - `PestanasArchivos.nombreDe(modelo)`: el nombre que muestra cada pestaña, a gusto del studio.
+  - `PaletaCategorica.porNombre(nombre)`: un color estable por nombre, el mismo en claro y en oscuro.
+  - `BotonAccion` con `plano: false`: aire a los lados (el texto tocaba el borde).
+  - `PaginaFormulario`: el `SpinBox` con un ancho mínimo.
 - **El acabado de la familia** (pedido del autor, 2026-11-19: «que sea así de elegante» como la barra de la selección de
   Ñawinchay, en los trece programas; auditoría de cada uno en claro y oscuro). Sin quitar ni renombrar nada:
   - **Lo elegido, teñido y no en bloque lleno**: `PanelNavegacion`, `TablaDatos`, `ArbolDatos`, `PaletaOrdenes`,

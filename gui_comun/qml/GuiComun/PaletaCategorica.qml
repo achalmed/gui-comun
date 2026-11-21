@@ -27,6 +27,14 @@ QtObject {
     function delTema(c, desde, hasta, h) {
         return c.hslSaturation > 0.3 && c.hslHue >= desde && c.hslHue <= hasta ? c : tono(h)
     }
+    // 4.2: el color de una categoría por su NOMBRE, estable: el mismo tono siempre (no depende del acento ni del esquema;
+    // solo la luminosidad se ajusta a claro u oscuro), para que «Medios» no cambie de color al cambiar de tema
+    function porNombre(nombre) {
+        let h = 0
+        const t = String(nombre || "").toLowerCase()
+        for (let i = 0; i < t.length; ++i) h = (h * 31 + t.charCodeAt(i)) % 360
+        return Qt.hsla(h / 360, 0.55, oscuro ? 0.62 : 0.45, 1)
+    }
     // un rol con significado (gui_comun.paleta.rol)
     function rol(nombre) {
         switch (nombre) {
