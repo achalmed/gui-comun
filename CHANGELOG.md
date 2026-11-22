@@ -10,6 +10,25 @@ La versión vive en `gui_comun/__init__.py` y en `pyproject.toml`. Las secciones
 
 ## [Unreleased]
 
+### Added
+- **Ventanas translúcidas y desenfocadas como Dolphin con Kvantum** (4.3, pedido del autor, 2026-11-22). Kvantum es un
+  `QStyle` de Qt Widgets: vuelve translúcidas a Dolphin y Kate pero no toca una `QQuickWindow`, cuyo fondo pintaba QML
+  opaco. Ahora `gui_comun.translucidez` lee la misma configuración que Kvantum (`widgetStyle` de `kdeglobals`, el tema
+  de `kvantum.kvconfig` con la variante oscura de `kvantum-dark`, `translucent_windows`, `blurring`,
+  `reduce_window_opacity` y `opaque=`) y, si la pide para la aplicación, `Aplicacion` pide un búfer con canal alfa antes
+  de crear la ventana y, con la ventana cargada, el desenfoque a KWin con `KWindowEffects::enableBlurBehind` por ctypes
+  (`libKF6WindowSystem.so.6`; no hay bindings de KF6 para Python), solo si `isEffectAvailable(BlurBehind)`; si el
+  efecto no está o la llamada falla, la ventana queda opaca (nunca texto sobre el escritorio sin desenfocar).
+  `VentanaBase` pinta su fondo con el color de ventana a la opacidad del tema (`1 - reduce_window_opacity/100`: 0,75
+  con LliphiDark) y la barra de menú, las barras de herramientas de `header`/`footer`, `PanelNavegacion` y
+  `PanelDetalles` dejan ver esa única capa (`FondoVentana`, nuevo); las zonas de lectura (`colorSet: View`: tablas,
+  árbol, editor, visor PDF, consola) siguen opacas. Sin Kvantum, sin pantalla, con la aplicación en `opaque=` o con
+  `GUI_COMUN_TRANSLUCIDA=0`, todo como antes. `aplicacionStudio.translucidez` (`activa`, `opacidad`, `posible`,
+  `motivo`, `preferida`, `preferir(bool)`).
+- Acción estándar `ventana.translucida` (Ver ▸ «Ventana translúcida», Ctrl+K): apaga o enciende la translucidez al
+  momento; el ajuste es de toda la familia (`ventana/translucida` en `~/.config/<organización>/gui-comun.conf`).
+  `Acciones.estandar` registra una acción más (once en lugar de diez): quien cuente las estándar, que sume una.
+
 ## [4.2.0] - 2026-11-21
 
 ### Changed

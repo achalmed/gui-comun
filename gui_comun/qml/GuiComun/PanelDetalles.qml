@@ -34,7 +34,7 @@ QQC2.Control {
         if (p && p.visible === false) { const i = primeraVisible(); if (i >= 0) pestanaActual = i }
     }
 
-    background: Rectangle { color: Kirigami.Theme.backgroundColor }
+    background: FondoVentana {}          // 4.3: translúcido con la ventana (un panel del marco, como en Dolphin)
 
     contentItem: ColumnLayout {
         spacing: 0

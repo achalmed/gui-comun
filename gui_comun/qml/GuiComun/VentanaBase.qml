@@ -8,11 +8,17 @@
 // commits…), y `header`/`footer` quedan libres. Ninguna navegación lateral, tabla, panel de detalles ni consola
 // impuestos: `VentanaStudio` es una distribución más, construida sobre esta.
 //
+// 4.3: translúcida y desenfocada como Dolphin cuando Kvantum lo pide (`aplicacionStudio.translucidez`, véase
+// `gui_comun/translucidez.py`): el fondo de la ventana es su color a la opacidad del tema; la barra de menú y las
+// barras de herramientas de `header`/`footer` dejan ver ese fondo (`FondoVentana`), igual que los paneles laterales de
+// la base; las zonas de lectura (`colorSet: View`) siguen opacas. La acción `ventana.translucida` la apaga.
+//
 // Ningún nombre ni logotipo dentro (el título lo pone el gestor de ventanas); sin colores, fuentes, radios ni sombras
 // propios: Kirigami.Theme y Kirigami.Units.
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls as QQC2
+import QtQuick.Templates as T
 import QtCore
 import org.kde.kirigami as Kirigami
 
@@ -36,6 +42,10 @@ Kirigami.AbstractApplicationWindow {
     readonly property alias paleta: paleta
     readonly property alias confirmacion: confirmacion
     readonly property alias dialogoError: dialogoError
+    // 4.3: la translucidez de la ventana (null fuera de una `Aplicacion`: opaca)
+    readonly property var translucidez: typeof aplicacionStudio !== "undefined" && aplicacionStudio
+                                        ? (aplicacionStudio.translucidez ?? null) : null
+    readonly property bool translucida: translucidez ? translucidez.activa : false
 
     // el contenido: lo que el studio declara dentro, bajo los mensajes y a todo lo ancho (con `anchors.fill: parent`)
     default property alias contenido: zonaContenido.data
@@ -51,7 +61,7 @@ Kirigami.AbstractApplicationWindow {
         if (ventana.menuPlegado && barraMenu.menuAt(0) !== menuTodo) barraMenu.insertMenu(0, menuTodo)
         else if (!ventana.menuPlegado && barraMenu.menuAt(0) === menuTodo) barraMenu.removeMenu(menuTodo)
     }
-    Component.onCompleted: Qt.callLater(ventana.ponerMenuPlegado)
+    Component.onCompleted: { Qt.callLater(ventana.ponerMenuPlegado); Qt.callLater(ventana.ponerTranslucidez) }
     QQC2.Menu {
         id: menuTodo
         title: "☰ Menú"
@@ -70,6 +80,31 @@ Kirigami.AbstractApplicationWindow {
     }
     minimumHeight: 420
     Kirigami.Theme.colorSet: Kirigami.Theme.Window
+    // 4.3: con la ventana translúcida, su color a la opacidad de Kvantum (el compositor desenfoca lo de detrás)
+    color: translucida ? Qt.alpha(Kirigami.Theme.backgroundColor, translucidez.opacidad) : Kirigami.Theme.backgroundColor
+
+    // 4.3: las barras de herramientas de `header` y `footer` con el fondo del estilo (el de org.kde.desktop) pasan a
+    // `FondoVentana`, con su raya y su alto; un fondo que el studio puso a su barra no se toca
+    Component { id: componenteFondoBarra; FondoVentana {} }
+    function fondoTranslucidoEn(barra) {
+        if (!barra || !(barra instanceof T.ToolBar) || !barra.background || barra.background.control !== barra) return
+        const viejo = barra.background
+        barra.background = componenteFondoBarra.createObject(barra, {
+            separador: barra.position === T.ToolBar.Footer ? "arriba" : "abajo",
+            implicitHeight: viejo.implicitHeight
+        })
+        viejo.destroy()
+    }
+    function ponerTranslucidez() {
+        if (ventana.translucida) { fondoTranslucidoEn(ventana.header); fondoTranslucidoEn(ventana.footer) }
+        if (acciones && acciones.existe("ventana.translucida")) {
+            acciones.habilitar("ventana.translucida", translucidez ? translucidez.posible : false)
+            acciones.marcar("ventana.translucida", ventana.translucida)
+        }
+    }
+    onTranslucidaChanged: ponerTranslucidez()
+    onHeaderChanged: if (translucida) fondoTranslucidoEn(header)
+    onFooterChanged: if (translucida) fondoTranslucidoEn(footer)
 
     // ------------------------------------------------------------------ API para el QML del studio
     // confirmar({titulo, consecuencias, operacion, operacionTexto, textoAceptar, icono, destructiva}, alAceptar)
@@ -96,7 +131,7 @@ Kirigami.AbstractApplicationWindow {
             acciones.marcar("ventana.pantalla_completa", visibility === Window.FullScreen)
     }
     onVisibilityChanged: sincronizarPantallaCompleta()
-    onAccionesChanged: sincronizarPantallaCompleta()
+    onAccionesChanged: { sincronizarPantallaCompleta(); ponerTranslucidez() }
 
     Connections {
         target: ventana.acciones ?? null
@@ -104,6 +139,10 @@ Kirigami.AbstractApplicationWindow {
             switch (nombre) {
             case "ventana.pantalla_completa": ventana.visibility = marcada ? Window.FullScreen : Window.Windowed; break
             case "ventana.paleta": paleta.abrir(""); break
+            case "ventana.translucida":
+                if (ventana.translucidez) ventana.translucidez.preferir(marcada)
+                ventana.ponerTranslucidez()
+                break
             case "app.ajustes": if (ventana.dialogoAjustes) ventana.dialogoAjustes.open(); break
             case "app.acerca": acerca.open(); break
             case "app.salir": Qt.quit(); break
@@ -132,6 +171,7 @@ Kirigami.AbstractApplicationWindow {
         id: barraMenu
         visible: ventana.conMenu
         height: visible ? implicitHeight : 0
+        background: FondoVentana {}                // 4.3: deja ver el fondo translúcido de la ventana
         Instantiator {
             active: !ventana.menuPlegado
             model: ventana.acciones ? ventana.acciones.menus : []

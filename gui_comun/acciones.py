@@ -325,6 +325,11 @@ class Acciones(QAbstractListModel):
                            marcada=False, descripcion="Muestra u oculta la salida y el registro")
         self.registrar("ventana.pantalla_completa", "Pantalla &completa", "view-fullscreen", StandardKey.FullScreen,
                        "Ver", marcable=True)
+        # 4.3: la ventana translúcida y desenfocada de Kvantum (un ajuste de toda la familia); `VentanaBase` la marca y
+        # la deshabilita, con el motivo, cuando el escritorio no la permite
+        self.registrar("ventana.translucida", "Ventana &translúcida", "blurfx", None, "Ver",
+                       marcable=True, marcada=True,
+                       descripcion="Fondo translúcido y desenfocado en el marco, las barras y los paneles, como Dolphin con Kvantum")
         self.registrar("ventana.paleta", "&Paleta de órdenes", "edit-find", "Ctrl+Alt+I", "Herramientas",
                        descripcion="Busca y ejecuta cualquier orden por su nombre (también Ctrl+K)")
         self.registrar("app.ajustes", f"Configurar &{nombre_app}…", "configure", StandardKey.Preferences, "Ajustes")

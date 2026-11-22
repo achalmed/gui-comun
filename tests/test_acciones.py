@@ -28,7 +28,7 @@ def test_registro_menus_y_barra(app):
     assert a.menus[0]["elementos"][1] == {"tipo": "separador"}
     assert a.menus[1]["elementos"][1]["tipo"] == "menu" and a.menus[1]["elementos"][1]["elementos"][0]["nombre"] == "repo.sinc"
     assert a.barra == ["repo.analizar", "|", "repo.sinc"]
-    assert a.rowCount() == 10 and a.data(a.index(8, 0), a.R_NOMBRE) == "repo.analizar"
+    assert a.rowCount() == 11 and a.data(a.index(9, 0), a.R_NOMBRE) == "repo.analizar"     # 4.3: + ventana.translucida
 
     a.ejecutar("repo.analizar")
     assert hechos == ["analizar"]

@@ -1,7 +1,7 @@
 ---
 tipo: estado
 estado: activo
-actualizado: 2026-11-21
+actualizado: 2026-11-22
 ---
 # estado.md — gui-comun
 
@@ -9,6 +9,7 @@ actualizado: 2026-11-21
 
 | fecha | qué | dónde se ve |
 |---|---|---|
+| 2026-11-22 | **Ventanas translúcidas y desenfocadas como Dolphin (sin versión: `[Unreleased]`, 4.3)**, pedido del autor: `gui_comun.translucidez` lee la configuración de Kvantum (con Lliphi: `LliphiDark.kvconfig`, opacidad 0,75), pide el canal alfa y el desenfoque a KWin por ctypes (`KWindowEffects`), solo si el efecto está; `VentanaBase` y `FondoVentana` translúcidos en el marco, el menú, las barras y los paneles laterales; las zonas de lectura opacas; acción `ventana.translucida` para apagarla (ajuste de la familia). Comprobado en la sesión real junto a Dolphin con Biblioteca Studio y la galería (el fondo se ve desenfocado a través del marco; la hoja del PDF, opaca). 154 pruebas (31 nuevas, sin pantalla). Con esta base pasan Filesystem (56), LaTeX (151), Quarto (`tests/studio`, 55), Biblioteca (`tests/studio`, 103), Raphi (4) y Git (74 de 75; `test_confirmar_con_verificacion_y_amend` falló una vez y pasa sola); Ñawinchay 92 de 93 (`test_leyendo_ahora_sin_lo_de_paso_y_lo_retirado_vuelve_al_leerlo` falla igual con `main`); Biblioteca y Ñawinchay arrancan (`--smoke`). Rama `wip/2026-11-22-translucidez` (worktree `~/.cache/translucidez/gui-comun`), sin fusionar ni empujar | `CHANGELOG.md` [Unreleased]; `docs/componentes.md` `FondoVentana`; `tests/test_translucidez.py` |
 | 2026-11-21 | **4.2.0 publicada**: el acabado de la familia y lo que pidieron los studios al aplicarlo, juntos en una versión (antes `[Unreleased]`); Lliphi Studio y Dotfiles Studio, que instalan el paquete, lo reciben con la etiqueta `v4.2.0` | `CHANGELOG.md` [4.2.0] |
 | 2026-11-21 | **Lo que pidieron los studios al aplicar el acabado** (sin versión: `[Unreleased]`, 4.2): `VentanaBase` en celular (mínimo 20 unidades y el menú plegado en «☰ Menú» por debajo de 34), `TablaDatos` con columnas `etiqueta` y `elidir: "medio"`, `VistaPdf` con la hoja como papel con sombra e `iconoVacio`, vacíos con icono mediano en paneles bajos, `PestanasArchivos.nombreDe`, `PaletaCategorica.porNombre`, `BotonAccion` sin `plano` con aire, `SpinBox` con ancho mínimo. 122 pruebas; pasan Git (75), Quarto (55), Biblioteca (98) y Ñawinchay (90; `test_raton` falla a veces bajo carga y pasa sola); Filesystem y LaTeX con su fallo de siempre (papelera, Okular) | `CHANGELOG.md` [Unreleased] |
 | 2026-11-19 | **El acabado de la familia (sin versión: `[Unreleased]`, 4.2)**, pedido del autor tras la barra de la selección de Ñawinchay («que sea así de elegante»): auditoría visual de los trece programas en Lliphi claro y oscuro (informes en las notas de la sesión) y, en la base, lo elegido teñido con su marca en navegación, tablas, árbol, paleta y listas; pestañas como `SelectorSegmentado`; la X neutra dibujada (`BotonCierre`) y sin la × roja en los diálogos con botones; marcables teñidos; paleta flotante; barra de estado en letra pequeña; la consola legible en oscuro; `GraficoXY`, `ListaDiagnosticos`, `VistaTexto`, `PasosEscritura` pulidos; piezas nuevas `BarraFlotante`, `GrupoOpciones`, `OpcionColor`, `SelectorSegmentado`, `BotonCierre`, `BotonPrincipal` (página «Opciones y barra flotante» de la galería). 118 pruebas; pasan Git (74), Ñawinchay (81), Quarto (55), Raphi (4), Biblioteca (97); Filesystem (50) y LaTeX (151) con un fallo cada uno que ya fallaba con la base anterior (la papelera y el salto a Okular, del entorno) | `CHANGELOG.md` [Unreleased]; `docs/componentes.md` «Piezas del acabado»; `docs/figuras/galeria-4.2-acabado-antes-despues.png` |
@@ -47,6 +48,8 @@ nada en curso
 
 ## Por hacer
 
+- 2026-11-22 · dueño: **el autor** · decidir el gris de la ventana: el esquema de color de Lliphi Oscuro (Window `#363636`) y `LliphiDark.kvconfig` (`window.color=#1b1c1e`) no coinciden, y Dolphin usa el de Kvantum; las ventanas de la familia siguen al esquema (regla de `Kirigami.Theme`), así que se ven más claras que Dolphin aun translúcidas. Se arregla en Lliphi, no aquí.
+- 2026-11-22 · dueño: director (studios) · paneles del marco propios de cada studio con `background: Rectangle { color: Kirigami.Theme.backgroundColor }` en `colorSet: Window` → `FondoVentana {}` (p. ej. `PanelFiltros` de Biblioteca, `BarraLateral` de LaTeX); las barras de grupo fijas de listas (el catálogo de Biblioteca) se quedan opacas.
 - 2026-11-18 · dueño: director (studios) · adoptar lo de 4.1 donde aún hay copia (Dotfiles y Lliphi ya, véase
   §Hecho): Simuladores (y quien lo tenga en `capturar.py`: Huella, Raphi, Muyu), su `_detener_servicios_del_bus` →
   `gui_comun.galeria.vivo`; Git, «Informe guardado» con `notificarConAcciones`; Filesystem, `pasos.informe(pasos=…)`;

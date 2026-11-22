@@ -12,6 +12,10 @@ de Qt y de Kirigami (las de Kirigami Addons las lee KI18n del entorno `LANGUAGE`
 ruta del módulo `GuiComun` (`gui_comun/qml`); crea el registro de errores (`errores`) y la integración con el
 escritorio (`escritorio`) y los expone. Si un módulo QML falta (Kirigami no instalado), lo dice con claridad.
 
+4.3: si el escritorio pide ventanas translúcidas (Kvantum con `translucent_windows` y `blurring`, como Dolphin), pide
+el búfer con canal alfa antes de crear la aplicación y, con la ventana cargada, el desenfoque a KWin; QML lo lee en
+`aplicacionStudio.translucidez` (véase `gui_comun.translucidez`).
+
 **Por qué `QApplication` y no `QGuiApplication` (3.0).** El tema de plataforma de KDE (`KDEPlasmaPlatformTheme6`)
 solo ofrece su diálogo de archivos nativo (el de Dolphin: lugares, vista previa, filtros, la barra de rutas) cuando
 la aplicación es una `QApplication`: es un widget (`KFileWidget`). Con una `QGuiApplication`, `FileDialog` y
@@ -33,6 +37,7 @@ from pathlib import Path
 from gui_comun import __version__ as _VERSION_GUI_COMUN
 from gui_comun import errores as _errores
 from gui_comun import i18n
+from gui_comun import translucidez as _translucidez
 from gui_comun.escritorio import Escritorio
 from gui_comun.notificaciones import Notificador
 from gui_comun.qt import (BINDING, Property, QApplication, QCoreApplication, QEvent, QGuiApplication, QIcon, QObject,
@@ -95,9 +100,15 @@ class Aplicacion:
         if version:
             QGuiApplication.setApplicationVersion(version)
         QGuiApplication.setDesktopFileName(app_id)
+        # 4.3: ¿ventana translúcida? (Python puro: Kvantum, el ajuste y el entorno); el canal alfa, antes de la ventana
+        nombres = (app_id, nombre_ajustes or app_id, nombre, Path((argv if argv is not None else sys.argv or [""])[0]).name)
+        preferida = _translucidez.leer_preferencia(organizacion)
+        self.decision_translucidez = _translucidez.decidir(nombres, preferida=preferida)
         # QApplication (no QGuiApplication): el diálogo de archivos de KDE y el QStyle de org.kde.desktop la necesitan
         # (ver el docstring del módulo); sin QtWidgets en el binding, la de siempre
         clase = QApplication if QApplication is not None else QGuiApplication
+        if self.decision_translucidez.posible:
+            _translucidez.preparar_superficie(app_creada=clase.instance() is not None)
         if clase.instance() is None:
             # 3.1: QtWebEngine de QML (la vista previa de Quarto) exige el contexto OpenGL compartido antes de crear la
             # aplicación; no cuesta nada a quien no lo usa (pedido por Quarto Studio, registro de la reingeniería)
@@ -122,6 +133,8 @@ class Aplicacion:
         self.exponer("escritorio", self.escritorio)
         self.notificador = Notificador(app_id, nombre)           # 4.1: los avisos van a las notificaciones de KDE
         self.exponer("notificador", self.notificador)
+        # 4.3: aquí (ya con plataforma) se pregunta a KWin si ofrece el desenfoque, solo si la decisión lo permite
+        self.translucidez = _translucidez.Translucidez(self.decision_translucidez, organizacion, preferida=preferida)
         self.datos = DatosStudio(self)
         self.exponer("aplicacionStudio", self.datos)
 
@@ -151,6 +164,7 @@ class Aplicacion:
             print(self.mensaje_de_fallo(), file=sys.stderr)
             return False
         self._raiz = raices[0]
+        self.translucidez.aplicar(self.ventana())      # 4.3: el desenfoque de KWin; si falla, la ventana queda opaca
         return True
 
     def ejecutar(self, ruta_qml: str | Path, humo: bool = False) -> int:
@@ -248,6 +262,12 @@ class DatosStudio(QObject):
     def escritorio(self):
         """3.0: la integración con el escritorio (`gui_comun.escritorio.Escritorio`)."""
         return self._a.escritorio
+
+    @Property(QObject, constant=True)
+    def translucidez(self):
+        """4.3: la ventana translúcida y desenfocada (`gui_comun.translucidez.Translucidez`): `activa`, `opacidad`,
+        `posible`, `motivo`, `preferida` y `preferir(bool)`; `VentanaBase` y `FondoVentana` la leen."""
+        return self._a.translucidez
 
     @Slot(str, "QVariantMap", result=str)
     def markdownHtml(self, texto: str, tema: dict) -> str:

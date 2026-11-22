@@ -30,7 +30,7 @@ de menú generada desde `acciones.menus` (la única que registra atajos), la pal
 `ventana.paleta`), `Mensajes`, un `DialogoError` sobre `errores` (se abre solo cuando llega un error), un
 `DialogoConfirmacion` (se abre cuando una acción emite `confirmacionPedida`), «Acerca de», el `dialogoAjustes` del
 studio, pantalla completa y la geometría en `QSettings` (`claveAjustes`, por omisión `ventana`). Atiende
-`ventana.pantalla_completa`, `ventana.paleta`, `app.ajustes`, `app.acerca`, `app.salir`. Con las tareas que declaran su
+`ventana.pantalla_completa`, `ventana.paleta`, `ventana.translucida` (4.3), `app.ajustes`, `app.acerca`, `app.salir`. Con las tareas que declaran su
 operación, notifica el éxito (escritura, instalación, publicación, eliminación) y, aparte, la verificación correcta (la
 fallida llega como error presentable).
 
@@ -45,6 +45,14 @@ fallida llega como error presentable).
 | `mensajes` | `Mensajes` | dónde van los mensajes (el de la base; `VentanaStudio` pone los suyos sobre el centro) |
 | `paleta` · `confirmacion` · `dialogoError` | componentes | la paleta, el diálogo de confirmación, el de errores |
 | `contenido` (por omisión) · `zonaContenido` | `Item` | lo que el studio declara dentro · su contenedor |
+| `translucidez` · `translucida` (4.3) | objeto · `bool` | `aplicacionStudio.translucidez` y si la ventana es translúcida ahora |
+
+4.3, **translúcida y desenfocada como Dolphin** cuando Kvantum lo pide (`gui_comun.translucidez`): el color de la
+ventana a la opacidad del tema (`1 - reduce_window_opacity/100`), con KWin desenfocando lo de detrás; la barra de menú y
+las `QQC2.ToolBar` de `header`/`footer` con el fondo del estilo pasan a `FondoVentana` (se ve la única capa
+translúcida); un fondo propio de una barra no se toca. Las zonas de lectura (`colorSet: View` con su fondo: tablas,
+árbol, editor, visor PDF, consola) siguen opacas. La acción `ventana.translucida` (Ver, Ctrl+K) la apaga para toda la
+familia y al momento; deshabilitada si el escritorio no la permite.
 
 Funciones: `confirmar(peticion, alAceptar)` (una confirmación ad hoc: `{titulo, consecuencias, operacion,
 operacionTexto, textoAceptar, icono, destructiva}`), `error(descripcion, causa, recurso, accion, detalle)`,
@@ -373,6 +381,19 @@ Reglas del acabado: los colores salen de `Kirigami.Theme` mezclados con `Kirigam
 `linearInterpolation`); el color de una opción es un dato del modelo; lo elegido es un tinte de `highlightColor` al
 0,22–0,30 con su marca o su borde; el foco por teclado se ve; ningún icono de cierre rojo.
 
+### FondoVentana (4.3)
+
+El fondo de una superficie del marco que está directamente sobre la ventana (un panel lateral, una barra): con la
+ventana translúcida no pinta nada (dos capas con alfa se suman: el panel quedaría más opaco que el marco), y con la
+ventana opaca, `Kirigami.Theme.backgroundColor` de su conjunto de colores, como antes. Lo usan `PanelNavegacion`,
+`PanelDetalles`, la barra de menú y las barras de herramientas de `VentanaBase`; un studio lo pone en sus paneles del
+marco (`background: FondoVentana {}`), nunca en una zona de lectura.
+
+| propiedad | tipo | qué es |
+|---|---|---|
+| `separador` | `string` | `"arriba"`, `"abajo"` o `""`: la raya de una barra de herramientas |
+| `translucida` | `bool` (solo lectura) | si la ventana es translúcida ahora |
+
 ### MenuAcciones · BotonAccion
 4.2: `BotonAccion` marcable se ve con un tinte del acento y su borde (con su propio icono y texto); `plano: false`, con borde fuera de una barra.
 
@@ -385,6 +406,7 @@ Reglas del acabado: los colores salen de `Kirigami.Theme` mezclados con `Kirigam
 | módulo | API |
 |---|---|
 | `nucleo.Aplicacion(app_id, nombre, version=, organizacion=, idioma="es", nombre_ajustes=)` | 3.0: una `QApplication` (el diálogo de archivos de KDE). `.exponer(nombre, objeto)` (también `studio.<nombre>`), `.cargar(qml)`, `.ejecutar(qml, humo=False)`, `.ventana()`, `.capturar(png, espera_ms)`, `.cerrar()`, `.traducciones`, `.mensaje_de_fallo()`; 3.0: `.errores`, `.escritorio` (expuestos con esos nombres), `.error(descripcion, causa, recurso, accion, detalle, nivel)`; `aplicacionStudio` en QML (appId, nombre, version, binding, versionGuiComun, versionQt; 3.0: errores, escritorio) |
+| `translucidez` (4.3) | `decidir(nombres_app, preferida=, entorno=)` → `Decision(posible, activa, opacidad, motivo, tema)` (Python puro: `widgetStyle` de la cascada de `kdeglobals` o `QT_STYLE_OVERRIDE`, el tema de `kvantum.kvconfig` con `[Applications]` y la variante `…Dark` de `kvantum-dark`, `translucent_windows`, `blurring`, `reduce_window_opacity`, `opaque=`; opaca sin pantalla o con `GUI_COMUN_TRANSLUCIDA=0`); `preparar_superficie(app_creada)` (canal alfa); `DesenfoqueKWin(cargar=)`: `disponible()` (`KWindowEffects::isEffectAvailable(BlurBehind)`), `aplicar(ventana, activo)` (`enableBlurBehind` por ctypes, región vacía = toda la ventana; sin efecto no llama a nada); `Translucidez(decision, organizacion, desenfoque=, preferida=)`, expuesto como `aplicacionStudio.translucidez`: `activa`, `posible`, `opacidad`, `motivo`, `preferida`, `preferir(bool)`; `leer_preferencia`/`guardar_preferencia` (`ventana/translucida` en `<organización>/gui-comun.conf`); sueltas `leer_ini`, `estilo_de_programas`, `tema_kvantum`, `ruta_tema`, `leer_tema` |
 | `notificaciones.Notificador(app_id, nombre, icono=)` (4.1) | expuesto como `notificador`: `disponible`, `notificar(texto, tipo)` → `bool` (por `notify-send`; información y éxito transitorios, cada uno reemplaza al anterior); `notificarConAcciones(texto, tipo, [{clave, texto}])` → id (0 sin escritorio), señales `accionElegida(id, clave)` y `notificacionCerrada(id)`, `enviado(texto, tipo)`; suelta `orden(texto, tipo, nombre, app_id, icono=, reemplazar=, acciones=)` |
 | `escritorio.Escritorio(errores, lanzar=, abrir_url=, buscar=)` (3.0) | `abrirConAplicacion(ruta)` (también una dirección web), `mostrarEnDolphin(ruta)`, `abrirCarpeta(ruta)` → `bool` (falso y error presentado si no existe o no arranca); `rutaDeUrl(url)`, `urlDeRuta(ruta)`, `existe(ruta)`, `hayDolphin`; `ruta_local(texto)` |
 | `errores.Errores(consola)` (3.0) | `.presentar(descripcion, causa=, recurso=, accion=, detalle=, nivel=)` → dict; `presentarTexto(5 textos)` y `presentarMapa({...})` desde QML; `.desde_excepcion(exc, descripcion, recurso=, accion=)`; `.desde_proceso(descripcion, argv, codigo, salida)`; la cola: `actual`, `cuantos`, `omitidos` (más de 20 seguidos), `descartar()`, `limpiar()`, `pendientes()`; señales `presentado(mapa)`, `cambiado`. `explicar(exc)` y `explicar_codigo(codigo, salida)` → (causa, acción); `predeterminado()` (el de la aplicación) |

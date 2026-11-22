@@ -57,7 +57,7 @@ QQC2.Control {
     Accessible.role: Accessible.List
     Accessible.name: "Navegación"
 
-    background: Rectangle { color: Kirigami.Theme.backgroundColor }
+    background: FondoVentana {}          // 4.3: translúcido con la ventana (un panel del marco, como en Dolphin)
 
     contentItem: QQC2.ScrollView {
         id: desplazamiento
