@@ -10,6 +10,8 @@ La versión vive en `gui_comun/__init__.py` y en `pyproject.toml`. Las secciones
 
 ## [Unreleased]
 
+## [4.3.0] - 2026-11-22
+
 ### Added
 - **Ventanas translúcidas y desenfocadas como Dolphin con Kvantum** (4.3, pedido del autor, 2026-11-22). Kvantum es un
   `QStyle` de Qt Widgets: vuelve translúcidas a Dolphin y Kate pero no toca una `QQuickWindow`, cuyo fondo pintaba QML
