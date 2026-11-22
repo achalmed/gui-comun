@@ -10,6 +10,8 @@ La versión vive en `gui_comun/__init__.py` y en `pyproject.toml`. Las secciones
 
 ## [Unreleased]
 
+## [4.2.0] - 2026-11-21
+
 ### Changed
 - **Lo que pidieron los studios al aplicar el acabado** (2026-11-21):
   - `VentanaBase`: cabe en un celular o media pantalla (`minimumWidth` de 640 a 20 unidades) y, por debajo de 34

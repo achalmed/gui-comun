@@ -1,7 +1,7 @@
 ---
 tipo: estado
 estado: activo
-actualizado: 2026-11-19
+actualizado: 2026-11-21
 ---
 # estado.md — gui-comun
 
@@ -9,6 +9,7 @@ actualizado: 2026-11-19
 
 | fecha | qué | dónde se ve |
 |---|---|---|
+| 2026-11-21 | **4.2.0 publicada**: el acabado de la familia y lo que pidieron los studios al aplicarlo, juntos en una versión (antes `[Unreleased]`); Lliphi Studio y Dotfiles Studio, que instalan el paquete, lo reciben con la etiqueta `v4.2.0` | `CHANGELOG.md` [4.2.0] |
 | 2026-11-21 | **Lo que pidieron los studios al aplicar el acabado** (sin versión: `[Unreleased]`, 4.2): `VentanaBase` en celular (mínimo 20 unidades y el menú plegado en «☰ Menú» por debajo de 34), `TablaDatos` con columnas `etiqueta` y `elidir: "medio"`, `VistaPdf` con la hoja como papel con sombra e `iconoVacio`, vacíos con icono mediano en paneles bajos, `PestanasArchivos.nombreDe`, `PaletaCategorica.porNombre`, `BotonAccion` sin `plano` con aire, `SpinBox` con ancho mínimo. 122 pruebas; pasan Git (75), Quarto (55), Biblioteca (98) y Ñawinchay (90; `test_raton` falla a veces bajo carga y pasa sola); Filesystem y LaTeX con su fallo de siempre (papelera, Okular) | `CHANGELOG.md` [Unreleased] |
 | 2026-11-19 | **El acabado de la familia (sin versión: `[Unreleased]`, 4.2)**, pedido del autor tras la barra de la selección de Ñawinchay («que sea así de elegante»): auditoría visual de los trece programas en Lliphi claro y oscuro (informes en las notas de la sesión) y, en la base, lo elegido teñido con su marca en navegación, tablas, árbol, paleta y listas; pestañas como `SelectorSegmentado`; la X neutra dibujada (`BotonCierre`) y sin la × roja en los diálogos con botones; marcables teñidos; paleta flotante; barra de estado en letra pequeña; la consola legible en oscuro; `GraficoXY`, `ListaDiagnosticos`, `VistaTexto`, `PasosEscritura` pulidos; piezas nuevas `BarraFlotante`, `GrupoOpciones`, `OpcionColor`, `SelectorSegmentado`, `BotonCierre`, `BotonPrincipal` (página «Opciones y barra flotante» de la galería). 118 pruebas; pasan Git (74), Ñawinchay (81), Quarto (55), Raphi (4), Biblioteca (97); Filesystem (50) y LaTeX (151) con un fallo cada uno que ya fallaba con la base anterior (la papelera y el salto a Okular, del entorno) | `CHANGELOG.md` [Unreleased]; `docs/componentes.md` «Piezas del acabado»; `docs/figuras/galeria-4.2-acabado-antes-despues.png` |
 | 2026-11-19 | **Ningún aviso en franja dentro de la ventana** (pedido del autor para toda la familia): `Mensajes.mostrar` manda también los avisos con botones a KDE y, sin escritorio, los sin botones a la barra de estado; solo una decisión sin escritorio queda en línea. Revisados los 13 programas que usan gui-comun: no hay `showPassiveNotification`; las demás `InlineMessage` son estados de la pantalla (lo que falta instalar, el error de un diálogo), no avisos; LaTeX Studio y Quarto Studio mandaban «cambió en el disco» a una franja propia y ahora van a KDE con sus dos botones | `tests/test_propuestas_41.py` |
