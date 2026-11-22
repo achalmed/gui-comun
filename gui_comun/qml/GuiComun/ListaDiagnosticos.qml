@@ -99,11 +99,11 @@ QQC2.Control {
                 // su color sobre la selección
                 background: Rectangle {
                     radius: Kirigami.Units.cornerRadius
-                    color: fila.highlighted ? Kirigami.ColorUtils.tintWithAlpha(Kirigami.Theme.backgroundColor, Kirigami.Theme.highlightColor, 0.22)
+                    color: fila.highlighted ? EstiloSeleccion.fondo(Kirigami.Theme.backgroundColor, Kirigami.Theme.highlightColor, 0.22)
                          : fila.hovered ? Kirigami.ColorUtils.tintWithAlpha(Kirigami.Theme.backgroundColor, Kirigami.Theme.textColor, 0.06)
                          : "transparent"
                     Rectangle {
-                        visible: fila.highlighted
+                        visible: fila.highlighted && EstiloSeleccion.conMarca
                         anchors { left: parent.left; top: parent.top; bottom: parent.bottom; margins: Kirigami.Units.smallSpacing; leftMargin: Kirigami.Units.smallSpacing / 2 }
                         width: Kirigami.Units.smallSpacing * 0.75
                         radius: width / 2

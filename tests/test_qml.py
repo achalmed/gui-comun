@@ -14,7 +14,9 @@ import pytest
 from conftest import QML, correr_hijo, requiere_kirigami
 
 AUXILIARES = ("ResaltadoSalida", "ResaltadoEditor", "GraficoQuickCharts", "DocumentoQtPdf", "PaginaQtPdf", "CapaQtPdf", "BusquedaQtPdf")      # los carga un Loader
-COMPONENTES = sorted(p.stem for p in QML.glob("*.qml") if p.stem not in AUXILIARES)
+# 4.4: los singletons (`EstiloSeleccion`) no se instancian: se declaran con «singleton» en el qmldir
+SINGLETONS = {l.split()[1] for l in (QML / "qmldir").read_text(encoding="utf-8").splitlines() if l.startswith("singleton ")}
+COMPONENTES = sorted(p.stem for p in QML.glob("*.qml") if p.stem not in AUXILIARES and p.stem not in SINGLETONS)
 
 # lo mínimo que cada componente necesita para instanciarse; `studio.*` lo pone el guion
 PROPIEDADES = {
@@ -121,8 +123,9 @@ def test_carga_cada_componente(componente, tmp_path):
 
 
 def test_qmldir_declara_cada_componente():
-    declarados = {l.split()[0] for l in (QML / "qmldir").read_text(encoding="utf-8").splitlines() if l and not l.startswith("module")}
-    assert declarados == set(COMPONENTES)
+    lineas = [l for l in (QML / "qmldir").read_text(encoding="utf-8").splitlines() if l and not l.startswith("module")]
+    declarados = {l.split()[1] if l.startswith("singleton ") else l.split()[0] for l in lineas}
+    assert declarados == set(COMPONENTES) | SINGLETONS
 
 
 def test_sin_colores_propios():

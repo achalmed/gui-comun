@@ -13,12 +13,16 @@
 // barras de herramientas de `header`/`footer` dejan ver ese fondo (`FondoVentana`), igual que los paneles laterales de
 // la base; las zonas de lectura (`colorSet: View`) siguen opacas. La acción `ventana.translucida` la apaga.
 //
+// 4.4: con el menú global de Plasma (la barra de arriba de Dolphin y Kate: `Kirigami.Settings.hasPlatformMenuBar`),
+// los menús van allí (`MenuGlobalAcciones`) y la barra de la ventana se oculta; sin él, la barra de siempre.
+//
 // Ningún nombre ni logotipo dentro (el título lo pone el gestor de ventanas); sin colores, fuentes, radios ni sombras
 // propios: Kirigami.Theme y Kirigami.Units.
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls as QQC2
 import QtQuick.Templates as T
+import Qt.labs.platform as Labs
 import QtCore
 import org.kde.kirigami as Kirigami
 
@@ -55,13 +59,34 @@ Kirigami.AbstractApplicationWindow {
     height: 760
     minimumWidth: Kirigami.Units.gridUnit * 20          // 4.2: cabe en un celular o media pantalla (antes 640)
     // 4.2: en una ventana angosta, la barra de menú se pliega en un solo «☰ Menú» con todos los menús dentro
-    property bool menuPlegado: width < Kirigami.Units.gridUnit * 34
+    property bool menuPlegado: width < Kirigami.Units.gridUnit * 34 && !menuGlobal
+    // 4.4: los menús en el menú global de Plasma, si lo hay (entonces la barra de la ventana no se muestra)
+    readonly property bool menuGlobal: conMenu && Kirigami.Settings.hasPlatformMenuBar
+    property var barraGlobal: null
+    Component { id: cBarraGlobal; Labs.MenuBar {} }
+    Component { id: cMenuGlobal; MenuGlobalAcciones {} }
+    function ponerMenuGlobal() {
+        if (barraGlobal) barraGlobal.clear()      // borra también los menús (no se destruyen otra vez)
+        if (!menuGlobal || !acciones) return
+        if (!barraGlobal) barraGlobal = cBarraGlobal.createObject(ventana, { window: ventana })
+        for (const m of acciones.menus) {
+            const menu = cMenuGlobal.createObject(barraGlobal, { acciones: ventana.acciones, titulo: m.titulo, elementos: m.elementos })
+            barraGlobal.addMenu(menu)
+            menu.unido = true          // vacío al unirlo, lleno después (véase MenuGlobalAcciones)
+        }
+    }
+    onMenuGlobalChanged: Qt.callLater(ponerMenuGlobal)
+    Connections {
+        target: ventana.acciones ?? null
+        ignoreUnknownSignals: true
+        function onMenusCambiados() { Qt.callLater(ventana.ponerMenuGlobal) }
+    }
     onMenuPlegadoChanged: Qt.callLater(ventana.ponerMenuPlegado)
     function ponerMenuPlegado() {
         if (ventana.menuPlegado && barraMenu.menuAt(0) !== menuTodo) barraMenu.insertMenu(0, menuTodo)
         else if (!ventana.menuPlegado && barraMenu.menuAt(0) === menuTodo) barraMenu.removeMenu(menuTodo)
     }
-    Component.onCompleted: { Qt.callLater(ventana.ponerMenuPlegado); Qt.callLater(ventana.ponerTranslucidez) }
+    Component.onCompleted: { Qt.callLater(ventana.ponerMenuPlegado); Qt.callLater(ventana.ponerTranslucidez); Qt.callLater(ventana.ponerMenuGlobal) }
     QQC2.Menu {
         id: menuTodo
         title: "☰ Menú"
@@ -131,7 +156,7 @@ Kirigami.AbstractApplicationWindow {
             acciones.marcar("ventana.pantalla_completa", visibility === Window.FullScreen)
     }
     onVisibilityChanged: sincronizarPantallaCompleta()
-    onAccionesChanged: { sincronizarPantallaCompleta(); ponerTranslucidez() }
+    onAccionesChanged: { sincronizarPantallaCompleta(); ponerTranslucidez(); Qt.callLater(ponerMenuGlobal) }
 
     Connections {
         target: ventana.acciones ?? null
@@ -169,11 +194,11 @@ Kirigami.AbstractApplicationWindow {
     // ------------------------------------------------------------------ barra de menú (generada)
     menuBar: QQC2.MenuBar {
         id: barraMenu
-        visible: ventana.conMenu
+        visible: ventana.conMenu && !ventana.menuGlobal
         height: visible ? implicitHeight : 0
         background: FondoVentana {}                // 4.3: deja ver el fondo translúcido de la ventana
         Instantiator {
-            active: !ventana.menuPlegado
+            active: !ventana.menuPlegado && !ventana.menuGlobal
             model: ventana.acciones ? ventana.acciones.menus : []
             delegate: MenuAcciones {
                 required property var modelData

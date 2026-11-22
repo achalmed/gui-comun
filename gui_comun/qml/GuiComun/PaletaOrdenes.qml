@@ -106,11 +106,11 @@ QQC2.Popup {
                 // 4.2: la actual, teñida del acento (no el bloque lleno), con su marca a la izquierda
                 background: Rectangle {
                     radius: Kirigami.Units.cornerRadius
-                    color: fila.highlighted ? Kirigami.ColorUtils.tintWithAlpha(Kirigami.Theme.backgroundColor, Kirigami.Theme.highlightColor, 0.24)
+                    color: fila.highlighted ? EstiloSeleccion.fondo(Kirigami.Theme.backgroundColor, Kirigami.Theme.highlightColor, 0.24)
                          : fila.hovered ? Kirigami.ColorUtils.tintWithAlpha(Kirigami.Theme.backgroundColor, Kirigami.Theme.textColor, 0.07)
                          : "transparent"
                     Rectangle {
-                        visible: fila.highlighted
+                        visible: fila.highlighted && EstiloSeleccion.conMarca
                         anchors { left: parent.left; verticalCenter: parent.verticalCenter; leftMargin: Kirigami.Units.smallSpacing / 2 }
                         width: Kirigami.Units.smallSpacing * 0.75
                         height: parent.height - Kirigami.Units.smallSpacing * 2.5

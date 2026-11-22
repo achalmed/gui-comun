@@ -16,6 +16,9 @@ escritorio (`escritorio`) y los expone. Si un módulo QML falta (Kirigami no ins
 el búfer con canal alfa antes de crear la aplicación y, con la ventana cargada, el desenfoque a KWin; QML lo lee en
 `aplicacionStudio.translucidez` (véase `gui_comun.translucidez`).
 
+4.4: aplica el esquema de color elegido para la familia (`gui_comun.esquemas`: el del sistema, «como Dolphin» con los
+colores de Kvantum, o uno instalado) antes de cargar el QML.
+
 **Por qué `QApplication` y no `QGuiApplication` (3.0).** El tema de plataforma de KDE (`KDEPlasmaPlatformTheme6`)
 solo ofrece su diálogo de archivos nativo (el de Dolphin: lugares, vista previa, filtros, la barra de rutas) cuando
 la aplicación es una `QApplication`: es un widget (`KFileWidget`). Con una `QGuiApplication`, `FileDialog` y
@@ -36,6 +39,7 @@ from pathlib import Path
 
 from gui_comun import __version__ as _VERSION_GUI_COMUN
 from gui_comun import errores as _errores
+from gui_comun import esquemas as _esquemas
 from gui_comun import i18n
 from gui_comun import translucidez as _translucidez
 from gui_comun.escritorio import Escritorio
@@ -117,6 +121,9 @@ class Aplicacion:
         if not QIcon.themeName():               # sin tema de escritorio (offscreen, otro entorno): el de Plasma
             QIcon.setThemeName("breeze")
         self.traducciones = cargar_traducciones(self.app, idioma)
+        # 4.4: el esquema de color elegido para la familia (predeterminado, como Dolphin o uno instalado), antes del QML
+        self.esquemas = _esquemas.Esquemas(self.app, nombres, organizacion)
+        _esquemas.fijar_predeterminado(self.esquemas)
         self.motor = QQmlApplicationEngine()
         self.motor.addImportPath(str(RUTA_QML))
         self.motor.quit.connect(self.app.quit)
@@ -191,6 +198,8 @@ class Aplicacion:
         self.motor = None
         if _errores.predeterminado() is self.errores:
             _errores.fijar_predeterminado(None)
+        if _esquemas.predeterminado() is self.esquemas:
+            _esquemas.fijar_predeterminado(None)
 
     def ventana(self):
         """La ventana raíz como `QQuickWindow` (para capturas, geometría, foco)."""
@@ -268,6 +277,12 @@ class DatosStudio(QObject):
         """4.3: la ventana translúcida y desenfocada (`gui_comun.translucidez.Translucidez`): `activa`, `opacidad`,
         `posible`, `motivo`, `preferida` y `preferir(bool)`; `VentanaBase` y `FondoVentana` la leen."""
         return self._a.translucidez
+
+    @Property(QObject, constant=True)
+    def esquemas(self):
+        """4.4: el esquema de color de la familia (`gui_comun.esquemas.Esquemas`): `actual`, `opciones`,
+        `seleccionLlena`, `alfaSeleccion`, `elegir(id)`."""
+        return self._a.esquemas
 
     @Slot(str, "QVariantMap", result=str)
     def markdownHtml(self, texto: str, tema: dict) -> str:

@@ -116,7 +116,7 @@ QQC2.Control {
                             rightInset: Kirigami.Units.smallSpacing / 2
                             background: Rectangle {
                                 radius: Kirigami.Units.cornerRadius
-                                color: fila.highlighted ? Kirigami.ColorUtils.tintWithAlpha(Kirigami.Theme.backgroundColor, Kirigami.Theme.highlightColor, fila.hovered || fila.pressed ? 0.30 : 0.22)
+                                color: fila.highlighted ? EstiloSeleccion.fondo(Kirigami.Theme.backgroundColor, Kirigami.Theme.highlightColor, fila.hovered || fila.pressed ? 0.30 : 0.22)
                                      : fila.pressed ? Kirigami.ColorUtils.tintWithAlpha(Kirigami.Theme.backgroundColor, Kirigami.Theme.textColor, 0.14)
                                      : fila.hovered ? Kirigami.ColorUtils.tintWithAlpha(Kirigami.Theme.backgroundColor, Kirigami.Theme.textColor, 0.07)
                                      : "transparent"
@@ -124,7 +124,7 @@ QQC2.Control {
                                 border.color: Kirigami.Theme.focusColor
                                 Behavior on color { ColorAnimation { duration: Kirigami.Units.shortDuration } }
                                 Rectangle {          // la marca de la elegida
-                                    visible: fila.highlighted && !panel.plegado
+                                    visible: fila.highlighted && !panel.plegado && EstiloSeleccion.conMarca
                                     anchors.left: parent.left
                                     anchors.leftMargin: Kirigami.Units.smallSpacing / 2
                                     anchors.verticalCenter: parent.verticalCenter
@@ -160,6 +160,7 @@ QQC2.Control {
                                 }
                                 Kirigami.Icon {
                                     source: fila.modelData.icono || "folder"
+                                    color: fila.highlighted && EstiloSeleccion.llena ? Kirigami.Theme.highlightedTextColor : "transparent"
                                     implicitWidth: Kirigami.Units.iconSizes.small
                                     implicitHeight: implicitWidth
                                     Layout.alignment: Qt.AlignVCenter
@@ -170,14 +171,14 @@ QQC2.Control {
                                     text: fila.modelData.texto
                                     Layout.fillWidth: true
                                     elide: Text.ElideRight
-                                    color: Kirigami.Theme.textColor
+                                    color: fila.highlighted ? EstiloSeleccion.texto(Kirigami.Theme.textColor, Kirigami.Theme.highlightedTextColor) : Kirigami.Theme.textColor
                                     font.weight: fila.highlighted ? Font.DemiBold : Font.Normal
                                 }
                                 QQC2.Label {
                                     visible: !panel.plegado && fila.modelData.contador !== undefined && fila.modelData.contador !== ""
                                     text: fila.modelData.contador !== undefined ? fila.modelData.contador : ""
                                     font: Kirigami.Theme.smallFont
-                                    color: Kirigami.Theme.disabledTextColor
+                                    color: fila.highlighted && EstiloSeleccion.llena ? Qt.alpha(Kirigami.Theme.highlightedTextColor, 0.75) : Kirigami.Theme.disabledTextColor
                                 }
                             }
                         }

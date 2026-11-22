@@ -335,6 +335,11 @@ class Acciones(QAbstractListModel):
         self.registrar("app.ajustes", f"Configurar &{nombre_app}…", "configure", StandardKey.Preferences, "Ajustes")
         self.registrar("app.acerca", f"&Acerca de {nombre_app}", "help-about", None, "Ayuda")
         self.registrar("app.salir", "&Salir", "application-exit", StandardKey.Quit, "Archivo")
+        # 4.4: el esquema de color de la ventana, como el menú «Window Color Scheme» de Kate (solo dentro de una
+        # `Aplicacion`); `definir_menus` lo pone en un submenú tras «Configurar…»
+        from gui_comun import esquemas as _esquemas
+        if _esquemas.predeterminado() is not None:
+            self._esquemas = _esquemas.predeterminado().registrar_acciones(self)
         for nombre, atajo in (atajos or {}).items():
             self.fijar_atajo(nombre, atajo)
 
@@ -355,8 +360,46 @@ class Acciones(QAbstractListModel):
 
     def definir_menus(self, menus: list) -> None:
         """[(título, [nombre | "|" | (título, [...])]), …] → `menus` para QML (lista de {titulo, elementos})."""
-        self._menus = [self._menu(titulo, elementos) for titulo, elementos in menus]
+        self._menus = [self._menu(titulo, elementos) for titulo, elementos in self._con_esquemas(menus)]
         self.menusCambiados.emit()
+
+    def _con_esquemas(self, menus: list) -> list:
+        """4.4: tras «Configurar…» (`app.ajustes`), el submenú «Esquema de color de la ventana» y «Ventana
+        translúcida», como en el menú Preferencias de Kate; solo si el studio no los puso ya."""
+        esquemas = [n for n in getattr(self, "_esquemas", []) if n in self._por_nombre]
+
+        def nombres(elementos):
+            for e in elementos:
+                if isinstance(e, tuple):
+                    yield from nombres(e[1])
+                elif e != "|":
+                    yield e
+        puestos = {n for _t, el in menus for n in nombres(el)}
+        extra = [] if not esquemas or puestos & set(esquemas) else [("Es&quema de color de la ventana", esquemas)]
+        if "ventana.translucida" in self._por_nombre and "ventana.translucida" not in puestos:
+            extra.append("ventana.translucida")
+        if not extra:
+            return menus
+
+        def insertar(elementos):
+            salida, hecho = [], False
+            for e in elementos:
+                if isinstance(e, tuple):
+                    sub, h = insertar(e[1])
+                    salida.append((e[0], sub))
+                    hecho = hecho or h
+                else:
+                    salida.append(e)
+                    if e == "app.ajustes" and not hecho:
+                        salida += extra
+                        hecho = True
+            return salida, hecho
+        resultado, salida = False, []
+        for titulo, elementos in menus:
+            nuevos, hecho = insertar(elementos) if not resultado else (elementos, False)
+            resultado = resultado or hecho
+            salida.append((titulo, nuevos))
+        return salida
 
     def _menu(self, titulo: str, elementos: list) -> dict:
         salida = []

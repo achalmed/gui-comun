@@ -10,6 +10,37 @@ La versión vive en `gui_comun/__init__.py` y en `pyproject.toml`. Las secciones
 
 ## [Unreleased]
 
+## [4.4.0] - 2026-11-22
+
+### Added
+- **El esquema de color de la ventana, como en Kate, y la variante «como Dolphin»** (4.4, pedido del autor,
+  2026-11-22: las ventanas de la familia se veían más claras que Dolphin). La causa: con Kvantum, Dolphin toma la paleta
+  del tema de Kvantum (`LliphiDark.kvconfig`: ventana `#1b1c1e`, vista `#101012`) y las ventanas QML la del esquema de
+  KDE (`LliphiOscuro.colors`: `#363636`, `#242424`). `gui_comun.esquemas` ofrece, para toda la familia:
+  «Predeterminado» (el esquema del sistema, como hasta ahora y por omisión), «Como Dolphin (Kvantum: <tema>)» (un
+  `.colors` generado del esquema del sistema con los colores del tema de Kvantum activo, el claro o el oscuro) y todos los
+  esquemas instalados. Se aplica como `KColorSchemeManager`: la propiedad `KDE_COLOR_SCHEME_PATH` de la aplicación (que
+  `KColorScheme`, y con él Kirigami, lee en lugar de `kdeglobals`) y una paleta nueva, al arrancar y al momento.
+  Ajuste `ventana/esquema` en `<organización>/gui-comun.conf`; `aplicacionStudio.esquemas`.
+- Acciones `ventana.esquema.<id>` (las registra `Acciones.estandar` dentro de una `Aplicacion`) y, en
+  `Acciones.definir_menus`, el submenú «Esquema de color de la ventana» y «Ventana translúcida» tras «Configurar…»
+  (`app.ajustes`), como en el menú Preferencias de Kate; un studio que ya los puso no los ve repetidos.
+- **Lo elegido como bloque lleno en la variante «como Dolphin»**: `EstiloSeleccion` (singleton) da el fondo de la fila
+  elegida, la selección de Kvantum al 65 % sobre la fila (`#991e21` sobre `#101012`; Dolphin, medido: `#992024`), sin la
+  marca lateral y con el texto en `highlightedTextColor`. Lo usan `FondoSeleccion`, `PanelNavegacion`, `TablaDatos`,
+  `ArbolDatos`, `ListaDiagnosticos`, `ListaErrores` y `PaletaOrdenes`. Con el predeterminado, el tinte de la 4.2.
+- **Los menús en el menú global de Plasma** (la barra de arriba, como Dolphin y Kate): con
+  `Kirigami.Settings.hasPlatformMenuBar`, `VentanaBase` pone los menús del registro en un `Qt.labs.platform` `MenuBar`
+  (`MenuGlobalAcciones`, nuevo) y oculta la barra de la ventana; Plasma los pinta con el estilo del escritorio (con
+  Kvantum, translúcidos y desenfocados, como los de Kate). Los atajos los registra ese menú. Sin menú global, la barra de
+  siempre. Ojo: en Qt 6.10 añadir a la barra un menú que ya tiene elementos tumba la aplicación; el menú se une vacío y
+  se llena después.
+- `EstiloSeleccion` no importa Kirigami: Qt resuelve los singletons del `qmldir` al cargar cualquier archivo de
+  la carpeta, y quien carga un componente suelto sin Kirigami (el visor PDF en las pruebas de LaTeX Studio) fallaba.
+
+### Changed
+- `tests/test_qml.py` reconoce los tipos `singleton` del `qmldir`.
+
 ## [4.3.0] - 2026-11-22
 
 ### Added

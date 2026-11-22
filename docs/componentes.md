@@ -46,6 +46,7 @@ fallida llega como error presentable).
 | `paleta` · `confirmacion` · `dialogoError` | componentes | la paleta, el diálogo de confirmación, el de errores |
 | `contenido` (por omisión) · `zonaContenido` | `Item` | lo que el studio declara dentro · su contenedor |
 | `translucidez` · `translucida` (4.3) | objeto · `bool` | `aplicacionStudio.translucidez` y si la ventana es translúcida ahora |
+| `menuGlobal` · `barraGlobal` (4.4) | `bool` · objeto | si los menús van al menú global de Plasma · su `Labs.MenuBar` |
 
 4.3, **translúcida y desenfocada como Dolphin** cuando Kvantum lo pide (`gui_comun.translucidez`): el color de la
 ventana a la opacidad del tema (`1 - reduce_window_opacity/100`), con KWin desenfocando lo de detrás; la barra de menú y
@@ -394,6 +395,18 @@ marco (`background: FondoVentana {}`), nunca en una zona de lectura.
 | `separador` | `string` | `"arriba"`, `"abajo"` o `""`: la raya de una barra de herramientas |
 | `translucida` | `bool` (solo lectura) | si la ventana es translúcida ahora |
 
+### EstiloSeleccion (4.4, singleton)
+
+Cómo se marca lo elegido: con el esquema predeterminado, el tinte del acento con su marca (4.2); con «como Dolphin»
+(`aplicacionStudio.esquemas.seleccionLlena`), un bloque lleno como el de Dolphin, sin marca y con el texto resaltado.
+`llena`, `conMarca`, `alfa`; `fondo(base, acento, tinte)`, `texto(normal, resaltado)`. Para las filas propias de un
+studio, mejor `FondoSeleccion`, que ya lo usa.
+
+### MenuGlobalAcciones (4.4)
+
+Un menú del registro de acciones en el menú global de Plasma (`Qt.labs.platform`), misma entrada que `MenuAcciones`;
+lo usa `VentanaBase` cuando hay menú global. Se llena solo después de unirlo a su barra o menú (`unido`).
+
 ### MenuAcciones · BotonAccion
 4.2: `BotonAccion` marcable se ve con un tinte del acento y su borde (con su propio icono y texto); `plano: false`, con borde fuera de una barra.
 
@@ -406,6 +419,7 @@ marco (`background: FondoVentana {}`), nunca en una zona de lectura.
 | módulo | API |
 |---|---|
 | `nucleo.Aplicacion(app_id, nombre, version=, organizacion=, idioma="es", nombre_ajustes=)` | 3.0: una `QApplication` (el diálogo de archivos de KDE). `.exponer(nombre, objeto)` (también `studio.<nombre>`), `.cargar(qml)`, `.ejecutar(qml, humo=False)`, `.ventana()`, `.capturar(png, espera_ms)`, `.cerrar()`, `.traducciones`, `.mensaje_de_fallo()`; 3.0: `.errores`, `.escritorio` (expuestos con esos nombres), `.error(descripcion, causa, recurso, accion, detalle, nivel)`; `aplicacionStudio` en QML (appId, nombre, version, binding, versionGuiComun, versionQt; 3.0: errores, escritorio) |
+| `esquemas` (4.4) | `opciones(nombres_app, entorno=)` → [{id, nombre}] (`""` predeterminado, `"kvantum"` como Dolphin, los instalados); `esquema_kvantum(nombres_app, entorno=, destino=)` → la ruta del `.colors` generado (en `$XDG_CACHE_HOME/gui-comun/esquemas/`) o None; `ruta_de(eleccion, …)`, `esquemas_instalados()`, `esquema_del_sistema()`, `paleta_de(ruta)`; `Esquemas(app, nombres_app, organizacion)`, expuesto como `aplicacionStudio.esquemas`: `actual`, `opciones`, `seleccionLlena`, `alfaSeleccion`, `ruta`, `elegir(id)` (guarda `ventana/esquema` y aplica al momento), `registrar_acciones(acciones)`; `predeterminado()` |
 | `translucidez` (4.3) | `decidir(nombres_app, preferida=, entorno=)` → `Decision(posible, activa, opacidad, motivo, tema)` (Python puro: `widgetStyle` de la cascada de `kdeglobals` o `QT_STYLE_OVERRIDE`, el tema de `kvantum.kvconfig` con `[Applications]` y la variante `…Dark` de `kvantum-dark`, `translucent_windows`, `blurring`, `reduce_window_opacity`, `opaque=`; opaca sin pantalla o con `GUI_COMUN_TRANSLUCIDA=0`); `preparar_superficie(app_creada)` (canal alfa); `DesenfoqueKWin(cargar=)`: `disponible()` (`KWindowEffects::isEffectAvailable(BlurBehind)`), `aplicar(ventana, activo)` (`enableBlurBehind` por ctypes, región vacía = toda la ventana; sin efecto no llama a nada); `Translucidez(decision, organizacion, desenfoque=, preferida=)`, expuesto como `aplicacionStudio.translucidez`: `activa`, `posible`, `opacidad`, `motivo`, `preferida`, `preferir(bool)`; `leer_preferencia`/`guardar_preferencia` (`ventana/translucida` en `<organización>/gui-comun.conf`); sueltas `leer_ini`, `estilo_de_programas`, `tema_kvantum`, `ruta_tema`, `leer_tema` |
 | `notificaciones.Notificador(app_id, nombre, icono=)` (4.1) | expuesto como `notificador`: `disponible`, `notificar(texto, tipo)` → `bool` (por `notify-send`; información y éxito transitorios, cada uno reemplaza al anterior); `notificarConAcciones(texto, tipo, [{clave, texto}])` → id (0 sin escritorio), señales `accionElegida(id, clave)` y `notificacionCerrada(id)`, `enviado(texto, tipo)`; suelta `orden(texto, tipo, nombre, app_id, icono=, reemplazar=, acciones=)` |
 | `escritorio.Escritorio(errores, lanzar=, abrir_url=, buscar=)` (3.0) | `abrirConAplicacion(ruta)` (también una dirección web), `mostrarEnDolphin(ruta)`, `abrirCarpeta(ruta)` → `bool` (falso y error presentado si no existe o no arranca); `rutaDeUrl(url)`, `urlDeRuta(ruta)`, `existe(ruta)`, `hayDolphin`; `ruta_local(texto)` |

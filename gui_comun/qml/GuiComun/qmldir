@@ -44,3 +44,5 @@ BotonPrincipal 4.2 BotonPrincipal.qml
 SelectorSegmentado 4.2 SelectorSegmentado.qml
 FondoSeleccion 4.2 FondoSeleccion.qml
 FondoVentana 4.3 FondoVentana.qml
+singleton EstiloSeleccion 4.4 EstiloSeleccion.qml
+MenuGlobalAcciones 4.4 MenuGlobalAcciones.qml

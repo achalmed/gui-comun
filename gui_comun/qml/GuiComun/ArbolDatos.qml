@@ -245,7 +245,7 @@ QQC2.Control {
                 implicitHeight: raiz.altoFila
                 // 4.2: la fila elegida, teñida del acento con su marca a la izquierda (como TablaDatos)
                 readonly property color fondoFila: row % 2 === 1 ? Kirigami.Theme.alternateBackgroundColor : Kirigami.Theme.backgroundColor
-                color: selected ? Kirigami.ColorUtils.tintWithAlpha(fondoFila, Kirigami.Theme.highlightColor, 0.24) : fondoFila
+                color: selected ? EstiloSeleccion.fondo(fondoFila, Kirigami.Theme.highlightColor, 0.24) : fondoFila
                 Accessible.role: Accessible.Cell
                 Accessible.name: model.display !== undefined ? String(model.display) : ""
 
@@ -261,7 +261,7 @@ QQC2.Control {
                     }
                 }
                 Rectangle {   // la marca de la fila elegida
-                    visible: celda.column === 0 && celda.selected
+                    visible: celda.column === 0 && celda.selected && EstiloSeleccion.conMarca
                     anchors { left: parent.left; top: parent.top; bottom: parent.bottom; topMargin: 2; bottomMargin: 2 }
                     width: Kirigami.Units.smallSpacing * 0.75
                     radius: width / 2
