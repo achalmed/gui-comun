@@ -8,7 +8,7 @@ mientras que las ventanas QML (estilo `org.kde.desktop` de Kirigami) toman la de
 Lo que hace este módulo, para toda la familia:
 
 - **Predeterminado**: el esquema de color del sistema, como hasta ahora (no se toca nada).
-- **Como Dolphin (Kvantum)**: genera un `.colors` a partir del esquema del sistema con los colores del tema de Kvantum
+- **Como Dolphin** (en el menú, el nombre del tema de Kvantum: «Lliphi Dark»): genera un `.colors` a partir del esquema del sistema con los colores del tema de Kvantum
   activo (el claro o el oscuro, según `kvantum`/`kvantum-dark`) en ventana, vista, botones, cabecera, selección y
   ayudas emergentes, y lo usa. Lo elegido se marca entonces con un bloque lleno, como en Dolphin.
 - **Cualquier esquema instalado** (`/usr/share/color-schemes`, `~/.local/share/color-schemes`), como el menú
@@ -141,7 +141,7 @@ def esquema_kvantum(nombres_app, entorno: dict | None = None, destino: Path | No
             valor = rgb(colores.get(clave_kv, ""))
             if valor:
                 destino_grupo[clave] = valor
-    nombre = f"{instalados.get(sistema, {}).get('nombre', sistema)} como Dolphin ({kvconfig.stem})"
+    nombre = nombre_tema(kvconfig)          # 4.4.1: el nombre del tema, sin más («Lliphi Dark»)
     salida = {"General": {"Name": nombre, "ColorScheme": f"{kvconfig.stem}Kvantum"}, **secciones}
     cache = Path(e.get("XDG_CACHE_HOME") or Path(e.get("HOME") or Path.home()) / ".cache")
     ruta = destino or cache / "gui-comun" / "esquemas" / f"{kvconfig.stem}-kvantum.colors"
@@ -169,8 +169,13 @@ def opciones(nombres_app, entorno: dict | None = None) -> list[dict]:
     salida = [{"id": PREDETERMINADO, "nombre": f"Predeterminado ({nombre_sistema})"}]
     kvconfig = tema_kvantum_activo(nombres_app, entorno)
     if kvconfig is not None:
-        salida.append({"id": KVANTUM, "nombre": f"Como Dolphin (Kvantum: {kvconfig.stem})"})
+        salida.append({"id": KVANTUM, "nombre": nombre_tema(kvconfig)})     # 4.4.1: «Lliphi Dark», como en Kate
     return salida + [{"id": d["id"], "nombre": d["nombre"]} for d in instalados]
+
+
+def nombre_tema(kvconfig: Path) -> str:
+    """El nombre del tema de Kvantum para leerlo: «LliphiDark» → «Lliphi Dark», «KvArcDark» → «Kv Arc Dark»."""
+    return re.sub(r"(?<=[a-z0-9])(?=[A-Z])", " ", kvconfig.stem)
 
 
 def nombre_accion(eleccion: str) -> str:

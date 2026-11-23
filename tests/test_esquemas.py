@@ -108,7 +108,7 @@ def test_variante_como_dolphin_con_los_colores_de_kvantum(tmp_path):
     assert ini["Colors:Selection"]["BackgroundNormal"] == "226,37,41"
     assert ini["Colors:Tooltip"]["BackgroundNormal"] == "50,51,53"
     assert ini["ColorEffects:Disabled"]["ContrastAmount"] == "0.65"
-    assert ini["General"]["Name"] == "Lliphi Oscuro como Dolphin (LliphiDark)"
+    assert ini["General"]["Name"] == "Lliphi Dark"
     assert ruta.read_text().count("[Colors:Header][Inactive]") == 1             # la sección doble, tal cual
 
 
@@ -129,7 +129,8 @@ def test_opciones_como_kate(tmp_path):
     ops = es.opciones(NOMBRES, e)
     assert [o["id"] for o in ops] == ["", "kvantum", "BreezeDark", "LliphiOscuro"]
     assert ops[0]["nombre"] == "Predeterminado (Lliphi Oscuro)"
-    assert ops[1]["nombre"] == "Como Dolphin (Kvantum: LliphiDark)"
+    assert ops[1]["nombre"] == "Lliphi Dark"
+    assert es.nombre_tema(Path("Lliphi.kvconfig")) == "Lliphi" and es.nombre_tema(Path("KvArcDark.kvconfig")) == "Kv Arc Dark"
     assert es.ruta_de("", NOMBRES, e) is None
     assert es.ruta_de("BreezeDark", NOMBRES, e).name == "BreezeDark.colors"
     assert es.ruta_de("NoExiste", NOMBRES, e) is None
