@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "gui-comun"
-version = "4.4.0"
+version = "4.4.1"
 description = "El marco común de la familia de studios: módulo QML GuiComun sobre Kirigami (ventana de trabajo, tabla, paneles, consola, paleta de órdenes, ajustes) con núcleo, acciones, tareas y consola en Python"
 readme = "README.md"
 license = { text = "MIT" }

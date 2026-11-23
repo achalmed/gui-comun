@@ -10,6 +10,8 @@ La versión vive en `gui_comun/__init__.py` y en `pyproject.toml`. Las secciones
 
 ## [Unreleased]
 
+## [4.4.1] - 2026-11-22
+
 ### Changed
 - El submenú «Esquema de color de la ventana» llama a la variante de Kvantum por el nombre de su tema, sin más:
   «Lliphi Dark» (antes «Como Dolphin (Kvantum: LliphiDark)»), como Kate nombra los esquemas; `esquemas.nombre_tema`.
